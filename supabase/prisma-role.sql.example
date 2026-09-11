@@ -1,0 +1,13 @@
+-- Run once in the Supabase SQL Editor BEFORE deploying the Prisma schema.
+-- IMPORTANT: replace the placeholder with a strong, unique database password.
+-- Never commit the real password to GitHub.
+
+create user "prisma" with password 'REPLACE_WITH_A_LONG_RANDOM_PASSWORD' bypassrls createdb;
+grant "prisma" to "postgres";
+
+grant usage, create on schema public to "prisma";
+grant all privileges on all tables in schema public to "prisma";
+grant all privileges on all sequences in schema public to "prisma";
+
+alter default privileges in schema public grant all on tables to "prisma";
+alter default privileges in schema public grant all on sequences to "prisma";
