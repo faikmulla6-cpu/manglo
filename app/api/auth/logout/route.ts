@@ -1,0 +1,1 @@
+import {NextRequest,NextResponse} from 'next/server';import {destroySession} from '@/lib/auth';import {assertSameOrigin} from '@/lib/security';export async function POST(req:NextRequest){try{assertSameOrigin(req);await destroySession();return NextResponse.redirect(new URL('/',req.url),303)}catch{return NextResponse.json({error:'Bad request'},{status:400})}}
