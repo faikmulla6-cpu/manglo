@@ -8,10 +8,37 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum OrderStatus { QUEUED PROCESSING COMPLETED PARTIAL CANCELED FAILED REFUNDED }
-enum PaymentStatus { CREATED PENDING PAID FAILED REFUNDED }
-enum LedgerType { DEPOSIT ORDER_DEBIT ORDER_REFUND ADJUSTMENT }
-enum SupportStatus { OPEN IN_REVIEW RESOLVED CLOSED }
+enum OrderStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  PARTIAL
+  CANCELED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum LedgerType {
+  DEPOSIT
+  ORDER_DEBIT
+  ORDER_REFUND
+  ADJUSTMENT
+}
+
+enum SupportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
 
 model User {
   id String @id @db.Uuid
