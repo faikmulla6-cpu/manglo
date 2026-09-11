@@ -6,8 +6,11 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get('token_hash');
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null;
+  const requestedNext = request.nextUrl.searchParams.get('next') || '/dashboard';
+  const nextPath = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
+
   const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = '/dashboard';
+  redirectTo.pathname = nextPath;
   redirectTo.search = '';
 
   if (!tokenHash || !type) {
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (!error && data.user) {
     try {
       await provisionUser(data.user);
-      redirectTo.searchParams.set('verified', '1');
+      if (type !== 'recovery') redirectTo.searchParams.set('verified', '1');
       return NextResponse.redirect(redirectTo);
     } catch {
       // Authentication succeeded, but the local business profile could not be provisioned.
