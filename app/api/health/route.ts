@@ -9,6 +9,10 @@ export async function GET() {
     database: 'unknown',
     supabaseUrlConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     supabaseKeyConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
+    cashfreeConfigured: Boolean(process.env.CASHFREE_CLIENT_ID && process.env.CASHFREE_CLIENT_SECRET),
+    cashfreeWebhookSecretConfigured: Boolean(process.env.CASHFREE_WEBHOOK_SECRET),
+    cashfreeMode: process.env.CASHFREE_MODE === 'production' ? 'production' : 'sandbox',
+    cashfreeApiVersion: process.env.CASHFREE_API_VERSION || '2025-01-01',
   } as const;
 
   let database: 'ok' | 'error' = 'ok';
@@ -20,8 +24,14 @@ export async function GET() {
   }
 
   const body = { ...checks, database };
+  const healthy = database === 'ok'
+    && checks.supabaseUrlConfigured
+    && checks.supabaseKeyConfigured
+    && checks.cashfreeConfigured
+    && checks.cashfreeMode === 'production';
+
   return NextResponse.json(body, {
-    status: database === 'ok' && checks.supabaseUrlConfigured && checks.supabaseKeyConfigured ? 200 : 503,
+    status: healthy ? 200 : 503,
     headers: { 'Cache-Control': 'no-store' },
   });
 }
