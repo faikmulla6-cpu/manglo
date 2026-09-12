@@ -6,6 +6,7 @@ import {trustworthyServiceName} from '@/lib/catalog';
 import {reconcileProviderOrder} from '@/lib/order-reconciliation';
 import DashboardShell from './DashboardShell';
 import PaymentReturnStatus from './PaymentReturnStatus';
+import ActiveOrderAutoRefresh from './ActiveOrderAutoRefresh';
 
 export const metadata={title:'My account',robots:{index:false,follow:false}};
 export const dynamic='force-dynamic';
@@ -29,5 +30,6 @@ export default async function Dashboard(){
   db.supportTicket.findMany({where:{userId:user.id},orderBy:{createdAt:'desc'},take:20})
  ]);
  const account=freshUser||user;
- return <><div className="container payment-return"><Suspense fallback={null}><PaymentReturnStatus/></Suspense></div><DashboardShell user={{name:account.name,email:account.email,phone:account.phone||'',walletPaise:Number(account.walletPaise),createdAt:account.createdAt.toISOString()}} orders={orders.map(order=>({id:order.publicId,service:trustworthyServiceName(order.service.name),platform:order.service.platform,status:order.status,quantity:order.quantity,chargedPaise:Number(order.chargedPaise),remains:order.remains,createdAt:order.createdAt.toISOString()}))} ledger={ledger.map(item=>({id:item.id,type:item.type,amountPaise:Number(item.amountPaise),balanceAfterPaise:Number(item.balanceAfterPaise),note:item.note,createdAt:item.createdAt.toISOString()}))} favorites={favorites.map(item=>({id:item.service.id,name:trustworthyServiceName(item.service.name),platform:item.service.platform,pricePaise:Number(item.service.retailRatePaisePerThousand)}))} tickets={tickets.map(ticket=>({id:ticket.publicId,category:ticket.category,subject:ticket.subject,status:ticket.status,createdAt:ticket.createdAt.toISOString()}))}/></>;
+ const hasActiveOrders=orders.some(order=>order.status==='QUEUED'||order.status==='PROCESSING');
+ return <><ActiveOrderAutoRefresh active={hasActiveOrders}/><div className="container payment-return"><Suspense fallback={null}><PaymentReturnStatus/></Suspense></div><DashboardShell user={{name:account.name,email:account.email,phone:account.phone||'',walletPaise:Number(account.walletPaise),createdAt:account.createdAt.toISOString()}} orders={orders.map(order=>({id:order.publicId,service:trustworthyServiceName(order.service.name),platform:order.service.platform,status:order.status,quantity:order.quantity,chargedPaise:Number(order.chargedPaise),remains:order.remains,createdAt:order.createdAt.toISOString()}))} ledger={ledger.map(item=>({id:item.id,type:item.type,amountPaise:Number(item.amountPaise),balanceAfterPaise:Number(item.balanceAfterPaise),note:item.note,createdAt:item.createdAt.toISOString()}))} favorites={favorites.map(item=>({id:item.service.id,name:trustworthyServiceName(item.service.name),platform:item.service.platform,pricePaise:Number(item.service.retailRatePaisePerThousand)}))} tickets={tickets.map(ticket=>({id:ticket.publicId,category:ticket.category,subject:ticket.subject,status:ticket.status,createdAt:ticket.createdAt.toISOString()}))}/></>;
 }
