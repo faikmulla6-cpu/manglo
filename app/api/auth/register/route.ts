@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     const input = RegisterSchema.parse(await req.json());
     const email = input.email.trim().toLowerCase();
     const name = cleanText(input.name, 80);
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
 
     const existingProfile = await db.user.findFirst({
       where: { OR: [{ email }, { phone: input.phone }] },
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       password: input.password,
       options: {
         data: { name, phone: input.phone },
+        emailRedirectTo: `${appUrl}/auth/confirm`,
       },
     });
 
