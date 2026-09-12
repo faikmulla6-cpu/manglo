@@ -1,50 +1,74 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {providerServices} from '@/lib/provider';
 import {db} from '@/lib/db';
-import {retailRate} from '@/lib/money';
-import {platformOf,providerCatalogById,serviceDescription,trustworthyCategory,trustworthyServiceName} from '@/lib/catalog';
+import {normalizeSupplierServices,supplierCatalogAudit} from '@/lib/service-sync';
+
+function envFlag(name:string,defaultValue=false){
+ const value=process.env[name];
+ if(value==null)return defaultValue;
+ return ['1','true','yes','on'].includes(value.trim().toLowerCase());
+}
 
 export async function POST(req:NextRequest){
- if(req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`)return NextResponse.json({error:'Unauthorized'},{status:401});
+ if(req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`){
+  return NextResponse.json({error:'Unauthorized'},{status:401});
+ }
+
  try{
-  const list=await providerServices();
-  if(!Array.isArray(list))return NextResponse.json({error:'Unexpected provider response'},{status:502});
-  const normalized=[] as Array<{id:string;data:any}>;
-  for(const x of list.slice(0,5000)){
-   const id=String(x?.service||'').trim();
-   if(!id)continue;
-   const meta=providerCatalogById.get(id);
-   const rateRupees=Number(x?.rate);
-   if(!Number.isFinite(rateRupees)||rateRupees<=0)continue;
-   const providerPaise=Math.max(1,Math.ceil(rateRupees*100));
-   const min=Math.max(1,Number(x?.min)||meta?.min||1);
-   const max=Math.max(min,Number(x?.max)||meta?.max||min);
-   const category=trustworthyCategory(String(meta?.category||x?.category||'Other')).slice(0,190);
-   const name=trustworthyServiceName(String(meta?.name||x?.name||'Service')).slice(0,190);
-   const averageTime=meta?.averageTime||null;
-   const refill=Boolean(x?.refill??meta?.refill);
-   const cancel=Boolean(x?.cancel??meta?.cancel);
-   const description=serviceDescription({averageTime,min,max,refill});
-   normalized.push({id,data:{platform:platformOf(category,name),category,name,description,averageTime,providerRatePaisePerThousand:BigInt(providerPaise),retailRatePaisePerThousand:BigInt(retailRate(providerPaise)),min,max,refill,cancel,active:true,lastSyncedAt:new Date()}});
+  const raw=await providerServices();
+  const normalized=normalizeSupplierServices(raw);
+  const audit=supplierCatalogAudit(normalized);
+
+  const minimum=Math.max(1,Number(process.env.SMM_MIN_SYNC_SERVICES||2000));
+  if(normalized.length<minimum){
+   console.error(`Supplier sync rejected: only ${normalized.length} valid services returned; minimum is ${minimum}`);
+   return NextResponse.json({
+    error:'Supplier returned too few valid services; existing catalog was preserved.',
+    writePerformed:false,
+    ...audit,
+   },{status:502});
   }
 
-  const minimum=Math.max(1,Number(process.env.SMM_MIN_SYNC_SERVICES||50));
-  if(normalized.length<minimum){
-   console.error(`Supplier sync rejected: only ${normalized.length} valid services returned`);
-   return NextResponse.json({error:'Supplier returned too few valid services; existing catalog was preserved.'},{status:502});
+  const minimumMatchRatio=Math.min(1,Math.max(0,Number(process.env.SMM_MIN_CURATED_MATCH_RATIO||0.75)));
+  if(audit.matchRatio<minimumMatchRatio){
+   console.error(`Supplier sync rejected: curated match ratio ${audit.matchRatio} below ${minimumMatchRatio}`);
+   return NextResponse.json({
+    error:'Supplier catalog no longer matches the curated MANGLO baseline closely enough. No changes were made.',
+    writePerformed:false,
+    minimumMatchRatio,
+    ...audit,
+   },{status:409});
   }
+
+  const importNew=envFlag('SMM_IMPORT_NEW_SERVICES',false);
+  const syncList=importNew?normalized:normalized.filter(item=>item.curated);
 
   const batchSize=25;
-  for(let i=0;i<normalized.length;i+=batchSize){
-   const batch=normalized.slice(i,i+batchSize);
-   await Promise.all(batch.map(({id,data})=>db.service.upsert({where:{provider_providerServiceId:{provider:'primary',providerServiceId:id}},create:{provider:'primary',providerServiceId:id,...data},update:data})));
+  for(let i=0;i<syncList.length;i+=batchSize){
+   const batch=syncList.slice(i,i+batchSize);
+   await Promise.all(batch.map(({id,data})=>db.service.upsert({
+    where:{provider_providerServiceId:{provider:'primary',providerServiceId:id}},
+    create:{provider:'primary',providerServiceId:id,...data},
+    update:data,
+   })));
   }
 
-  const activeIds=normalized.map(item=>item.id);
-  const retired=await db.service.updateMany({where:{provider:'primary',providerServiceId:{notIn:activeIds},active:true},data:{active:false}});
-  return NextResponse.json({ok:true,synced:normalized.length,deactivated:retired.count});
+  const liveCuratedIds=normalized.filter(item=>item.curated).map(item=>item.id);
+  const retired=await db.service.updateMany({
+   where:{provider:'primary',providerServiceId:{notIn:liveCuratedIds},active:true},
+   data:{active:false},
+  });
+
+  return NextResponse.json({
+   ok:true,
+   writePerformed:true,
+   synced:syncList.length,
+   deactivated:retired.count,
+   importedNewServices:importNew,
+   ...audit,
+  },{headers:{'Cache-Control':'no-store'}});
  }catch(error){
   console.error('Supplier sync failed',error instanceof Error?error.message:'unknown');
-  return NextResponse.json({error:'Supplier synchronization failed.'},{status:502});
+  return NextResponse.json({error:'Supplier synchronization failed. Existing catalog was preserved.'},{status:502});
  }
 }
