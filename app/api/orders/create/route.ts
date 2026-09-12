@@ -20,6 +20,15 @@ async function refundDefinitiveProviderFailure(orderId:string){
  });
 }
 
+async function resolveService(serviceId:string){
+ const requested=serviceId.trim();
+ const direct=await db.service.findFirst({where:{id:requested,active:true}});
+ if(direct)return direct;
+ const providerServiceId=requested.startsWith('catalog-')?requested.slice('catalog-'.length):requested;
+ if(!providerServiceId)return null;
+ return db.service.findFirst({where:{provider:'primary',providerServiceId,active:true}});
+}
+
 export async function POST(req:NextRequest){
  try{
   assertSameOrigin(req);
@@ -30,7 +39,7 @@ export async function POST(req:NextRequest){
   if(recent>=10)return NextResponse.json({error:'Too many order attempts. Please wait a few minutes.'},{status:429});
 
   const input=orderInput.parse(await req.json());
-  const service=await db.service.findFirst({where:{id:input.serviceId,active:true}});
+  const service=await resolveService(input.serviceId);
   if(!service)return NextResponse.json({error:'This service is not currently available.'},{status:404});
   if(input.quantity<service.min||input.quantity>service.max)return NextResponse.json({error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},{status:400});
 
