@@ -13,6 +13,8 @@ export async function GET() {
     cashfreeWebhookSecretConfigured: Boolean(process.env.CASHFREE_WEBHOOK_SECRET),
     cashfreeMode: process.env.CASHFREE_MODE === 'production' ? 'production' : 'sandbox',
     cashfreeApiVersion: process.env.CASHFREE_API_VERSION || '2025-01-01',
+    supplierConfigured: Boolean(process.env.SMM_API_URL && process.env.SMM_API_KEY),
+    supplierRateCurrency: (process.env.SMM_RATE_CURRENCY || 'INR').toUpperCase(),
   } as const;
 
   let database: 'ok' | 'error' = 'ok';
