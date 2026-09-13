@@ -7,14 +7,13 @@ import Footer from '@/components/Footer';
 
 export const metadata:Metadata={
  metadataBase:new URL(process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop'),
- title:{default:'MANGLO — Social growth, clearly managed',template:'%s | MANGLO'},
- description:'Discover live social growth services, review exact rates and limits, fund your wallet securely, and track every MANGLO order from one account.',
- keywords:['social growth marketplace','social media services','Instagram services','YouTube services','TikTok services','Telegram services','MANGLO'],
+ title:{default:'MANGLO — AI-assisted social growth marketplace',template:'%s | MANGLO'},
+ description:'Tell MANGLO what you want to grow. MANGLO AI searches the live service catalog, compares exact IDs and rates, prepares wallet-aware quotes, and hands final execution to the verified MANGLO order engine.',
+ keywords:['AI social growth marketplace','social media services','Instagram services','YouTube services','TikTok services','Telegram services','MANGLO AI'],
  icons:{icon:'/manglo-icon.png'},
- openGraph:{title:'MANGLO — Social growth, clearly managed',description:'Live service data, clear pricing, secure wallet funding and order-linked support in one customer experience.',type:'website',url:'https://manglo.shop'},
- twitter:{card:'summary',title:'MANGLO — Social growth, clearly managed',description:'Jo chahiye, Manglo. Search live services, review the terms, then order and track from one account.'},
- robots:{index:true,follow:true},
- alternates:{canonical:'/'}
+ openGraph:{title:'MANGLO — AI-assisted social growth marketplace',description:'Conversational service discovery with live catalog data, wallet-aware quotes, Cashfree-hosted payments and supplier-linked order tracking.',type:'website',url:'https://manglo.shop'},
+ twitter:{card:'summary',title:'MANGLO — AI-assisted social growth marketplace',description:'Jo chahiye, Manglo. Ask naturally, compare live services, review the quote, then confirm through MANGLO.'},
+ robots:{index:true,follow:true},alternates:{canonical:'/'}
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
