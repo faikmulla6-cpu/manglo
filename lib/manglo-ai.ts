@@ -16,7 +16,7 @@ export type OrderProposal={
 export type AiArtifacts={services?:ServiceView[];proposal?:OrderProposal;executeProposal?:OrderProposal;orders?:unknown[]};
 
 const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
-const model=process.env.GROQ_MODEL||'llama-3.3-70b-versatile';
+const model=process.env.GROQ_MODEL||'openai/gpt-oss-120b';
 
 function averageMinutes(value:string|null){
  if(!value)return Number.POSITIVE_INFINITY;
