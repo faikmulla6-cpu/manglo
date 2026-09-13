@@ -1,5 +1,6 @@
 import {db} from './db';
 import {providerStatus} from './provider';
+import {rewardReferralForCompletedOrder} from './referrals';
 
 function mappedStatus(raw:string){
  const s=raw.toLowerCase();
@@ -50,5 +51,6 @@ export async function reconcileProviderOrder(orderId:string){
  }
 
  await db.order.update({where:{id:order.id},data:{status,providerStatus:rawStatus,startCount,remains}});
+ if(status==='COMPLETED')await rewardReferralForCompletedOrder(order.id).catch(error=>console.error('[referral-reward]',error instanceof Error?error.message:'failed'));
  return {status,providerStatus:rawStatus,startCount,remains};
 }
