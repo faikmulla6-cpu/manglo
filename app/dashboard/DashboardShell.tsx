@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import {useEffect,useState} from 'react';
 import {
@@ -29,8 +30,9 @@ export default function DashboardShell({user,orders,ledger,favorites,tickets}:{u
  useEffect(()=>{const view=new URLSearchParams(window.location.search).get('view');if(view&&['ai','overview','orders','wallet','favorites','support','profile'].includes(view))setTab(view)},[]);
  function navigate(target:string){if(target==='services'){location.assign('/services');return}if(target==='ai'){setTab('ai');setAiReset(value=>value+1);return}setTab(target);const url=new URL(window.location.href);url.searchParams.set('view',target);window.history.replaceState({},'',url.pathname+url.search)}
 
- return <main className={`${styles.shell} manglo-app`}>
+ return <main className={`${styles.shell} manglo-app manglo-dashboard`}>
   <aside className={styles.sidebar}>
+   <Link href="/" className="manglo-app-brand"><Image src="/manglo-icon.png" alt="" width={29} height={29}/><div><b>MANGLO</b><span>AI workspace</span></div></Link>
    <div className={styles.workspaceLabel}>WORKSPACE</div>
    <div className={styles.userCard}><span className={styles.avatar}>{user.name.slice(0,1).toUpperCase()}</span><div className={styles.userMeta}><b>{user.name}</b><small>{user.email}</small></div><span className={styles.liveDot} aria-label="Account active"/></div>
    <nav className={styles.nav}>{nav.map(([id,label,Icon],index)=><button type="button" onClick={()=>navigate(id)} className={`${styles.navButton} ${tab===id?styles.navButtonActive:''} ${index===0?styles.navPrimary:''}`} key={id}><Icon size={16}/>{label}{id==='orders'&&active>0?<em className={styles.navBadge}>{active}</em>:null}</button>)}</nav>
