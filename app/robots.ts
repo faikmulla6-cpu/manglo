@@ -1,1 +1,5 @@
-import type { MetadataRoute } from 'next';export default function robots():MetadataRoute.Robots{return {rules:{userAgent:'*',allow:'/',disallow:['/dashboard','/api/']},sitemap:`${process.env.NEXT_PUBLIC_APP_URL||'https://manglo.example'}/sitemap.xml`}}
+import type {MetadataRoute} from 'next';
+export default function robots():MetadataRoute.Robots{
+ const base=process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop';
+ return{rules:{userAgent:'*',allow:'/',disallow:['/dashboard','/order','/auth','/api/']},sitemap:`${base}/sitemap.xml`};
+}
