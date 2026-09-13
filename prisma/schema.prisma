@@ -46,6 +46,7 @@ model User {
   phone String? @unique
   name String
   walletPaise BigInt @default(0)
+  analyticsLinkedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   payments Payment[]
@@ -54,6 +55,7 @@ model User {
   favorites Favorite[]
   tickets SupportTicket[]
   aiConversations AiConversation[]
+  analyticsEvents AnalyticsEvent[]
 }
 
 model Payment {
@@ -194,4 +196,27 @@ model AdminAuditLog {
   createdAt DateTime @default(now())
   @@index([createdAt])
   @@index([entityType, entityId])
+}
+
+model AnalyticsEvent {
+  id String @id @default(cuid())
+  userId String? @db.Uuid
+  anonymousId String?
+  sessionId String?
+  event String
+  path String?
+  source String?
+  medium String?
+  campaign String?
+  content String?
+  term String?
+  referrerHost String?
+  metadata Json?
+  uniqueKey String? @unique
+  createdAt DateTime @default(now())
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([event, createdAt])
+  @@index([userId, createdAt])
+  @@index([sessionId, createdAt])
+  @@index([source, campaign, createdAt])
 }
