@@ -4,6 +4,7 @@ import {getUser} from '@/lib/auth';
 import {db} from '@/lib/db';
 import {assertSameOrigin,cleanText,randomToken} from '@/lib/security';
 import {providerAdd,ProviderError} from '@/lib/provider';
+import {recordAnalytics} from '@/lib/analytics';
 
 const orderInput=z.object({
  serviceId:z.string().min(1).max(100),
@@ -69,6 +70,8 @@ export async function POST(req:NextRequest){
    orderId=order.id;
    await tx.walletLedger.create({data:{userId:user.id,type:'ORDER_DEBIT',amountPaise:-charge,balanceAfterPaise:updated.walletPaise,orderId:order.id,idempotencyKey:`order:${order.id}:debit`,note:`Order ${publicId}`}});
   },{isolationLevel:'Serializable',maxWait:5_000,timeout:10_000});
+
+  await recordAnalytics({event:'ORDER_PLACED',userId:user.id,path:'/order',uniqueKey:`order:${orderId}:placed`,metadata:{publicId,serviceId:service.providerServiceId,platform:service.platform,quantity:input.quantity,chargedPaise:Number(charge)}});
 
   try{
    const remote=await providerAdd(service.providerServiceId,input.link,input.quantity);
