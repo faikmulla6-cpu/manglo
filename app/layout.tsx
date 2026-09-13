@@ -13,7 +13,7 @@ export const metadata:Metadata={
  icons:{icon:'/manglo-icon.png'},
  openGraph:{title:'MANGLO — Social growth services, clearly managed',description:'Live service discovery, transparent customer pricing, Cashfree-hosted wallet funding and supplier-linked order tracking in one account.',type:'website',url:'https://manglo.shop'},
  twitter:{card:'summary',title:'MANGLO — Social growth services, clearly managed',description:'Jo chahiye, Manglo. Search live services, review the exact terms, confirm the wallet charge and track your order.'},
- robots:{index:true,follow:true},alternates:{canonical:'/'}
+ robots:{index:true,follow:true}
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
