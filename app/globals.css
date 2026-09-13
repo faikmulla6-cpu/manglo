@@ -65,10 +65,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 /* Compatibility */
 .dashboard{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 72px);background:var(--canvas)}.sidebar{border-right:1px solid var(--line);padding:22px;background:#fff}.sidebar a{display:block;padding:12px 14px;border-radius:10px;color:#444b54;text-decoration:none;font-weight:700}.sidebar a:hover{background:#f5f6f7;color:var(--ink)}.content{padding:28px}.wallet{background:#1b1e22;color:#fff;border-radius:16px;padding:24px}.wallet strong{font-size:36px;display:block;margin-top:8px;letter-spacing:-.04em}.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.service{border:1px solid var(--line);padding:18px;border-radius:14px;background:#fff}.service .price{font-weight:800;color:var(--brand-strong);font-size:22px}
 
-/* The signed-in workspace is an app, not a marketing page. */
+/* Authenticated product chrome */
 .site-body:has(.manglo-app) > footer{display:none}
 .site-body:has(.manglo-app){background:#f3f5f7}
+.site-body:has(.manglo-dashboard) > header{display:none}
+.manglo-dashboard{min-height:100vh!important}
+.manglo-dashboard>aside{top:0!important;height:100vh!important}
+.manglo-dashboard>section{padding-top:18px!important;padding-bottom:18px!important}
+.manglo-app-brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#111318;padding:2px 8px 15px;margin-bottom:8px;border-bottom:1px solid #e4e7eb}
+.manglo-app-brand img{border-radius:7px}.manglo-app-brand div{display:grid;gap:0}.manglo-app-brand b{font-size:12px;letter-spacing:-.025em}.manglo-app-brand span{font-size:7px;color:#8b939d;letter-spacing:.03em}
 
 @media(max-width:900px){.container{width:min(100% - 32px,1240px)}.grid-3,.service-grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
-@media(max-width:650px){.container{width:min(100% - 28px,1240px)}.grid-3,.service-grid{grid-template-columns:1fr}.auth-wrap{padding:46px 14px}.auth-card{padding:24px;border-radius:16px}.legal{padding:54px 0 72px}.legal h1{font-size:40px}.dashboard{grid-template-columns:1fr}.sidebar{display:none}.content{padding:16px}}
+@media(max-width:650px){.container{width:min(100% - 28px,1240px)}.grid-3,.service-grid{grid-template-columns:1fr}.auth-wrap{padding:46px 14px}.auth-card{padding:24px;border-radius:16px}.legal{padding:54px 0 72px}.legal h1{font-size:40px}.dashboard{grid-template-columns:1fr}.sidebar{display:none}.content{padding:16px}.manglo-dashboard>section{padding-top:10px!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
