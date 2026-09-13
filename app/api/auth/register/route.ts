@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { provisionUser } from '@/lib/auth';
+import { claimReferralForUser } from '@/lib/referrals';
 import { assertSameOrigin, cleanText } from '@/lib/security';
 import { createClient } from '@/lib/supabase/server';
 
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
     const email = input.email.trim().toLowerCase();
     const name = cleanText(input.name, 80);
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
+    const referralCode=req.cookies.get('manglo_referral')?.value;
 
     const existingProfile = await db.user.findFirst({
       where: { OR: [{ email }, { phone: input.phone }] },
@@ -42,12 +44,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unable to create account. Please check your details.' }, { status: 400 });
     }
 
-    await provisionUser(data.user);
+    const profile=await provisionUser(data.user);
+    if(referralCode)await claimReferralForUser(profile.id,referralCode).catch(error=>console.warn('[referral-attribution]',error instanceof Error?error.message:'failed'));
 
-    return NextResponse.json({
+    const response=NextResponse.json({
       ok: true,
       confirmationRequired: !data.session,
     });
+    if(referralCode)response.cookies.set('manglo_referral','',{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/',maxAge:0});
+    return response;
   } catch (error) {
     console.error('MANGLO registration error', error instanceof Error ? error.message : 'unknown');
     return NextResponse.json({ error: 'Unable to create account.' }, { status: 400 });
