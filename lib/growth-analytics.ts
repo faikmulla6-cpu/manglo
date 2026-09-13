@@ -1,0 +1,40 @@
+import {db} from './db';
+
+function visitorKey(event:{userId:string|null;sessionId:string|null;anonymousId:string|null}){return event.userId?`u:${event.userId}`:event.sessionId?`s:${event.sessionId}`:event.anonymousId?`a:${event.anonymousId}`:null}
+function metaString(value:unknown,key:string){if(!value||typeof value!=='object'||Array.isArray(value))return'';const raw=(value as Record<string,unknown>)[key];return typeof raw==='string'?raw:''}
+function metaNumber(value:unknown,key:string){if(!value||typeof value!=='object'||Array.isArray(value))return 0;const raw=Number((value as Record<string,unknown>)[key]);return Number.isFinite(raw)?raw:0}
+
+export async function getGrowthAnalytics(days=30){
+ const since=new Date(Date.now()-days*86_400_000);
+ const events=await db.analyticsEvent.findMany({
+  where:{createdAt:{gte:since}},
+  select:{event:true,userId:true,anonymousId:true,sessionId:true,source:true,medium:true,campaign:true,referrerHost:true,metadata:true,createdAt:true},
+  orderBy:{createdAt:'asc'},take:30000,
+ });
+ const stageNames=['PAGE_VIEW','SERVICE_VIEW','ORDER_REVIEW','WALLET_TOPUP_STARTED','WALLET_TOPUP_PAID','ORDER_PLACED'] as const;
+ const stageSets=new Map<string,Set<string>>(stageNames.map(name=>[name,new Set<string>()]));
+ const userSource=new Map<string,string>();
+ const sourceVisitors=new Map<string,Set<string>>();
+ const sourceOrders=new Map<string,{orders:number;gross:number;users:Set<string>}>();
+ const searches=new Map<string,number>();
+ for(const event of events){
+  const key=visitorKey(event);
+  if(key&&stageSets.has(event.event))stageSets.get(event.event)!.add(key);
+  const source=(event.source||event.referrerHost||'Direct / unknown').trim()||'Direct / unknown';
+  if(key&&event.event==='PAGE_VIEW'){
+   const set=sourceVisitors.get(source)||new Set<string>();set.add(key);sourceVisitors.set(source,set);
+  }
+  if(event.userId&&!userSource.has(event.userId))userSource.set(event.userId,source);
+  if(event.event==='ORDER_PLACED'&&event.userId){
+   const attributed=userSource.get(event.userId)||'Direct / unknown';
+   const row=sourceOrders.get(attributed)||{orders:0,gross:0,users:new Set<string>()};row.orders++;row.gross+=metaNumber(event.metadata,'chargedPaise');row.users.add(event.userId);sourceOrders.set(attributed,row);
+  }
+  if(event.event==='SERVICE_SEARCH'){
+   const term=metaString(event.metadata,'term');if(term&&term!=='[redacted]')searches.set(term,(searches.get(term)||0)+1);
+  }
+ }
+ const stages=stageNames.map((event,index)=>{const visitors=stageSets.get(event)!.size;const previous=index===0?visitors:stageSets.get(stageNames[index-1])!.size;return{event,visitors,stepRate:previous?visitors/previous*100:0}});
+ const sources=[...new Set([...sourceVisitors.keys(),...sourceOrders.keys()])].map(source=>{const visitors=sourceVisitors.get(source)?.size||0;const order=sourceOrders.get(source);return{source,visitors,orders:order?.orders||0,customers:order?.users.size||0,gross:order?.gross||0,conversionRate:visitors?(order?.users.size||0)/visitors*100:0}}).sort((a,b)=>b.orders-a.orders||b.visitors-a.visitors).slice(0,12);
+ const signups=await db.user.count({where:{createdAt:{gte:since}}});
+ return {days,eventsSampled:events.length>=30000,signups,stages,sources,topSearches:[...searches.entries()].map(([term,count])=>({term,count})).sort((a,b)=>b.count-a.count).slice(0,10)};
+}
