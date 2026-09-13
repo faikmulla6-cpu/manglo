@@ -5,18 +5,22 @@ function metaString(value:unknown,key:string){if(!value||typeof value!=='object'
 function metaNumber(value:unknown,key:string){if(!value||typeof value!=='object'||Array.isArray(value))return 0;const raw=Number((value as Record<string,unknown>)[key]);return Number.isFinite(raw)?raw:0}
 
 export async function getGrowthAnalytics(days=30){
- const since=new Date(Date.now()-days*86_400_000);
- const events=await db.analyticsEvent.findMany({
-  where:{createdAt:{gte:since}},
-  select:{event:true,userId:true,anonymousId:true,sessionId:true,source:true,medium:true,campaign:true,referrerHost:true,metadata:true,createdAt:true},
-  orderBy:{createdAt:'asc'},take:30000,
- });
+ const since=new Date(Date.now()-days*86_400_000);const now=new Date();const abandonedBefore=new Date(Date.now()-30*60_000);
+ const [events,recoverableDrafts]=await Promise.all([
+  db.analyticsEvent.findMany({
+   where:{createdAt:{gte:since}},
+   select:{event:true,userId:true,anonymousId:true,sessionId:true,source:true,medium:true,campaign:true,referrerHost:true,metadata:true,createdAt:true},
+   orderBy:{createdAt:'asc'},take:30000,
+  }),
+  db.orderDraft.count({where:{expiresAt:{gt:now},updatedAt:{lte:abandonedBefore},service:{active:true,operatorDisabled:false}}}).catch(()=>0),
+ ]);
  const stageNames=['PAGE_VIEW','SERVICE_VIEW','ORDER_REVIEW','WALLET_TOPUP_STARTED','WALLET_TOPUP_PAID','ORDER_PLACED'] as const;
  const stageSets=new Map<string,Set<string>>(stageNames.map(name=>[name,new Set<string>()]));
  const userSource=new Map<string,string>();
  const sourceVisitors=new Map<string,Set<string>>();
  const sourceOrders=new Map<string,{orders:number;gross:number;users:Set<string>}>();
  const searches=new Map<string,number>();
+ const preparedDrafts=new Set<string>();const recoveryOpened=new Set<string>();const recoveredCustomers=new Set<string>();let recoveryOpens=0;let recoveredOrders=0;let recoveredGross=0;let reorderStarts=0;
  for(const event of events){
   const key=visitorKey(event);
   if(key&&stageSets.has(event.event))stageSets.get(event.event)!.add(key);
@@ -32,9 +36,13 @@ export async function getGrowthAnalytics(days=30){
   if(event.event==='SERVICE_SEARCH'){
    const term=metaString(event.metadata,'term');if(term&&term!=='[redacted]')searches.set(term,(searches.get(term)||0)+1);
   }
+  if(event.event==='ORDER_DRAFT_READY'&&key)preparedDrafts.add(key);
+  if(event.event==='ORDER_RECOVERY_OPENED'){recoveryOpens++;if(key)recoveryOpened.add(key)}
+  if(event.event==='ORDER_RECOVERED'){recoveredOrders++;recoveredGross+=metaNumber(event.metadata,'chargedPaise');if(event.userId)recoveredCustomers.add(event.userId)}
+  if(event.event==='REORDER_STARTED')reorderStarts++;
  }
  const stages=stageNames.map((event,index)=>{const visitors=stageSets.get(event)!.size;const previous=index===0?visitors:stageSets.get(stageNames[index-1])!.size;return{event,visitors,stepRate:previous?visitors/previous*100:0}});
  const sources=[...new Set([...sourceVisitors.keys(),...sourceOrders.keys()])].map(source=>{const visitors=sourceVisitors.get(source)?.size||0;const order=sourceOrders.get(source);return{source,visitors,orders:order?.orders||0,customers:order?.users.size||0,gross:order?.gross||0,conversionRate:visitors?(order?.users.size||0)/visitors*100:0}}).sort((a,b)=>b.orders-a.orders||b.visitors-a.visitors).slice(0,12);
  const signups=await db.user.count({where:{createdAt:{gte:since}}});
- return {days,eventsSampled:events.length>=30000,signups,stages,sources,topSearches:[...searches.entries()].map(([term,count])=>({term,count})).sort((a,b)=>b.count-a.count).slice(0,10)};
+ return {days,eventsSampled:events.length>=30000,signups,stages,sources,topSearches:[...searches.entries()].map(([term,count])=>({term,count})).sort((a,b)=>b.count-a.count).slice(0,10),retention:{preparedCustomers:preparedDrafts.size,recoverableDrafts,recoveryOpens,recoveryVisitors:recoveryOpened.size,recoveredOrders,recoveredCustomers:recoveredCustomers.size,recoveredGross,recoveryRate:recoveryOpens?recoveredOrders/recoveryOpens*100:0,reorderStarts}};
 }
