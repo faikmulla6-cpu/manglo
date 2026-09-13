@@ -41,7 +41,11 @@ export default function AnalyticsProvider(){
    let url:URL;try{url=new URL(anchor.href,location.origin)}catch{return}if(url.origin!==location.origin)return;
    if(url.pathname.startsWith('/dashboard')&&url.searchParams.get('view')==='ai')trackAnalytics('AI_OPENED');
    if(url.pathname.startsWith('/dashboard')&&url.searchParams.get('view')==='support')trackAnalytics('SUPPORT_OPENED');
-   if(url.pathname==='/order')trackAnalytics('ORDER_REVIEW',{serviceId:url.searchParams.get('service')||null});
+   if(url.pathname==='/order'){
+    const repeat=url.searchParams.get('repeat');
+    if(repeat)trackAnalytics('REORDER_STARTED',{orderId:repeat});
+    trackAnalytics('ORDER_REVIEW',{serviceId:url.searchParams.get('service')||null,repeat:Boolean(repeat)});
+   }
   }
   function input(event:Event){
    if(location.pathname.startsWith('/admin'))return;
