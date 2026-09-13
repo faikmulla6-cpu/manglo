@@ -1,0 +1,68 @@
+'use client';
+
+import {FormEvent,useEffect,useRef,useState} from 'react';
+import {ArrowUp,Clock3,CreditCard,History,MessageSquarePlus,Wallet} from 'lucide-react';
+import styles from './MangloAI.module.css';
+
+type Service={id:string;serviceId:string;platform:string;category:string;name:string;description:string|null;averageTime:string|null;ratePaisePerThousand:number;min:number;max:number;refill:boolean;score:number};
+type Proposal={serviceDbId:string;serviceId:string;serviceName:string;platform:string;link:string;quantity:number;ratePaisePerThousand:number;chargePaise:number;walletBalancePaise:number;balanceAfterPaise:number;sufficient:boolean;min:number;max:number;averageTime:string|null;refill:boolean;quotedAt:string};
+type Meta={services?:Service[];proposal?:Proposal};
+type Message={id:string;role:string;content:string;metadata?:Meta|null;createdAt?:string};
+type Conversation={id:string;title:string;updatedAt:string;messageCount:number};
+type Props={userName:string;walletPaise:number;resetSignal:number;onNavigate:(target:string)=>void};
+
+const money=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2}).format(paise/100);
+const when=(value:string)=>new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
+
+export default function MangloAI({userName,walletPaise,resetSignal,onNavigate}:Props){
+ const [conversations,setConversations]=useState<Conversation[]>([]);
+ const [conversationId,setConversationId]=useState<string|null>(null);
+ const [messages,setMessages]=useState<Message[]>([]);
+ const [input,setInput]=useState('');
+ const [busy,setBusy]=useState(false);
+ const [error,setError]=useState('');
+ const [historyOpen,setHistoryOpen]=useState(false);
+ const [readyProposal,setReadyProposal]=useState<Proposal|null>(null);
+ const bottomRef=useRef<HTMLDivElement>(null);
+ const initialized=useRef(false);
+ const lastReset=useRef(resetSignal);
+
+ useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:'smooth',block:'end'})},[messages,busy,readyProposal]);
+ useEffect(()=>{void refreshConversations();const id=new URLSearchParams(window.location.search).get('chat');if(id)void loadConversation(id);else initialized.current=true},[]);
+ useEffect(()=>{if(!initialized.current){lastReset.current=resetSignal;return}if(resetSignal!==lastReset.current){lastReset.current=resetSignal;newChat()}},[resetSignal]);
+
+ async function refreshConversations(){const response=await fetch('/api/ai/conversations',{cache:'no-store'}).catch(()=>null);if(!response?.ok)return;const data=await response.json();setConversations(data.conversations||[])}
+ async function loadConversation(id:string){setError('');setBusy(true);setHistoryOpen(false);setReadyProposal(null);try{const response=await fetch(`/api/ai/conversations?id=${encodeURIComponent(id)}`,{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not open this chat.');setConversationId(id);setMessages(data.messages||[]);setUrlChat(id)}catch(e){setError(e instanceof Error?e.message:'Could not open this chat.')}finally{setBusy(false);initialized.current=true}}
+ function setUrlChat(id:string|null){const url=new URL(window.location.href);if(id)url.searchParams.set('chat',id);else url.searchParams.delete('chat');url.searchParams.delete('view');window.history.replaceState({},'',url.pathname+(url.search?url.search:''))}
+ function newChat(){setConversationId(null);setMessages([]);setInput('');setError('');setHistoryOpen(false);setReadyProposal(null);setUrlChat(null)}
+
+ async function send(text?:string){
+  const value=(text??input).trim();if(!value||busy)return;
+  setReadyProposal(null);setMessages(old=>[...old,{id:`local-${Date.now()}`,role:'user',content:value,createdAt:new Date().toISOString()}]);setInput('');setError('');setBusy(true);
+  try{
+   const response=await fetch('/api/ai/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId:conversationId||undefined,message:value})});
+   const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'MANGLO AI is temporarily unavailable.');
+   const id=data.conversationId as string;setConversationId(id);setUrlChat(id);setMessages(old=>[...old,data.message]);await refreshConversations();
+   if(data.action?.type==='place_order'&&data.action.proposal)setReadyProposal(data.action.proposal);
+  }catch(e){setError(e instanceof Error?e.message:'MANGLO AI is temporarily unavailable.')}finally{setBusy(false)}
+ }
+
+ function submit(event:FormEvent){event.preventDefault();void send()}
+ function approveQuote(proposal:Proposal){void send(`Yes. I approve this exact quote of ${money(proposal.chargePaise)} for service ID ${proposal.serviceId}. Prepare the order for final review.`)}
+ function useService(service:Service){void send(`Use service ID ${service.serviceId}.`)}
+ function keyDown(event:React.KeyboardEvent<HTMLTextAreaElement>){if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();void send()}}
+ function openPreparedOrder(proposal:Proposal){const params=new URLSearchParams({service:proposal.serviceDbId,quantity:String(proposal.quantity),link:proposal.link,quote:String(proposal.chargePaise)});location.assign(`/order?${params.toString()}`)}
+
+ const isEmpty=messages.length===0;
+ return <section className={styles.ai}>
+  <header className={styles.top}><div className={styles.identity}><span className={styles.mark}>M</span><div><b>MANGLO AI</b><small><i className={styles.dot}/>Grok-powered · live MANGLO tools</small></div></div><div className={styles.topActions}><button type="button" className={styles.wallet} onClick={()=>onNavigate('wallet')}><Wallet size={13}/><span>Wallet</span><strong>{money(walletPaise)}</strong></button><button type="button" className={styles.topButton} onClick={()=>setHistoryOpen(value=>!value)}><History size={13}/><span>History</span></button><button type="button" className={`${styles.topButton} ${styles.newButton}`} onClick={newChat}><MessageSquarePlus size={13}/><span>New chat</span></button></div></header>
+  {historyOpen&&<div className={styles.historyPanel}><div className={styles.historyHead}><span>Recent conversations</span><span>{conversations.length}</span></div>{conversations.length?conversations.map(item=><button type="button" className={styles.historyItem} onClick={()=>void loadConversation(item.id)} key={item.id}><b>{item.title}</b><small>{when(item.updatedAt)} · {item.messageCount} messages</small></button>):<div className={styles.historyEmpty}>No conversations yet.</div>}</div>}
+  <div className={styles.body}>{isEmpty&&!busy?<div className={styles.welcome}><span className={styles.heroMark}>M</span><h2>What do you want to grow?</h2><p>Ask naturally. I can search the live catalog, compare exact service IDs, check limits and pricing, inspect your wallet, and prepare an order for final review.</p><div className={styles.examples}><button className={styles.example} onClick={()=>void send('Find me the cheapest Instagram views service.')}><b>Cheapest Instagram views</b><small>Compare live rates and IDs</small></button><button className={styles.example} onClick={()=>void send('Find strong YouTube subscriber options with refill, and compare them.')}><b>YouTube subscribers with refill</b><small>Compare exact live services</small></button><button className={styles.example} onClick={()=>void send('I want Instagram followers with a provider-listed no-drop claim. Show the best matching options.')}><b>Followers with no-drop listing</b><small>Provider-listed claims, clearly labelled</small></button><button className={styles.example} onClick={()=>void send('Track my latest order and tell me its current status.')}><b>Track my latest order</b><small>Read supplier-linked MANGLO status</small></button></div></div>:<div className={styles.conversation}>{messages.map(message=><MessageView key={message.id} message={message} userName={userName} onUseService={useService} onApprove={approveQuote} onNavigate={onNavigate}/>)}{busy&&<div className={`${styles.message} ${styles.assistant}`}><span className={`${styles.avatar} ${styles.assistantAvatar}`}>M</span><div className={styles.content}><div className={styles.typing}><i/><i/><i/></div></div></div>}<div ref={bottomRef}/></div>}</div>
+  {readyProposal?<div className={styles.orderResult}><span>Quote revalidated · ID {readyProposal.serviceId} · {money(readyProposal.chargePaise)}</span><button type="button" onClick={()=>openPreparedOrder(readyProposal)}>Review & place order</button></div>:null}
+  {error?<div className={styles.error}>{error}</div>:null}
+  <div className={styles.composerWrap}><form className={styles.composer} onSubmit={submit}><textarea rows={1} value={input} onChange={event=>setInput(event.target.value)} onKeyDown={keyDown} placeholder="Ask MANGLO — e.g. cheapest Instagram views…" aria-label="Message MANGLO AI"/><button className={styles.send} disabled={!input.trim()||busy} aria-label="Send"><ArrowUp size={16}/></button></form><div className={styles.composerFoot}><span>Live prices, limits and wallet charges are revalidated before the final order screen.</span><div className={styles.shortcuts}><button className={styles.shortcut} onClick={()=>location.assign('/services')}>Services</button><button className={styles.shortcut} onClick={()=>onNavigate('wallet')}>Add funds</button><button className={styles.shortcut} onClick={()=>onNavigate('orders')}>Orders</button></div></div></div>
+ </section>;
+}
+
+function MessageView({message,userName,onUseService,onApprove,onNavigate}:{message:Message;userName:string;onUseService:(service:Service)=>void;onApprove:(proposal:Proposal)=>void;onNavigate:(target:string)=>void}){const user=message.role==='user';const meta=message.metadata||{};return <div className={`${styles.message} ${user?styles.messageUser:styles.assistant}`}><span className={`${styles.avatar} ${!user?styles.assistantAvatar:''}`}>{user?userName.slice(0,1).toUpperCase():'M'}</span><div className={styles.content}><div className={styles.text}>{message.content}</div>{meta.services?.length?<div className={styles.serviceGrid}>{meta.services.slice(0,6).map(service=><div className={styles.service} key={service.id}><div><div className={styles.serviceTitle}><b>{service.name}</b><span className={styles.serviceId}>ID {service.serviceId}</span></div><p>{service.platform} · {service.category}</p><div className={styles.serviceMeta}><span className={styles.price}>{money(service.ratePaisePerThousand)} / 1K</span><span>Min {service.min.toLocaleString('en-IN')}</span><span>Max {service.max.toLocaleString('en-IN')}</span>{service.averageTime?<span><Clock3 size={9}/> {service.averageTime}</span>:null}{service.refill?<span>Refill listed</span>:null}</div></div><button className={styles.select} onClick={()=>onUseService(service)}>Use ID {service.serviceId}</button></div>)}</div>:null}{meta.proposal?<ProposalCard proposal={meta.proposal} onApprove={onApprove} onNavigate={onNavigate}/>:null}</div></div>}
+function ProposalCard({proposal,onApprove,onNavigate}:{proposal:Proposal;onApprove:(proposal:Proposal)=>void;onNavigate:(target:string)=>void}){return <div className={styles.proposal}><div className={styles.proposalHead}><b>Order review</b><span>LIVE QUOTE · ID {proposal.serviceId}</span></div><div className={styles.proposalBody}><div className={styles.proposalLine}><span>Service</span><strong>{proposal.serviceName}</strong></div><div className={styles.proposalLine}><span>Quantity</span><strong>{proposal.quantity.toLocaleString('en-IN')}</strong></div><div className={styles.proposalLine}><span>Rate</span><strong>{money(proposal.ratePaisePerThousand)} / 1K</strong></div><div className={`${styles.proposalLine} ${styles.proposalTotal}`}><span>Wallet charge</span><strong>{money(proposal.chargePaise)}</strong></div><div className={styles.proposalLine}><span>Wallet after</span><strong className={!proposal.sufficient?styles.insufficient:''}>{proposal.sufficient?money(proposal.balanceAfterPaise):`Short by ${money(Math.abs(proposal.balanceAfterPaise))}`}</strong></div></div><div className={styles.proposalActions}>{proposal.sufficient?<button className={styles.approve} onClick={()=>onApprove(proposal)}>Approve quote</button>:<button className={styles.approve} onClick={()=>onNavigate('wallet')}><CreditCard size={11}/> Add funds</button>}<button className={styles.secondary} onClick={()=>location.assign(`/order?service=${encodeURIComponent(proposal.serviceDbId)}`)}>Review manually</button></div></div>}
