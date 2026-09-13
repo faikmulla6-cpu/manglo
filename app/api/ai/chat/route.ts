@@ -19,7 +19,7 @@ export async function POST(req:NextRequest){
  try{
   assertSameOrigin(req);
   const user=await getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
-  if(!process.env.XAI_API_KEY)return NextResponse.json({error:'MANGLO AI is not configured yet.'},{status:503});
+  if(!process.env.GROQ_API_KEY)return NextResponse.json({error:'MANGLO AI is not configured yet.'},{status:503});
   const input=inputSchema.parse(await req.json());
 
   const since=new Date(Date.now()-60_000);
@@ -45,8 +45,8 @@ export async function POST(req:NextRequest){
   if(error instanceof z.ZodError)return NextResponse.json({error:'Please send a valid message.'},{status:400});
   const text=error instanceof Error?error.message:'unknown';
   console.error('MANGLO AI chat failed',text.replace(/Bearer\s+[A-Za-z0-9._-]+/g,'Bearer [redacted]'));
-  if(text==='XAI_NOT_CONFIGURED')return NextResponse.json({error:'MANGLO AI is not configured yet.'},{status:503});
-  if(text.startsWith('XAI_'))return NextResponse.json({error:'MANGLO AI is temporarily unavailable. Your wallet and orders were not changed.'},{status:503});
+  if(text==='GROQ_NOT_CONFIGURED')return NextResponse.json({error:'MANGLO AI is not configured yet.'},{status:503});
+  if(text.startsWith('GROQ_'))return NextResponse.json({error:'MANGLO AI is temporarily unavailable. Your wallet and orders were not changed.'},{status:503});
   return NextResponse.json({error:'MANGLO AI could not complete that request. Your wallet and orders were not changed.'},{status:500});
  }
 }
