@@ -20,5 +20,5 @@ ALTER TABLE "OrderDraft" ADD CONSTRAINT "OrderDraft_userId_fkey" FOREIGN KEY ("u
 ALTER TABLE "OrderDraft" ADD CONSTRAINT "OrderDraft_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Service"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "OrderDraft" ENABLE ROW LEVEL SECURITY;
 
--- The application accesses drafts through its authenticated server/Prisma connection.
--- Browser roles intentionally receive no table grants.
+-- Drafts are accessed through MANGLO's authenticated server/Prisma path, not browser-side table access.
+-- Production also removes anon/authenticated table grants as defense in depth.
