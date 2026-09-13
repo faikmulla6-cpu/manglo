@@ -5,6 +5,7 @@ import {getUser} from '@/lib/auth';
 import {db} from '@/lib/db';
 import {createCashfreeOrder,cashfreeMode} from '@/lib/cashfree';
 import {assertSameOrigin} from '@/lib/security';
+import {recordAnalytics} from '@/lib/analytics';
 
 const Schema=z.object({amount:z.number().finite().min(10).max(50000)});
 
@@ -45,6 +46,7 @@ export async function POST(req:NextRequest){
     phone:user.phone,
    });
    await db.payment.update({where:{cfOrderId:orderId},data:{status:'PENDING',rawStatus:String(cf?.order_status||'ACTIVE')}});
+   await recordAnalytics({event:'WALLET_TOPUP_STARTED',userId:user.id,path:'/dashboard',uniqueKey:`payment:${orderId}:started`,metadata:{amountPaise}});
    return NextResponse.json({paymentSessionId:cf.payment_session_id,orderId,mode:cashfreeMode});
   }catch(error){
    await db.payment.update({where:{cfOrderId:orderId},data:{status:'FAILED',rawStatus:'CREATE_ORDER_FAILED'}}).catch(()=>undefined);
