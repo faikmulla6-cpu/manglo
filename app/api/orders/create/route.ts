@@ -7,6 +7,10 @@ import {providerAdd,ProviderError} from '@/lib/provider';
 
 const orderInput=z.object({serviceId:z.string().min(1).max(100),link:z.string().url().max(1500),quantity:z.number().int().positive().max(100_000_000)});
 
+function json(requestId:string,body:Record<string,unknown>,status=200){
+ return NextResponse.json(body,{status,headers:{'Cache-Control':'no-store','X-Manglo-Request-Id':requestId}});
+}
+
 async function refundDefinitiveProviderFailure(orderId:string){
  await db.$transaction(async tx=>{
   const order=await tx.order.findUniqueOrThrow({where:{id:orderId}});
@@ -30,18 +34,19 @@ async function resolveService(serviceId:string){
 }
 
 export async function POST(req:NextRequest){
+ const requestId=cleanText(req.headers.get('x-manglo-request-id')||randomToken(8),80);
  try{
   assertSameOrigin(req);
   const user=await getUser();
-  if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
+  if(!user)return json(requestId,{error:'Sign in required'},401);
 
   const recent=await db.order.count({where:{userId:user.id,createdAt:{gte:new Date(Date.now()-5*60*1000)}}});
-  if(recent>=10)return NextResponse.json({error:'Too many order attempts. Please wait a few minutes.'},{status:429});
+  if(recent>=10)return json(requestId,{error:'Too many order attempts. Please wait a few minutes.'},429);
 
   const input=orderInput.parse(await req.json());
   const service=await resolveService(input.serviceId);
-  if(!service)return NextResponse.json({error:'This service is not currently available.'},{status:404});
-  if(input.quantity<service.min||input.quantity>service.max)return NextResponse.json({error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},{status:400});
+  if(!service)return json(requestId,{error:'This service is not currently available.'},404);
+  if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);
 
   const charge=BigInt(Math.ceil(Number(service.retailRatePaisePerThousand)*input.quantity/1000));
   const providerCost=BigInt(Math.ceil(Number(service.providerRatePaisePerThousand)*input.quantity/1000));
@@ -64,18 +69,18 @@ export async function POST(req:NextRequest){
    const providerError=error instanceof ProviderError?error:new ProviderError('Provider is temporarily unavailable',true);
    if(providerError.retryable){
     await db.order.update({where:{id:orderId},data:{status:'QUEUED',providerStatus:'Submission confirmation pending'}}).catch(()=>undefined);
-    console.error('Provider submission uncertain',providerError.message);
-    return NextResponse.json({ok:true,publicId,status:'QUEUED',message:'Your order is being reviewed because the supplier confirmation was delayed. Your wallet has not been charged twice.'},{status:202});
+    console.error(`Provider submission uncertain [${requestId}]`,providerError.message);
+    return json(requestId,{ok:true,publicId,status:'QUEUED',message:'Your order is being reviewed because the supplier confirmation was delayed. Your wallet has not been charged twice.'},202);
    }
    await refundDefinitiveProviderFailure(orderId);
-   return NextResponse.json({error:'The supplier rejected this order. Your wallet was restored automatically.'},{status:502});
+   return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);
   }
 
-  return NextResponse.json({ok:true,publicId,status:'PROCESSING'});
+  return json(requestId,{ok:true,publicId,status:'PROCESSING'});
  }catch(error){
-  if((error as Error)?.message==='INSUFFICIENT')return NextResponse.json({error:'Your wallet balance is too low for this order.'},{status:402});
-  if(error instanceof z.ZodError)return NextResponse.json({error:'Please check the service, link and quantity.'},{status:400});
-  console.error('Order creation failed',error instanceof Error?error.message:'unknown');
-  return NextResponse.json({error:'Unable to place the order right now.'},{status:500});
+  if((error as Error)?.message==='INSUFFICIENT')return json(requestId,{error:'Your wallet balance is too low for this order.'},402);
+  if(error instanceof z.ZodError)return json(requestId,{error:'Please check the service, link and quantity.'},400);
+  console.error(`Order creation failed [${requestId}]`,error instanceof Error?error.message:'unknown');
+  return json(requestId,{error:'Unable to place the order right now.'},500);
  }
 }
