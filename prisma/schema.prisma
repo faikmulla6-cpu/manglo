@@ -51,6 +51,7 @@ model User {
   updatedAt DateTime @updatedAt
   payments Payment[]
   orders Order[]
+  orderDraft OrderDraft?
   ledger WalletLedger[]
   favorites Favorite[]
   tickets SupportTicket[]
@@ -93,6 +94,7 @@ model Service {
   score Int @default(80)
   lastSyncedAt DateTime @default(now())
   orders Order[]
+  orderDrafts OrderDraft[]
   favorites Favorite[]
   @@unique([provider, providerServiceId])
   @@index([platform, category, active])
@@ -144,6 +146,22 @@ model Order {
   service Service @relation(fields: [serviceId], references: [id])
   ledger WalletLedger[]
   @@index([userId, createdAt])
+}
+
+model OrderDraft {
+  id String @id @default(cuid())
+  userId String @unique @db.Uuid
+  serviceId String
+  quantity Int
+  link String @db.Text
+  recoveryOpenedAt DateTime?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+  @@index([serviceId])
 }
 
 model WalletLedger {
