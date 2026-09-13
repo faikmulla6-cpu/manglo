@@ -60,6 +60,8 @@ export async function POST(req:NextRequest){
   }
   const providerCost=BigInt(Math.ceil(Number(service.providerRatePaisePerThousand)*input.quantity/1000));
   const publicId=`MG${Date.now().toString(36).toUpperCase()}${randomToken(3).toUpperCase()}`;
+  const draft=await db.orderDraft.findUnique({where:{userId:user.id},select:{id:true,serviceId:true,recoveryOpenedAt:true}}).catch(()=>null);
+  const recoveredDraft=Boolean(draft?.recoveryOpenedAt&&draft.serviceId===service.id);
   let orderId='';
 
   await db.$transaction(async tx=>{
@@ -71,7 +73,9 @@ export async function POST(req:NextRequest){
    await tx.walletLedger.create({data:{userId:user.id,type:'ORDER_DEBIT',amountPaise:-charge,balanceAfterPaise:updated.walletPaise,orderId:order.id,idempotencyKey:`order:${order.id}:debit`,note:`Order ${publicId}`}});
   },{isolationLevel:'Serializable',maxWait:5_000,timeout:10_000});
 
+  await db.orderDraft.deleteMany({where:{userId:user.id}}).catch(()=>undefined);
   await recordAnalytics({event:'ORDER_PLACED',userId:user.id,path:'/order',uniqueKey:`order:${orderId}:placed`,metadata:{publicId,serviceId:service.providerServiceId,platform:service.platform,quantity:input.quantity,chargedPaise:Number(charge)}});
+  const recordRecovery=()=>recoveredDraft?recordAnalytics({event:'ORDER_RECOVERED',userId:user.id,path:'/order',uniqueKey:`order:${orderId}:recovered`,metadata:{publicId,serviceId:service.providerServiceId,platform:service.platform,quantity:input.quantity,chargedPaise:Number(charge)}}):Promise.resolve(false);
 
   try{
    const remote=await providerAdd(service.providerServiceId,input.link,input.quantity);
@@ -80,6 +84,7 @@ export async function POST(req:NextRequest){
    const providerError=error instanceof ProviderError?error:new ProviderError('Provider is temporarily unavailable',true);
    if(providerError.retryable){
     await db.order.update({where:{id:orderId},data:{status:'QUEUED',providerStatus:'Submission confirmation pending'}}).catch(()=>undefined);
+    await recordRecovery();
     console.error(`Provider submission uncertain [${requestId}]`,providerError.message);
     return json(requestId,{ok:true,publicId,status:'QUEUED',message:'Your order is being reviewed because the supplier confirmation was delayed. Your wallet has not been charged twice.'},202);
    }
@@ -87,6 +92,7 @@ export async function POST(req:NextRequest){
    return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);
   }
 
+  await recordRecovery();
   return json(requestId,{ok:true,publicId,status:'PROCESSING'});
  }catch(error){
   if((error as Error)?.message==='INSUFFICIENT')return json(requestId,{error:'Your wallet balance is too low for this order.'},402);
