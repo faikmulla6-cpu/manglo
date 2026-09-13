@@ -1,17 +1,1 @@
-.premiumOrder{
- --brand:#e86114;
- --brandHover:#c94e08;
- --ink:#111827;
- --ink2:#273142;
- --muted:#667085;
- --line:#dfe3e8;
- --lineStrong:#cfd5dc;
- --surface:#fff;
- --canvas:#f4f6f8;
- --success:#13795b;
- --danger:#b42318;
- padding:30px 0 52px;
- background:#f4f6f8;
- min-height:calc(100vh - 72px);
-}
-.orderHeading{margin-bottom:22px}.orderHeading span{font-size:9px;letter-spacing:.12em;font-weight:800;color:#7a3a12}.orderHeading h1{font:800 clamp(28px,3.2vw,38px) Manrope,ui-sans-serif,sans-serif;letter-spacing:-.035em;margin:4px 0;color:#111827}.orderHeading p{margin:0;color:#667085;font-size:12px}
+.premiumOrder{--brand:#ff6a00;--ink:#111319;--muted:#6e7781;--line:#e4e7eb;--lineStrong:#d4d9df;--surface:#fff;--canvas:#f4f6f8;--success:#13795b;--danger:#b42318;padding:26px 0 42px;background:#f4f6f8;min-height:calc(100vh - 72px)}.orderHeading{margin:0 auto 18px;max-width:1160px}.orderHeading span{font-size:9px;letter-spacing:.12em;font-weight:850;color:#8e4618}.orderHeading h1{font-family:inherit;font-weight:760;font-size:clamp(28px,3.1vw,38px);letter-spacing:-.04em;margin:5px 0 6px;color:#111319}.orderHeading p{margin:0;color:#6d7680;font-size:11px;line-height:1.6}@media(max-width:760px){.premiumOrder{padding:16px 0 28px}.orderHeading{margin-bottom:14px}.orderHeading h1{font-size:30px}}
