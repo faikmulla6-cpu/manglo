@@ -10,10 +10,11 @@ export async function getGrowthAnalytics(days=30){
   db.analyticsEvent.findMany({
    where:{createdAt:{gte:since}},
    select:{event:true,userId:true,anonymousId:true,sessionId:true,source:true,medium:true,campaign:true,referrerHost:true,metadata:true,createdAt:true},
-   orderBy:{createdAt:'asc'},take:30000,
+   orderBy:{createdAt:'desc'},take:30000,
   }),
   db.orderDraft.count({where:{expiresAt:{gt:now},updatedAt:{lte:abandonedBefore},service:{is:{active:true,operatorDisabled:false}}}}).catch(()=>0),
  ]);
+ events.reverse();
  const stageNames=['PAGE_VIEW','SERVICE_VIEW','ORDER_REVIEW','WALLET_TOPUP_STARTED','WALLET_TOPUP_PAID','ORDER_PLACED'] as const;
  const stageSets=new Map<string,Set<string>>(stageNames.map(name=>[name,new Set<string>()]));
  const userSource=new Map<string,string>();
