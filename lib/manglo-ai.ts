@@ -15,8 +15,8 @@ export type OrderProposal={
 };
 export type AiArtifacts={services?:ServiceView[];proposal?:OrderProposal;executeProposal?:OrderProposal;orders?:unknown[]};
 
-const XAI_URL='https://api.x.ai/v1/chat/completions';
-const model=process.env.XAI_MODEL||'grok-4.3';
+const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
+const model=process.env.GROQ_MODEL||'llama-3.3-70b-versatile';
 
 function averageMinutes(value:string|null){
  if(!value)return Number.POSITIVE_INFINITY;
@@ -97,14 +97,14 @@ async function recentOrders(userId:string,limit:number){
  return rows.map(order=>({orderId:order.publicId,serviceId:order.service.providerServiceId,serviceName:trustworthyServiceName(order.service.name),platform:order.service.platform,quantity:order.quantity,status:order.status,providerStatus:order.providerStatus,remains:order.remains,chargedPaise:Number(order.chargedPaise),createdAt:order.createdAt.toISOString()}));
 }
 
-async function callGrok(messages:ChatMessage[],conversationId:string){
- const apiKey=process.env.XAI_API_KEY;if(!apiKey)throw new Error('XAI_NOT_CONFIGURED');
+async function callGroq(messages:ChatMessage[]){
+ const apiKey=process.env.GROQ_API_KEY;if(!apiKey)throw new Error('GROQ_NOT_CONFIGURED');
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45_000);
  try{
-  const response=await fetch(XAI_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`,'x-grok-conv-id':conversationId},body:JSON.stringify({model,messages,tools,tool_choice:'auto',parallel_tool_calls:false,temperature:0.2}),signal:controller.signal,cache:'no-store'});
+  const response=await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model,messages,tools,tool_choice:'auto',parallel_tool_calls:false,temperature:0.2}),signal:controller.signal,cache:'no-store'});
   const text=await response.text();let data:any={};try{data=JSON.parse(text)}catch{}
-  if(!response.ok)throw new Error(`XAI_${response.status}:${String(data?.error?.message||text||'request failed').slice(0,240)}`);
-  const message=data?.choices?.[0]?.message;if(!message)throw new Error('XAI_EMPTY_RESPONSE');
+  if(!response.ok)throw new Error(`GROQ_${response.status}:${String(data?.error?.message||text||'request failed').slice(0,240)}`);
+  const message=data?.choices?.[0]?.message;if(!message)throw new Error('GROQ_EMPTY_RESPONSE');
   return message as ChatMessage;
  }finally{clearTimeout(timer)}
 }
@@ -113,7 +113,7 @@ export async function runMangloAi({userId,userName,conversationId,history,pendin
  const artifacts:AiArtifacts={};let pending=pendingProposal;
  const messages:ChatMessage[]=[{role:'system',content:systemPrompt(userName,pending)},...history.slice(-24).map(item=>({role:(item.role==='assistant'?'assistant':'user') as 'assistant'|'user',content:item.content}))];
  for(let step=0;step<7;step++){
-  const reply=await callGrok(messages,conversationId);
+  const reply=await callGroq(messages);
   const calls=reply.tool_calls||[];
   if(!calls.length)return{content:reply.content?.trim()||'I’m ready. Tell me what you want to grow.',artifacts};
   messages.push(reply);
