@@ -5,6 +5,7 @@ import './dashboard/commerce-compat.css';
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnalyticsProvider from '@/components/AnalyticsProvider';
 
 export const metadata:Metadata={
  metadataBase:new URL(process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop'),
@@ -20,5 +21,5 @@ export const metadata:Metadata={
 export default function RootLayout({children}:{children:React.ReactNode}){
  const origin=process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop';
  const schema={"@context":"https://schema.org","@type":"Organization","name":"MANGLO","url":origin,"logo":`${origin}/manglo-icon.png`,"email":"support@manglo.shop"};
- return <html lang="en-IN"><body className="site-body"><Header/>{children}<Footer/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></body></html>
+ return <html lang="en-IN"><body className="site-body"><AnalyticsProvider/><Header/>{children}<Footer/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></body></html>
 }
