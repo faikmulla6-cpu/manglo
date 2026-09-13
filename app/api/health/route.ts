@@ -17,7 +17,7 @@ export async function GET() {
     supplierRateCurrency: (process.env.SMM_RATE_CURRENCY || 'INR').toUpperCase(),
     aiConfigured: Boolean(process.env.GROQ_API_KEY),
     aiProvider: 'groq',
-    aiModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    aiModel: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
   } as const;
 
   let database: 'ok' | 'error' = 'ok';
