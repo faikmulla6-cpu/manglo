@@ -13,8 +13,8 @@ export async function POST(req:NextRequest){
   const service=await db.service.findUnique({where:{provider_providerServiceId:{provider:'primary',providerServiceId:body.providerServiceId}}});
   if(!service)return NextResponse.json({error:'Service not found'},{status:404});
 
-  const cutoff=new Date(Date.now()-12*60*60*1000);
-  const nextActive=body.operatorDisabled?false:service.lastSyncedAt>=cutoff;
+  const freshEnough=service.lastSyncedAt.getTime()>=Date.now()-12*60*60*1000;
+  const nextActive=body.operatorDisabled?false:freshEnough;
   const before={active:service.active,operatorDisabled:service.operatorDisabled};
   const after={active:nextActive,operatorDisabled:body.operatorDisabled};
 
