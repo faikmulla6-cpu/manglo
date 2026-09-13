@@ -1,0 +1,2 @@
+import styles from '@/app/Skeleton.module.css';
+export default function Loading(){return <main className={styles.wrap}><div className={styles.shell}><div className={styles.head}><span className={styles.line}/><span className={styles.line}/><span className={styles.line}/></div><div className={styles.bar}/><div className={styles.grid}>{Array.from({length:6}).map((_,index)=><div className={styles.card} key={index}/>)}</div></div></main>}
