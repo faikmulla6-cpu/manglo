@@ -47,6 +47,7 @@ model User {
   name String
   walletPaise BigInt @default(0)
   analyticsLinkedAt DateTime?
+  referralCode String? @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   payments Payment[]
@@ -57,6 +58,8 @@ model User {
   tickets SupportTicket[]
   aiConversations AiConversation[]
   analyticsEvents AnalyticsEvent[]
+  referralsSent Referral[] @relation("ReferralReferrer")
+  referralReceived Referral? @relation("ReferralReferred")
 }
 
 model Payment {
@@ -145,6 +148,7 @@ model Order {
   user User @relation(fields: [userId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
   ledger WalletLedger[]
+  referralQualification Referral? @relation("ReferralQualification")
   @@index([userId, createdAt])
 }
 
@@ -162,6 +166,23 @@ model OrderDraft {
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   @@index([expiresAt])
   @@index([serviceId])
+}
+
+model Referral {
+  id String @id @default(cuid())
+  code String
+  referrerId String @db.Uuid
+  referredUserId String @unique @db.Uuid
+  qualifyingOrderId String? @unique
+  referrerRewardPaise BigInt @default(0)
+  qualifiedAt DateTime?
+  rewardedAt DateTime?
+  createdAt DateTime @default(now())
+  referrer User @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: Cascade)
+  qualifyingOrder Order? @relation("ReferralQualification", fields: [qualifyingOrderId], references: [id], onDelete: SetNull)
+  @@index([referrerId, createdAt])
+  @@index([rewardedAt])
 }
 
 model WalletLedger {
