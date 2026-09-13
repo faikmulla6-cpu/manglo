@@ -5,5 +5,5 @@ export const company={
   supportPhone:value('NEXT_PUBLIC_SUPPORT_PHONE',''),
   address:value('NEXT_PUBLIC_BUSINESS_ADDRESS',''),
   supportHours:value('NEXT_PUBLIC_SUPPORT_HOURS','Monday–Saturday, 10:00 AM–7:00 PM IST'),
-  effectiveDate:value('NEXT_PUBLIC_POLICY_EFFECTIVE_DATE','12 September 2026'),
+  effectiveDate:value('NEXT_PUBLIC_POLICY_EFFECTIVE_DATE','14 September 2026'),
 };
