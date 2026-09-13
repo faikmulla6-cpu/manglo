@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {useState} from 'react';
 import {
  BadgeHelp,ChevronRight,ClipboardList,CreditCard,Gift,Heart,Home,LogOut,
- Plus,RefreshCw,ShieldCheck,Sparkles,UserRound,Wallet,Zap
+ Plus,RefreshCw,ShieldCheck,UserRound,Wallet,Zap
 } from 'lucide-react';
 import OrderForm from './OrderForm';
 import PaymentButton from './PaymentButton';
@@ -19,8 +19,8 @@ type Ticket={id:string;category:string;subject:string;status:string;createdAt:st
 const money=(p:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(p/100);
 const date=(x:string)=>new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(x));
 const labels:Record<string,string>={
- QUEUED:'Queued',PROCESSING:'Growing',COMPLETED:'Completed',PARTIAL:'Needs attention',
- CANCELED:'Cancelled',FAILED:'Needs attention',REFUNDED:'Refunded',ORDER_DEBIT:'Order payment',
+ QUEUED:'Queued',PROCESSING:'Processing',COMPLETED:'Completed',PARTIAL:'Needs review',
+ CANCELED:'Cancelled',FAILED:'Needs review',REFUNDED:'Refunded',ORDER_DEBIT:'Order payment',
  ORDER_REFUND:'Order refund',DEPOSIT:'Wallet top-up',ADJUSTMENT:'Adjustment'
 };
 
@@ -50,7 +50,7 @@ export default function DashboardShell({user,orders,ledger,favorites,tickets}:{u
     <span className={styles.liveDot} aria-label="Account active"/>
    </div>
    <nav className={styles.nav}>{nav.map(([id,label,Icon])=><button type="button" onClick={()=>setTab(id)} className={`${styles.navButton} ${tab===id?styles.navButtonActive:''}`} key={id}><Icon size={17}/>{label}{id==='orders'&&active>0?<em className={styles.navBadge}>{active}</em>:null}</button>)}</nav>
-   <div className={styles.sidebarTrust}><Sparkles size={17}/><strong>Built for confident ordering.</strong><p>Live supplier status, wallet records and Cashfree-hosted payment checkout.</p></div>
+   <div className={styles.sidebarTrust}><ShieldCheck size={17}/><strong>Operational safeguards</strong><p>Supplier-linked tracking, auditable wallet records and Cashfree-hosted checkout.</p></div>
    <form action="/api/auth/logout" method="post"><button className={styles.logout}><LogOut size={17}/> Log out</button></form>
   </aside>
 
@@ -59,32 +59,32 @@ export default function DashboardShell({user,orders,ledger,favorites,tickets}:{u
 
    {tab==='overview'&&<>
     <div className={styles.heading}>
-     <div><span className={styles.eyebrow}>WELCOME BACK</span><h1>Hey, {user.name.split(' ')[0]} 👋</h1><p>Wallet, fulfilment and order progress in one place.</p></div>
+     <div><span className={styles.eyebrow}>ACCOUNT OVERVIEW</span><h1>Overview</h1><p>Signed in as {user.name}. Monitor wallet, orders and fulfilment from one place.</p></div>
      <button type="button" onClick={()=>setTab('new')} className={styles.primaryButton}><Plus size={17}/> New order</button>
     </div>
     <div className={styles.stats}>
-     <article className={`${styles.statCard} ${styles.walletCard}`}><span>MANGLO WALLET</span><strong>{money(user.walletPaise)}</strong><button type="button" onClick={()=>setTab('wallet')}>Add money <ChevronRight size={14}/></button></article>
-     <article className={styles.statCard}><span>ACTIVE ORDERS</span><strong>{active}</strong><small>{active?'Live supplier status is being monitored':'Nothing active right now'}</small></article>
-     <article className={styles.statCard}><span>COMPLETED</span><strong>{completed}</strong><small>Successfully completed orders</small></article>
-     <article className={styles.statCard}><span>TOTAL ORDERS</span><strong>{orders.length}</strong><small>Since your account was created</small></article>
+     <article className={`${styles.statCard} ${styles.walletCard}`}><span>AVAILABLE BALANCE</span><strong>{money(user.walletPaise)}</strong><button type="button" onClick={()=>setTab('wallet')}>Fund wallet <ChevronRight size={14}/></button></article>
+     <article className={styles.statCard}><span>ACTIVE ORDERS</span><strong>{active}</strong><small>{active?'Supplier status reconciliation is active':'No active orders'}</small></article>
+     <article className={styles.statCard}><span>COMPLETED</span><strong>{completed}</strong><small>Completed fulfilment records</small></article>
+     <article className={styles.statCard}><span>TOTAL ORDERS</span><strong>{orders.length}</strong><small>All account order records</small></article>
     </div>
     <div className={styles.overviewGrid}>
-     <section className={styles.panel}><div className={styles.panelHeader}><h2>Recent orders</h2><button type="button" className={styles.textButton} onClick={()=>setTab('orders')}>View all</button></div><OrderList orders={orders.slice(0,5)}/></section>
-     <section className={styles.panel}><div className={styles.panelHeader}><h2>Quick actions</h2></div><div className={styles.quickList}>
-      <button type="button" className={styles.quickButton} onClick={()=>setTab('new')}><span className={styles.quickIcon}><Zap size={17}/></span><div><b>Place a new order</b><small>Explore live services</small></div><ChevronRight size={17}/></button>
-      <button type="button" className={styles.quickButton} onClick={()=>setTab('wallet')}><span className={styles.quickIcon}><CreditCard size={17}/></span><div><b>Add wallet funds</b><small>Cashfree hosted checkout</small></div><ChevronRight size={17}/></button>
-      <button type="button" className={styles.quickButton} onClick={()=>setTab('support')}><span className={styles.quickIcon}><BadgeHelp size={17}/></span><div><b>Get support</b><small>Attach an order automatically</small></div><ChevronRight size={17}/></button>
+     <section className={styles.panel}><div className={styles.panelHeader}><h2>Recent order activity</h2><button type="button" className={styles.textButton} onClick={()=>setTab('orders')}>View all orders</button></div><OrderList orders={orders.slice(0,5)}/></section>
+     <section className={styles.panel}><div className={styles.panelHeader}><h2>Account actions</h2></div><div className={styles.quickList}>
+      <button type="button" className={styles.quickButton} onClick={()=>setTab('new')}><span className={styles.quickIcon}><Zap size={17}/></span><div><b>Create order</b><small>Search the live service catalog</small></div><ChevronRight size={17}/></button>
+      <button type="button" className={styles.quickButton} onClick={()=>setTab('wallet')}><span className={styles.quickIcon}><CreditCard size={17}/></span><div><b>Fund wallet</b><small>Cashfree hosted checkout</small></div><ChevronRight size={17}/></button>
+      <button type="button" className={styles.quickButton} onClick={()=>setTab('support')}><span className={styles.quickIcon}><BadgeHelp size={17}/></span><div><b>Contact support</b><small>Open an order-linked request</small></div><ChevronRight size={17}/></button>
      </div></section>
     </div>
    </>}
 
-   {tab==='new'&&<Page title="New order" subtitle="Discover the right service, verify the details, then confirm once." eyebrow="LIVE MARKETPLACE"><OrderForm walletPaise={user.walletPaise}/></Page>}
-   {tab==='orders'&&<Page title="My orders" subtitle="Supplier-linked status updates with clear wallet outcomes." eyebrow="LIVE TRACKING"><div className={styles.panel}><OrderList orders={orders} full/></div></Page>}
-   {tab==='wallet'&&<Page title="MANGLO Wallet" subtitle="Fund once, order quickly, and keep an auditable transaction history." eyebrow="SECURE WALLET"><div className={styles.walletLayout}><PaymentButton/><div className={styles.panel}><div className={styles.panelHeader}><h2>Transaction history</h2></div>{ledger.length?ledger.map(item=><div className={styles.transaction} key={item.id}><span className={`${styles.transactionSign} ${item.amountPaise>=0?styles.transactionCredit:''}`}>{item.amountPaise>=0?'+':'−'}</span><div><b>{labels[item.type]||item.type}</b><small>{item.note||date(item.createdAt)} · Balance {money(item.balanceAfterPaise)}</small></div><strong className={item.amountPaise>=0?styles.positive:''}>{item.amountPaise>=0?'+':''}{money(item.amountPaise)}</strong></div>):<Empty text="No wallet transactions yet."/>}</div></div></Page>}
-   {tab==='favorites'&&<Page title="Favorites" subtitle="Your quickest path back to services you use repeatedly." eyebrow="SAVED SERVICES"><div className={styles.panel}>{favorites.length?favorites.map(item=><div className={styles.favoriteRow} key={item.id}><div><small>{item.platform}</small><b>{item.name}</b><span>{money(item.pricePaise)} / 1K</span></div><button type="button" onClick={()=>setTab('new')} className={styles.secondaryButton}>Order again</button></div>):<Empty text="Save a marketplace service to find it here." action="Browse marketplace"/>}</div></Page>}
-   {tab==='support'&&<Page title="Support" subtitle="Real help with the relevant order context attached." eyebrow="ACCOUNT SUPPORT"><Support tickets={tickets} orders={orders}/></Page>}
-   {tab==='rewards'&&<Page title="Rewards" subtitle="Benefits become visible only when they are actually available." eyebrow="MANGLO REWARDS"><div className={styles.rewardsCard}><span className={styles.tier}><Gift size={13}/> STARTER</span><h2>You’re in.</h2><p>Eligible rewards and referral credits will appear here when a real promotion is active. MANGLO does not show invented points, fake savings or unavailable benefits.</p><div className={styles.rewardTrack}><span style={{width:`${Math.min(100,completed*10)}%`}}/></div><small>{Math.max(0,10-completed)} more completed orders toward the next eligibility milestone.</small></div></Page>}
-   {tab==='profile'&&<Page title="Profile & security" subtitle="Keep account details current and understand how your session is protected." eyebrow="ACCOUNT"><Profile user={user}/></Page>}
+   {tab==='new'&&<Page title="New order" subtitle="Select a live service, review the commercial terms and submit once." eyebrow="SERVICE MARKETPLACE"><OrderForm walletPaise={user.walletPaise}/></Page>}
+   {tab==='orders'&&<Page title="My orders" subtitle="Supplier-linked status updates with clear wallet outcomes." eyebrow="ORDER ACTIVITY"><div className={styles.panel}><OrderList orders={orders} full/></div></Page>}
+   {tab==='wallet'&&<Page title="Wallet" subtitle="Fund your account and review every recorded wallet movement." eyebrow="WALLET & PAYMENTS"><div className={styles.walletLayout}><PaymentButton/><div className={styles.panel}><div className={styles.panelHeader}><h2>Transaction history</h2></div>{ledger.length?ledger.map(item=><div className={styles.transaction} key={item.id}><span className={`${styles.transactionSign} ${item.amountPaise>=0?styles.transactionCredit:''}`}>{item.amountPaise>=0?'+':'−'}</span><div><b>{labels[item.type]||item.type}</b><small>{item.note||date(item.createdAt)} · Balance {money(item.balanceAfterPaise)}</small></div><strong className={item.amountPaise>=0?styles.positive:''}>{item.amountPaise>=0?'+':''}{money(item.amountPaise)}</strong></div>):<Empty text="No wallet transactions yet."/>}</div></div></Page>}
+   {tab==='favorites'&&<Page title="Favorites" subtitle="Saved services for faster repeat ordering." eyebrow="SAVED SERVICES"><div className={styles.panel}>{favorites.length?favorites.map(item=><div className={styles.favoriteRow} key={item.id}><div><small>{item.platform}</small><b>{item.name}</b><span>{money(item.pricePaise)} / 1K</span></div><button type="button" onClick={()=>setTab('new')} className={styles.secondaryButton}>Order again</button></div>):<Empty text="Save a marketplace service to find it here." action="Browse marketplace"/>}</div></Page>}
+   {tab==='support'&&<Page title="Support" subtitle="Open a request with the relevant order context attached." eyebrow="ACCOUNT SUPPORT"><Support tickets={tickets} orders={orders}/></Page>}
+   {tab==='rewards'&&<Page title="Rewards" subtitle="Eligibility and benefits are shown only when they are actually available." eyebrow="REWARD ELIGIBILITY"><div className={styles.rewardsCard}><span className={styles.tier}><Gift size={13}/> STARTER</span><h2>Current tier: Starter</h2><p>Eligible rewards and referral credits will appear here when a real promotion is active. MANGLO does not display invented points, fake savings or unavailable benefits.</p><div className={styles.rewardTrack}><span style={{width:`${Math.min(100,completed*10)}%`}}/></div><small>{Math.max(0,10-completed)} more completed orders toward the next eligibility milestone.</small></div></Page>}
+   {tab==='profile'&&<Page title="Profile & security" subtitle="Manage account details and review how your session and payment flow are protected." eyebrow="ACCOUNT SECURITY"><Profile user={user}/></Page>}
   </section>
  </main>;
 }
