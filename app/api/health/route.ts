@@ -33,8 +33,9 @@ export async function GET() {
     && checks.supabaseUrlConfigured
     && checks.supabaseKeyConfigured
     && checks.cashfreeConfigured
+    && checks.cashfreeWebhookSecretConfigured
     && checks.cashfreeMode === 'production'
-    && checks.aiConfigured;
+    && checks.supplierConfigured;
 
   return NextResponse.json(body, {
     status: healthy ? 200 : 503,
