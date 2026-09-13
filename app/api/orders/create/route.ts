@@ -5,7 +5,12 @@ import {db} from '@/lib/db';
 import {assertSameOrigin,cleanText,randomToken} from '@/lib/security';
 import {providerAdd,ProviderError} from '@/lib/provider';
 
-const orderInput=z.object({serviceId:z.string().min(1).max(100),link:z.string().url().max(1500),quantity:z.number().int().positive().max(100_000_000)});
+const orderInput=z.object({
+ serviceId:z.string().min(1).max(100),
+ link:z.string().url().max(1500),
+ quantity:z.number().int().positive().max(100_000_000),
+ expectedChargePaise:z.number().int().nonnegative().max(100_000_000).optional(),
+});
 
 function json(requestId:string,body:Record<string,unknown>,status=200){
  return NextResponse.json(body,{status,headers:{'Cache-Control':'no-store','X-Manglo-Request-Id':requestId}});
@@ -49,6 +54,9 @@ export async function POST(req:NextRequest){
   if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);
 
   const charge=BigInt(Math.ceil(Number(service.retailRatePaisePerThousand)*input.quantity/1000));
+  if(input.expectedChargePaise!==undefined&&BigInt(input.expectedChargePaise)!==charge){
+   return json(requestId,{error:'The live service price changed after your quote. Please review the updated price before ordering.',code:'QUOTE_CHANGED',currentChargePaise:Number(charge)},409);
+  }
   const providerCost=BigInt(Math.ceil(Number(service.providerRatePaisePerThousand)*input.quantity/1000));
   const publicId=`MG${Date.now().toString(36).toUpperCase()}${randomToken(3).toUpperCase()}`;
   let orderId='';
