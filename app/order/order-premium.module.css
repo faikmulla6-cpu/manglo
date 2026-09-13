@@ -1,0 +1,20 @@
+.premiumOrder{
+ --brand:#ff6b00;
+ --brand2:#ff8a1f;
+ --brandSoft:#fff2e8;
+ --ink:#171c2b;
+ --ink2:#2d3448;
+ --muted:#737b8f;
+ --line:#e9edf3;
+ --surface:#fff;
+ --canvas:#f7f9fc;
+ --success:#0f9f6e;
+ --successSoft:#eafaf4;
+ --danger:#d84b4b;
+ --shadow:0 22px 60px rgba(35,42,63,.08);
+ --shadowHover:0 28px 70px rgba(35,42,63,.13);
+ padding:36px 0 60px;
+ background:radial-gradient(circle at 88% 0%,rgba(255,107,0,.06),transparent 28%),linear-gradient(180deg,#fbfcfe,#f7f9fc);
+ min-height:calc(100vh - 76px);
+}
+.orderHeading{margin-bottom:24px}.orderHeading span{font-size:10px;letter-spacing:.14em;font-weight:900;color:#c95000}.orderHeading h1{font:800 clamp(32px,4vw,46px) "Space Grotesk",sans-serif;letter-spacing:-.045em;margin:5px 0}.orderHeading p{margin:0;color:#737b8f;font-size:14px}
