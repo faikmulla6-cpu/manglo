@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import styles from './CommerceHome.module.css';
 
+export const metadata={alternates:{canonical:'/'}};
 const platforms=['Instagram','YouTube','TikTok','Telegram','Facebook','X'];
 const quickStarts=[
  {label:'LOWEST RATE',title:'Instagram views',copy:'Compare current rates, IDs and limits before ordering.',href:'/services?platform=Instagram&q=views&filter=Lowest%20rate'},
@@ -23,11 +24,11 @@ export default function Home(){
     <div className={styles.quickLinks}><Link href="/services?platform=Instagram">Instagram</Link><Link href="/services?platform=YouTube">YouTube</Link><Link href="/services?platform=TikTok">TikTok</Link><Link href="/services?filter=Lowest%20rate">Lowest rates</Link><Link href="/services?filter=Refill">Refill listings</Link></div>
     <div className={styles.assurance}><span><ShieldCheck size={14}/>Server-validated orders</span><span><CreditCard size={14}/>Cashfree hosted payments</span><span><BadgeCheck size={14}/>Order-linked support</span></div>
    </div>
-   <div className={styles.preview} aria-label="MANGLO order preview">
-    <div className={styles.previewTop}><div><span className={styles.previewMark}>M</span><div><b>MANGLO Marketplace</b><small>Live service catalog</small></div></div><span className={styles.live}>LIVE CATALOG</span></div>
+   <div className={styles.preview} aria-label="Illustrative MANGLO order interface preview">
+    <div className={styles.previewTop}><div><span className={styles.previewMark}>M</span><div><b>MANGLO Marketplace</b><small>Illustrative interface preview</small></div></div><span className={styles.live}>LIVE CATALOG</span></div>
     <div className={styles.previewBody}>
      <div className={styles.previewSearch}><Search size={14}/>Search service, platform or ID…</div>
-     <div className={styles.previewService}><div className={styles.previewServiceHead}><span className={styles.platformMark}>IG</span><div><b>Instagram Views</b><small>Example service layout</small></div><span className={styles.serviceId}>ID 1348</span></div><div className={styles.metrics}><div><span>RATE / 1K</span><strong>₹0.62</strong></div><div><span>MINIMUM</span><strong>100</strong></div><div><span>MAXIMUM</span><strong>1,00,000</strong></div><div><span>AVG.</span><strong>13 min</strong></div></div><div className={styles.orderSummary}><div><span>Exact wallet charge</span><strong>Shown before confirmation</strong></div><button>Review order</button></div></div>
+     <div className={styles.previewService}><div className={styles.previewServiceHead}><span className={styles.platformMark}>IG</span><div><b>Instagram Views</b><small>Example service layout</small></div><span className={styles.serviceId}>ID shown</span></div><div className={styles.metrics}><div><span>RATE / 1K</span><strong>Live</strong></div><div><span>MINIMUM</span><strong>Visible</strong></div><div><span>MAXIMUM</span><strong>Visible</strong></div><div><span>AVG.</span><strong>Listed</strong></div></div><div className={styles.orderSummary}><div><span>Exact wallet charge</span><strong>Calculated at review</strong></div><button>Review order</button></div></div>
     </div>
     <div className={styles.previewFoot}><LockKeyhole size={12}/>Supplier credentials stay server-side. Pricing is checked again before wallet debit.</div>
    </div>
