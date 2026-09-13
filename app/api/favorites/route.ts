@@ -1,3 +1,27 @@
-import {NextRequest,NextResponse} from 'next/server';import {z} from 'zod';import {getUser} from '@/lib/auth';import {db} from '@/lib/db';import {assertSameOrigin} from '@/lib/security';
+import {NextRequest,NextResponse} from 'next/server';
+import {z} from 'zod';
+import {getUser} from '@/lib/auth';
+import {db} from '@/lib/db';
+import {assertSameOrigin} from '@/lib/security';
 const S=z.object({serviceId:z.string().min(1)});
-export async function POST(req:NextRequest){try{assertSameOrigin(req);const user=await getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});const {serviceId}=S.parse(await req.json());const service=await db.service.findFirst({where:{id:serviceId,active:true},select:{id:true}});if(!service)return NextResponse.json({error:'Service unavailable'},{status:404});const existing=await db.favorite.findUnique({where:{userId_serviceId:{userId:user.id,serviceId}}});if(existing){await db.favorite.delete({where:{id:existing.id}});return NextResponse.json({saved:false})}await db.favorite.create({data:{userId:user.id,serviceId}});return NextResponse.json({saved:true})}catch{return NextResponse.json({error:'Unable to update favorites'},{status:400})}}
+
+export async function GET(){
+ try{
+  const user=await getUser();
+  if(!user)return NextResponse.json({ids:[]});
+  const rows=await db.favorite.findMany({where:{userId:user.id},select:{serviceId:true}});
+  return NextResponse.json({ids:rows.map(row=>row.serviceId)});
+ }catch{return NextResponse.json({ids:[]})}
+}
+
+export async function POST(req:NextRequest){
+ try{
+  assertSameOrigin(req);
+  const user=await getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
+  const {serviceId}=S.parse(await req.json());
+  const service=await db.service.findFirst({where:{id:serviceId,active:true},select:{id:true}});if(!service)return NextResponse.json({error:'Service unavailable'},{status:404});
+  const existing=await db.favorite.findUnique({where:{userId_serviceId:{userId:user.id,serviceId}}});
+  if(existing){await db.favorite.delete({where:{id:existing.id}});return NextResponse.json({saved:false})}
+  await db.favorite.create({data:{userId:user.id,serviceId}});return NextResponse.json({saved:true});
+ }catch{return NextResponse.json({error:'Unable to update favorites'},{status:400})}
+}
