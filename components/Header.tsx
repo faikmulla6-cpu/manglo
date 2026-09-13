@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {getUser} from '@/lib/auth';
-import {Bot,Menu,Search,UserRound} from 'lucide-react';
+import {LayoutDashboard,Menu,Search,UserRound} from 'lucide-react';
 import styles from './Header.module.css';
 
 export default async function Header(){
@@ -11,8 +11,8 @@ export default async function Header(){
   <nav className={styles.links}><Link href="/services">Services</Link><Link href="/about">About</Link><Link href="/trust">Trust & safety</Link><Link href="/contact">Support</Link></nav>
   <div className={styles.actions}>
    <Link className={styles.search} href="/services" aria-label="Search services"><Search size={18}/></Link>
-   {user?<Link className={styles.primary} href="/dashboard"><Bot size={16}/> MANGLO AI</Link>:<><Link className={styles.login} href="/auth"><UserRound size={16}/> Log in</Link><Link className={styles.primary} href="/auth?mode=signup">Get started</Link></>}
-   <details className={styles.mobile}><summary aria-label="Open menu"><Menu size={19}/></summary><div className={styles.menu}><Link href="/services">Services</Link><Link href="/about">About</Link><Link href="/trust">Trust & safety</Link><Link href="/contact">Support</Link><Link href={user?'/dashboard':'/auth'}>{user?'MANGLO AI':'Log in'}</Link></div></details>
+   {user?<Link className={styles.primary} href="/dashboard"><LayoutDashboard size={16}/> My account</Link>:<><Link className={styles.login} href="/auth"><UserRound size={16}/> Log in</Link><Link className={styles.primary} href="/auth?mode=signup">Get started</Link></>}
+   <details className={styles.mobile}><summary aria-label="Open menu"><Menu size={19}/></summary><div className={styles.menu}><Link href="/services">Services</Link><Link href="/about">About</Link><Link href="/trust">Trust & safety</Link><Link href="/contact">Support</Link><Link href={user?'/dashboard':'/auth'}>{user?'My account':'Log in'}</Link></div></details>
   </div>
  </div></header>;
 }
