@@ -79,6 +79,13 @@ export async function getCashfreeOrder(orderId: string) {
   return response.json();
 }
 
+export async function getCashfreeOrderPayments(orderId: string) {
+  const response = await cashfreeFetch(`/orders/${encodeURIComponent(orderId)}/payments`, { headers: headers() });
+  if (!response.ok) throw new Error(`Cashfree payment-attempt lookup failed: ${response.status}`);
+  const data = await response.json();
+  return Array.isArray(data) ? data as Record<string, unknown>[] : [];
+}
+
 function signatureMatches(secret: string, raw: string, timestamp: string, signature: string) {
   const expected = crypto.createHmac('sha256', secret).update(timestamp + raw).digest('base64');
   const a = Buffer.from(expected);
