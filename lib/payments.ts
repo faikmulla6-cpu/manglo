@@ -1,5 +1,6 @@
 import {db} from './db';
 import {getCashfreeOrder,getCashfreeOrderPayments} from './cashfree';
+import {recordAnalytics} from './analytics';
 
 const terminalAttempts=new Set(['FAILED','USER_DROPPED','VOID','CANCELLED']);
 const nonTerminalAttempts=new Set(['PENDING','NOT_ATTEMPTED','FLAGGED']);
@@ -17,7 +18,6 @@ async function classifyActiveOrder(orderId:string){
 
   const statuses=attempts.map(attempt=>String(attempt.payment_status||'UNKNOWN').toUpperCase());
   if(statuses.includes('SUCCESS')){
-   // Never credit from an attempt record alone. The order endpoint must become PAID first.
    return {status:'PENDING' as const,rawStatus:'PAYMENT_SUCCESS_WAITING_ORDER'};
   }
   if(statuses.some(status=>nonTerminalAttempts.has(status))){
@@ -38,7 +38,6 @@ export async function reconcileCashfreePayment(orderId:string){
  const local=await db.payment.findUnique({where:{cfOrderId:orderId}});
  if(!local)return null;
 
- // Once a deposit has been atomically credited, repeated returns/webhooks are a no-op.
  if(local.status==='PAID')return {status:'PAID' as const,remoteStatus:local.rawStatus||'PAID'};
 
  const remote=await getCashfreeOrder(orderId);
@@ -60,40 +59,20 @@ export async function reconcileCashfreePayment(orderId:string){
    status=classified.status;
    rawStatus=classified.rawStatus;
   }
-  await db.payment.updateMany({
-   where:{id:local.id,status:{not:'PAID'}},
-   data:{status,rawStatus},
-  });
+  await db.payment.updateMany({where:{id:local.id,status:{not:'PAID'}},data:{status,rawStatus}});
   return {status,remoteStatus:rawStatus};
  }
 
+ let credited=false;
  await db.$transaction(async tx=>{
-  // Claim the payment exactly once before touching the wallet. Concurrent webhook/return
-  // requests will see count=0 after the first transaction commits.
-  const claimed=await tx.payment.updateMany({
-   where:{id:local.id,status:{not:'PAID'}},
-   data:{status:'PAID',rawStatus:'PAID'},
-  });
+  const claimed=await tx.payment.updateMany({where:{id:local.id,status:{not:'PAID'}},data:{status:'PAID',rawStatus:'PAID'}});
   if(claimed.count===0)return;
+  credited=true;
 
-  const user=await tx.user.update({
-   where:{id:local.userId},
-   data:{walletPaise:{increment:local.amountPaise}},
-   select:{walletPaise:true},
-  });
-
-  await tx.walletLedger.create({
-   data:{
-    userId:local.userId,
-    type:'DEPOSIT',
-    amountPaise:local.amountPaise,
-    balanceAfterPaise:user.walletPaise,
-    paymentId:local.id,
-    idempotencyKey:`cashfree:${local.cfOrderId}:deposit`,
-    note:'Cashfree wallet top-up',
-   },
-  });
+  const user=await tx.user.update({where:{id:local.userId},data:{walletPaise:{increment:local.amountPaise}},select:{walletPaise:true}});
+  await tx.walletLedger.create({data:{userId:local.userId,type:'DEPOSIT',amountPaise:local.amountPaise,balanceAfterPaise:user.walletPaise,paymentId:local.id,idempotencyKey:`cashfree:${local.cfOrderId}:deposit`,note:'Cashfree wallet top-up'}});
  });
 
+ if(credited)await recordAnalytics({event:'WALLET_TOPUP_PAID',userId:local.userId,path:'/dashboard',uniqueKey:`payment:${local.cfOrderId}:paid`,metadata:{amountPaise:Number(local.amountPaise)}});
  return {status:'PAID' as const,remoteStatus};
 }
