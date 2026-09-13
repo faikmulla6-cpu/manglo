@@ -15,6 +15,8 @@ export async function GET() {
     cashfreeApiVersion: process.env.CASHFREE_API_VERSION || '2025-01-01',
     supplierConfigured: Boolean(process.env.SMM_API_URL && process.env.SMM_API_KEY),
     supplierRateCurrency: (process.env.SMM_RATE_CURRENCY || 'INR').toUpperCase(),
+    aiConfigured: Boolean(process.env.XAI_API_KEY),
+    aiModel: process.env.XAI_MODEL || 'grok-4.3',
   } as const;
 
   let database: 'ok' | 'error' = 'ok';
