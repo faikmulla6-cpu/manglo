@@ -1,8 +1,5 @@
 import Link from 'next/link';
-import {
- ArrowRight,BadgeCheck,CheckCircle2,Clock3,CreditCard,LockKeyhole,
- MessageSquareText,Search,ShieldCheck,Sparkles,Wallet
-} from 'lucide-react';
+import {ArrowRight,BadgeCheck,Clock3,CreditCard,LockKeyhole,MessageSquareText,Search,ShieldCheck,Wallet} from 'lucide-react';
 import styles from './Home.module.css';
 
 const platforms=['Instagram','YouTube','TikTok','Telegram','Facebook','X'];
@@ -12,82 +9,57 @@ export default function Home(){
   <section className={styles.hero}>
    <div className={`container ${styles.heroGrid}`}>
     <div className={styles.heroCopy}>
-     <div className={styles.eyebrow}><span/>MANGLO · SOCIAL GROWTH MARKETPLACE</div>
-     <h1>Growth services,<br/><em>without the panel chaos.</em></h1>
-     <p>Search a live catalog, compare the exact service terms, fund your wallet securely, and track every order from one clear account. Use MANGLO AI when you want help finding the right option faster.</p>
-     <div className={styles.actions}>
-      <Link className={styles.primary} href="/services">Explore live services <ArrowRight size={17}/></Link>
-      <Link className={styles.secondary} href="/dashboard"><Sparkles size={16}/> Ask MANGLO AI</Link>
-     </div>
-     <div className={styles.assurance}>
-      <span><ShieldCheck size={16}/>Server-validated checkout</span>
-      <span><CreditCard size={16}/>Cashfree hosted payments</span>
-      <span><BadgeCheck size={16}/>Order-linked support</span>
-     </div>
+     <span className={styles.eyebrow}>AI-NATIVE GROWTH COMMERCE</span>
+     <h1>Ask for growth.<br/><span>MANGLO finds the service.</span></h1>
+     <p>Describe the outcome in normal language. MANGLO AI searches the live catalog, compares exact service IDs, checks the current terms, calculates the wallet impact, and prepares the order for final review.</p>
+     <div className={styles.actions}><Link className={styles.primary} href="/dashboard">Open MANGLO AI <ArrowRight size={16}/></Link><Link className={styles.secondary} href="/services">Browse live services</Link></div>
+     <div className={styles.assurance}><span><ShieldCheck size={14}/>Server-validated ordering</span><span><CreditCard size={14}/>Cashfree hosted checkout</span><span><BadgeCheck size={14}/>Supplier-linked tracking</span></div>
     </div>
 
-    <div className={styles.productFrame}>
-     <div className={styles.frameTop}>
-      <div><span className={styles.brandMark}>M</span><div><b>MANGLO</b><small>Live marketplace workspace</small></div></div>
-      <span className={styles.live}><i/> LIVE CATALOG</span>
+    <div className={styles.aiFrame}>
+     <div className={styles.aiTop}><div><span className={styles.aiMark}>M</span><div><b>MANGLO AI</b><small><i/>Groq reasoning · live catalog</small></div></div><span className={styles.walletPill}><Wallet size={12}/>Wallet aware</span></div>
+     <div className={styles.aiBody}>
+      <div className={styles.userPrompt}>Find me the cheapest Instagram views.</div>
+      <div className={styles.aiReply}><span className={styles.replyMark}>M</span><p>The lowest live rate is Service ID 1348. I’ve shown the strongest matching options below.</p></div>
+      <div className={styles.resultCard}><span className={styles.platformMark}>IG</span><div><div className={styles.resultTitle}><b>Instagram Views · No Support</b><span>ID 1348</span></div><small>Current catalog result</small><div className={styles.resultMeta}><span>₹0.62 / 1K</span><span>Min 100</span><span>Avg. 13 min</span></div></div><button>Use ID 1348</button></div>
+      <div className={styles.quoteBar}><div><LockKeyhole size={14}/><span><small>TRANSACTION BOUNDARY</small><b>AI recommends. MANGLO verifies before wallet debit.</b></span></div></div>
      </div>
-     <div className={styles.frameBody}>
-      <div className={styles.askCard}><MessageSquareText size={17}/><span>I need Instagram views with a low minimum.</span></div>
-      <div className={styles.responseLine}><span className={styles.aiMark}>M</span><div><small>MANGLO AI</small><p>I found options from the live catalog. Compare the exact ID, rate, limits and listed timing before you order.</p></div></div>
-      <div className={styles.serviceCard}>
-       <div className={styles.serviceTop}><span className={styles.platformMark}>IG</span><div><b>Instagram Views</b><small>Live service details</small></div><BadgeCheck size={17}/></div>
-       <div className={styles.metrics}><div><span>RATE / 1K</span><strong>Live</strong></div><div><span>LIMITS</span><strong>Visible</strong></div><div><span>TIMING</span><strong>Listed</strong></div></div>
-       <div className={styles.quote}><div><Wallet size={16}/><span><small>Final wallet charge</small><b>Calculated before confirmation</b></span></div><ArrowRight size={16}/></div>
-      </div>
-     </div>
-     <div className={styles.frameFoot}><LockKeyhole size={14}/><span>AI can help you choose. The order engine still rechecks the transaction.</span></div>
+     <div className={styles.composerDemo}><span>Ask MANGLO about a service, quote or order…</span><i>↑</i></div>
     </div>
    </div>
   </section>
 
-  <section className={styles.proofStrip}>
-   <div className={`container ${styles.proofGrid}`}>
-    <article><Search size={18}/><div><b>Live service catalog</b><small>Search by platform, category or exact ID.</small></div></article>
-    <article><Wallet size={18}/><div><b>Visible wallet ledger</b><small>Deposits, debits and eligible refunds stay recorded.</small></div></article>
-    <article><Clock3 size={18}/><div><b>Order tracking</b><small>Follow supplier-linked status from your account.</small></div></article>
-    <article><ShieldCheck size={18}/><div><b>Clear support context</b><small>Attach the relevant MANGLO order to a request.</small></div></article>
-   </div>
-  </section>
+  <section className={styles.proofStrip}><div className={`container ${styles.proofGrid}`}>
+   <article><Search size={17}/><div><b>Live catalog tools</b><small>Search by intent, platform, category or exact ID.</small></div></article>
+   <article><Wallet size={17}/><div><b>Wallet-aware quotes</b><small>See the exact charge and remaining balance before review.</small></div></article>
+   <article><Clock3 size={17}/><div><b>Supplier-linked status</b><small>Orders reconcile from processing through completion.</small></div></article>
+   <article><ShieldCheck size={17}/><div><b>Deterministic checkout</b><small>The AI does not directly move customer money.</small></div></article>
+  </div></section>
 
-  <section className={styles.section}>
-   <div className="container">
-    <div className={styles.sectionHead}><div><span>HOW MANGLO WORKS</span><h2>Know what you are choosing before money moves.</h2></div><p>MANGLO separates discovery from transaction execution. You can compare naturally, but the live service record and server-side checks remain authoritative.</p></div>
-    <div className={styles.steps}>
-     <article><span>01</span><div className={styles.stepIcon}><Search size={20}/></div><h3>Find the right service</h3><p>Browse the marketplace or ask MANGLO AI to narrow down the live catalog based on what you need.</p></article>
-     <article><span>02</span><div className={styles.stepIcon}><CheckCircle2 size={20}/></div><h3>Review the exact terms</h3><p>Check the current rate, minimum, maximum, listed timing, refill availability and destination before confirmation.</p></article>
-     <article><span>03</span><div className={styles.stepIcon}><Wallet size={20}/></div><h3>Confirm from your wallet</h3><p>The server recalculates the charge and checks your balance again before the order can be submitted.</p></article>
-     <article><span>04</span><div className={styles.stepIcon}><BadgeCheck size={20}/></div><h3>Track and get support</h3><p>Your order record stays in one account with status, wallet history and order-linked support when you need help.</p></article>
-    </div>
+  <section className={styles.section}><div className="container">
+   <div className={styles.sectionHead}><div><span>HOW IT WORKS</span><h2>Conversation on top.<br/>Transaction controls underneath.</h2></div><p>MANGLO gives customers an AI-native buying experience without making the model the source of truth for rates, limits, wallet balances or order execution.</p></div>
+   <div className={styles.steps}>
+    <article><span>01</span><MessageSquareText size={19}/><h3>Say what you want</h3><p>Ask for views, followers, subscribers, refill, the lowest rate, the fastest listed average, or an exact service ID.</p></article>
+    <article><span>02</span><Search size={19}/><h3>AI checks the live catalog</h3><p>Groq decides which MANGLO tools to use. Catalog data, IDs, rates and limits come from MANGLO—not model memory.</p></article>
+    <article><span>03</span><Wallet size={19}/><h3>Review the exact quote</h3><p>MANGLO calculates the current charge, checks your wallet, and shows the expected balance after the order.</p></article>
+    <article><span>04</span><BadgeCheck size={19}/><h3>Confirm and track</h3><p>The server validates the transaction again, submits the order, and keeps the customer-facing status synchronized.</p></article>
    </div>
-  </section>
+  </div></section>
 
-  <section className={styles.marketSection}>
-   <div className="container">
-    <div className={styles.sectionHead}><div><span>LIVE MARKETPLACE</span><h2>Start with the platform you already know.</h2></div><p>No supplier-style maze. Pick a platform, search the catalog, compare the visible terms, and continue only when the service fits.</p></div>
-    <div className={styles.platforms}>{platforms.map(name=><Link href={`/services?platform=${name}`} key={name}><span>{name.slice(0,2).toUpperCase()}</span><div><b>{name}</b><small>Browse live services</small></div><ArrowRight size={16}/></Link>)}</div>
-    <div className={styles.marketAction}><Link href="/services">View the full marketplace <ArrowRight size={16}/></Link></div>
+  <section className={styles.marketSection}><div className="container">
+   <div className={styles.sectionHead}><div><span>LIVE MARKETPLACE</span><h2>Prefer to browse? The catalog is still yours.</h2></div><p>AI is the fastest path, not the only path. Every live service remains searchable by platform, category and service ID.</p></div>
+   <div className={styles.platforms}>{platforms.map(name=><Link href={`/services?platform=${name}`} key={name}><span>{name.slice(0,2).toUpperCase()}</span><div><b>{name}</b><small>Explore live services</small></div><ArrowRight size={14}/></Link>)}</div>
+  </div></section>
+
+  <section className={styles.trustSection}><div className={`container ${styles.trustGrid}`}>
+   <div className={styles.trustCopy}><span>BUILT FOR TRUST</span><h2>AI convenience without handing AI the wallet.</h2><p>MANGLO separates recommendation from execution. The model can search, compare and prepare; the transaction engine rechecks the service, current rate, quantity, wallet balance and final charge.</p><Link href="/trust">See the trust architecture <ArrowRight size={15}/></Link></div>
+   <div className={styles.trustCards}>
+    <article><LockKeyhole size={18}/><div><b>Secrets remain server-side</b><p>Supplier API credentials, payment secrets and internal provider data are never exposed in the browser or AI conversation.</p></div></article>
+    <article><CreditCard size={18}/><div><b>Cashfree hosted payment flow</b><p>Wallet funding happens through Cashfree hosted checkout. MANGLO does not store raw card numbers, CVV values or UPI PINs.</p></div></article>
+    <article><ShieldCheck size={18}/><div><b>Clear limits on claims</b><p>Provider-listed descriptions are presented as listings—not guarantees of virality, permanence or outcomes controlled by social platforms.</p></div></article>
    </div>
-  </section>
+  </div></section>
 
-  <section className={styles.trustSection}>
-   <div className={`container ${styles.trustGrid}`}>
-    <div className={styles.trustCopy}><span>BUILT FOR ACCOUNTABILITY</span><h2>AI can recommend.<br/>It cannot move your money.</h2><p>MANGLO AI helps with discovery and comparison. Final service terms, wallet balance, pricing, and order submission are revalidated by MANGLO’s server-side transaction layer.</p><Link href="/trust">See how MANGLO protects the flow <ArrowRight size={16}/></Link></div>
-    <div className={styles.trustCards}>
-     <article><span><LockKeyhole size={18}/></span><div><b>Credentials stay private</b><p>Supplier keys and infrastructure remain server-side rather than being exposed to the browser.</p></div></article>
-     <article><span><CreditCard size={18}/></span><div><b>Hosted payment flow</b><p>Wallet funding uses Cashfree hosted checkout. MANGLO does not store raw card numbers, CVV values or UPI PINs.</p></div></article>
-     <article><span><ShieldCheck size={18}/></span><div><b>No impossible promises</b><p>Service outcomes depend on the selected listing and third-party platforms. MANGLO does not promise guaranteed virality or permanent results.</p></div></article>
-    </div>
-   </div>
-  </section>
-
-  <section className={`container ${styles.cta}`}>
-   <div><span>READY WHEN YOU ARE</span><h2>Search first. Review clearly. Order when it makes sense.</h2></div>
-   <div><Link className={styles.ctaPrimary} href="/services">Browse services <ArrowRight size={16}/></Link><Link className={styles.ctaSecondary} href="/auth">Create an account</Link></div>
-  </section>
+  <section className={`container ${styles.cta}`}><div><span>START WITH A SENTENCE</span><h2>Tell MANGLO what you want to grow.</h2></div><div><Link className={styles.ctaPrimary} href="/dashboard">Open MANGLO AI <ArrowRight size={15}/></Link><Link className={styles.ctaSecondary} href="/services">Browse services</Link></div></section>
  </main>;
 }
