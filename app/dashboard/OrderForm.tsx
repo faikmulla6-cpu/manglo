@@ -63,6 +63,10 @@ function serviceScore(service:Service){
  return score;
 }
 
+function newRequestId(){
+ try{return crypto.randomUUID()}catch{return `mg-${Date.now()}-${Math.random().toString(36).slice(2,10)}`}
+}
+
 export default function OrderForm({initialServiceId,walletPaise}:Props){
  const [services,setServices]=useState<Service[]>([]);
  const [serviceId,setServiceId]=useState(initialServiceId||'');
@@ -156,17 +160,36 @@ export default function OrderForm({initialServiceId,walletPaise}:Props){
   event.preventDefault();
   if(!selected)return;
   setBusy(true);setMessage('');setPublicId('');
+  const requestId=newRequestId();
   try{
    const response=await fetch('/api/orders/create',{
-    method:'POST',headers:{'Content-Type':'application/json'},
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json','X-Manglo-Request-Id':requestId},
+    credentials:'same-origin',cache:'no-store',
     body:JSON.stringify({serviceId:selected.id,link,quantity}),
    });
-   const result=await response.json().catch(()=>({}));
-   if(!response.ok)throw new Error(result.error||'The order could not be placed.');
+   const raw=await response.text();
+   let result:Record<string,unknown>={};
+   if(raw){try{result=JSON.parse(raw) as Record<string,unknown>}catch{result={}}}
+   const reference=response.headers.get('x-manglo-request-id')||requestId;
+   if(!response.ok){
+    if(typeof result.error==='string')throw new Error(result.error);
+    const safeRef=reference.slice(0,12);
+    if(response.status===401)throw new Error('Your session expired. Sign in again before placing the order.');
+    if(response.status===429)throw new Error('Too many order attempts. Wait a few minutes before trying again.');
+    if(response.status>=500)throw new Error(`MANGLO could not confirm this order (HTTP ${response.status}, ref ${safeRef}). Check My orders before retrying so a supplier order is never duplicated.`);
+    throw new Error(`The order request was rejected (HTTP ${response.status}, ref ${safeRef}).`);
+   }
+   if(typeof result.publicId!=='string'||!result.publicId){
+    throw new Error(`MANGLO received an incomplete confirmation (ref ${reference.slice(0,12)}). Check My orders before retrying.`);
+   }
    setPublicId(result.publicId);
    setMessage(`Order ${result.publicId} was accepted and sent for processing.`);
    setLink('');
-  }catch(error){setMessage((error as Error).message)}finally{setBusy(false)}
+  }catch(error){
+   if(error instanceof TypeError)setMessage('The order request could not reach MANGLO. Check your connection, then check My orders before trying again.');
+   else setMessage(error instanceof Error?error.message:'The order could not be placed.');
+  }finally{setBusy(false)}
  }
 
  if(loading)return <div className={styles.sectionCard}>Loading live services…</div>;
