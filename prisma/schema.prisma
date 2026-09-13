@@ -217,6 +217,7 @@ model AnalyticsEvent {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   @@index([event, createdAt])
   @@index([userId, createdAt])
+  @@index([anonymousId, createdAt])
   @@index([sessionId, createdAt])
   @@index([source, campaign, createdAt])
 }
