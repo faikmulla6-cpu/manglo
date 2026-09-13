@@ -2,7 +2,7 @@ import {db} from '@/lib/db';
 import {fallbackServices,presentService} from '@/lib/catalog';
 import ServicesBrowser from './ServicesBrowser';
 
-export const metadata={title:'Service Marketplace',description:'Search live MANGLO services by platform, category or service ID. Review current customer rates, limits and provider-reported timing before ordering.'};
+export const metadata={title:'Service Marketplace',description:'Search live MANGLO services by platform, category or service ID. Review current customer rates, limits and provider-reported timing before ordering.',alternates:{canonical:'/services'}};
 
 export default async function Services({searchParams}:{searchParams:Promise<{platform?:string;q?:string;filter?:string}>}){
  const params=await searchParams;
