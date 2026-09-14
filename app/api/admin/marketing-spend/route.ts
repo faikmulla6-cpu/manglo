@@ -20,7 +20,7 @@ export async function POST(req:NextRequest){
   const admin=await requireAdminApi(req);if(!admin)return NextResponse.json({error:'Not found'},{status:404});
   const input=Body.parse(await req.json());
   const source=cleanText(input.source,120).toLowerCase();
-  const campaign=cleanText(input.campaign,160);
+  const campaign=cleanText(input.campaign,160).toLowerCase();
   if(!source||!campaign)return NextResponse.json({error:'Source and campaign are required.'},{status:400});
   const date=new Date(`${input.date}T00:00:00.000Z`);
   if(Number.isNaN(date.getTime()))return NextResponse.json({error:'Invalid spend date.'},{status:400});
