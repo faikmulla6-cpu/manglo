@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {db} from '@/lib/db';
 import {presentService} from '@/lib/catalog';
+import {catalogFreshAfter} from '@/lib/catalog-freshness';
 
 export const dynamic='force-dynamic';
 export const revalidate=0;
@@ -8,7 +9,7 @@ export const revalidate=0;
 export async function GET(){
  try{
   const services=await db.service.findMany({
-   where:{active:true,operatorDisabled:false},
+   where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()}},
    select:{
     id:true,
     providerServiceId:true,
