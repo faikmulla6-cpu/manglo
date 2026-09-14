@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {adminConfigured} from '@/lib/admin';
+import {catalogFreshAfter} from '@/lib/catalog-freshness';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,14 +25,19 @@ function productionConfigReady(){
 }
 
 export async function GET() {
- let databaseReady=true;
+ let databaseReady=true,catalogReady=false;
  try{
   await db.$queryRaw`SELECT 1`;
+  const freshService=await db.service.findFirst({
+   where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()}},
+   select:{id:true},
+  });
+  catalogReady=Boolean(freshService);
  }catch(error){
   databaseReady=false;
   console.error('MANGLO health database check failed', error instanceof Error ? error.message : 'unknown');
  }
- const ok=databaseReady&&productionConfigReady();
+ const ok=databaseReady&&catalogReady&&productionConfigReady();
  return NextResponse.json({ok,status:ok?'ready':'unavailable'}, {
   status:ok?200:503,
   headers:{'Cache-Control':'no-store, max-age=0','X-Robots-Tag':'noindex, nofollow'},
