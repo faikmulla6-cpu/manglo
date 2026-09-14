@@ -293,7 +293,7 @@ model MetaAdsWindsorDaily {
   urlTags String? @db.Text @map("url_tags")
   dataFetchedAt DateTime? @map("data_fetched_at")
   importedAt DateTime @default(now()) @map("imported_at")
-  @@unique([accountId, adId, date])
+  @@index([accountId, adId, date])
   @@index([date])
   @@index([campaignId, date])
   @@map("MetaAdsWindsorDaily")
