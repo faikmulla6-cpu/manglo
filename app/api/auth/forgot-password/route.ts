@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getPublicAppOrigin } from '@/lib/public-app-origin';
 import { assertSameOrigin } from '@/lib/security';
 import { createClient } from '@/lib/supabase/server';
 
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest) {
     assertSameOrigin(req);
     const { email } = Schema.parse(await req.json());
     const supabase = await createClient();
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
+    const appUrl = getPublicAppOrigin(req);
 
     // Do not reveal whether an email exists. Supabase also applies auth rate limits.
     await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
@@ -18,8 +19,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
     // Keep the response indistinguishable to reduce account-enumeration risk.
+    console.error('[password-recovery-request]', error instanceof Error ? error.message : 'request failed');
     return NextResponse.json({ ok: true });
   }
 }
