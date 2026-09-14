@@ -1,5 +1,6 @@
 import type {MetadataRoute} from 'next';
 import {db} from '@/lib/db';
+import {catalogFreshAfter} from '@/lib/catalog-freshness';
 
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const base=process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop';
@@ -11,7 +12,7 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
   priority:path===''?1:path==='/services'?.9:.7,
  }));
  const services=await db.service.findMany({
-  where:{active:true},
+  where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()}},
   select:{providerServiceId:true,lastSyncedAt:true},
   orderBy:{lastSyncedAt:'desc'},
  }).catch(()=>[]);
