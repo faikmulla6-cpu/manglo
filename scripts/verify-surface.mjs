@@ -100,7 +100,7 @@ for(const rel of files){
 const dashboardPolish=exists('app/dashboard/dashboard-polish.css')?fs.readFileSync(path.join(root,'app/dashboard/dashboard-polish.css'),'utf8'):'';
 if(!dashboardPolish.includes('manglo-logo.png'))fail.push('Dashboard hero must reference public/manglo-logo.png');
 if(!dashboardPolish.includes('manglo-icon.png'))fail.push('Dashboard sidebar must reference public/manglo-icon.png');
-const brandFiles=['components/Header.tsx','components/Footer.tsx','app/layout.tsx','app/auth/AuthForm.tsx'];
+const brandFiles=['components/HeaderNav.tsx','components/Footer.tsx','app/layout.tsx','app/auth/AuthForm.tsx'];
 for(const rel of brandFiles){
   if(!exists(rel)||!fs.readFileSync(path.join(root,rel),'utf8').includes('manglo-icon.png')){
     fail.push(`${rel} must reference public/manglo-icon.png`);
