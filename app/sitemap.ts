@@ -5,11 +5,11 @@ import {catalogFreshAfter} from '@/lib/catalog-freshness';
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const base=process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop';
  const now=new Date();
- const staticPages=['','/services','/about','/trust','/contact','/terms','/privacy','/refund'].map(path=>({
+ const staticPages=['','/services','/about','/trust','/help','/faq','/contact','/terms','/privacy','/refund'].map(path=>({
   url:base+path,
   lastModified:now,
   changeFrequency:(path===''?'daily':'weekly') as 'daily'|'weekly',
-  priority:path===''?1:path==='/services'?.9:.7,
+  priority:path===''?1:path==='/services'?.9:path==='/help'?.78:path==='/faq'?.76:.7,
  }));
  const services=await db.service.findMany({
   where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()}},
