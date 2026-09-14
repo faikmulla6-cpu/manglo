@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {adminConfigured} from '@/lib/admin';
 import {catalogFreshAfter} from '@/lib/catalog-freshness';
+import {getPublicAppOrigin} from '@/lib/public-app-origin';
 
 export const dynamic = 'force-dynamic';
 
 function productionConfigReady(){
- const appUrl=process.env.NEXT_PUBLIC_APP_URL?.trim()||'';
- let secureOrigin=false;
- try{secureOrigin=new URL(appUrl).protocol==='https:'}catch{}
+ let publicOriginReady=false;
+ try{publicOriginReady=Boolean(getPublicAppOrigin())}catch{}
  return Boolean(
-  secureOrigin&&
+  publicOriginReady&&
   process.env.NEXT_PUBLIC_SUPABASE_URL&&
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY&&
   process.env.CASHFREE_CLIENT_ID&&
