@@ -5,11 +5,13 @@ import {isAdminEmail} from '@/lib/admin';
 import {ArrowRight,Gauge,Gift,LayoutDashboard,Menu,Search,UserRound} from 'lucide-react';
 import styles from './Header.module.css';
 
+const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
+
 export default async function Header(){
  const user=await getUser().catch(()=>null);
  const admin=isAdminEmail(user?.email);
  return <header className={styles.header}><div className={`container ${styles.inner}`}>
-  <Link className={styles.brand} href="/"><Image src="/manglo-icon.png" alt="" width={34} height={34}/><span>MANGLO</span></Link>
+  <Link className={styles.brand} href="/"><Image src={BRAND_ICON} alt="" width={34} height={34} priority/><span>MANGLO</span></Link>
   <nav className={styles.links}><Link href="/services">Services</Link>{user?<Link href="/invite">Invite & earn</Link>:<Link href="/auth?mode=signup&next=%2Finvite">Invite & earn</Link>}<Link href="/trust">Trust & safety</Link><Link href="/contact">Support</Link></nav>
   <div className={styles.actions}>
    <Link className={styles.iconButton} href="/services" aria-label="Search services"><Search size={17}/></Link>
