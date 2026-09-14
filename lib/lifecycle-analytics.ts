@@ -3,6 +3,7 @@ import {db} from './db';
 const DAY=86_400_000;
 const ORDER_SAMPLE=20_000;
 const EVENT_SAMPLE=50_000;
+const META_SAMPLE=20_000;
 const PAID_WINDOW_DAYS=30;
 
 type RetentionPoint={days:number;mature:number;retained:number;rate:number|null};
@@ -12,6 +13,7 @@ type CustomerEconomics={
  userId:string;firstOrderAt:Date;orders:{createdAt:Date;chargedPaise:number;providerCostPaise:number}[];
  revenue:number;margin:number;rewardCost:number;rewardedAt:Date|null;contribution:number;touch:Touch;
 };
+type CanonicalSpendDay={source:string;campaign:string;date:Date;spend:number;impressions:number;clicks:number;origin:'manual'|'windsor'};
 
 function touchLabel(source:string|null,referrerHost:string|null){
  const clean=(source||'').trim();if(clean)return clean;
@@ -20,6 +22,7 @@ function touchLabel(source:string|null,referrerHost:string|null){
 function campaignLabel(value:string|null){return value?.trim()||'(none)'}
 function normalizedKey(value:string){return value.trim().toLowerCase()}
 function acquisitionKey(source:string,campaign:string){return `${normalizedKey(source)}\u0000${normalizedKey(campaign)}`}
+function spendDayKey(source:string,campaign:string,date:Date){return `${acquisitionKey(source,campaign)}\u0000${date.toISOString().slice(0,10)}`}
 function moneyNumber(value:bigint|null|undefined){return Number(value||0n)}
 function percentile(values:number[],p:number){
  if(!values.length)return 0;
@@ -46,6 +49,20 @@ function groupCacEconomics(customers:CustomerEconomics[],now:number){
  const breakEvenCac=mature30.length?contribution30/mature30.length:(customers.length?contribution/customers.length:0);
  return{revenue,contribution,orders,repeat,breakEvenCac,safeCac:Math.max(0,breakEvenCac*.7),cacBasis:mature30.length?'30-day matured':'realized to date',mature30:mature30.length};
 }
+function parseMetaAttribution(urlTags:string|null,campaignName:string){
+ if(!urlTags)return null;
+ try{
+  const clean=urlTags.trim().replace(/^\?/,'').replace(/&amp;/g,'&');
+  const params=new URLSearchParams(clean);
+  const source=params.get('utm_source')?.trim();
+  let campaign=params.get('utm_campaign')?.trim();
+  if(!source||!campaign)return null;
+  if(/\{\{/.test(source))return null;
+  if(/^\{\{\s*campaign\.name\s*\}\}$/i.test(campaign))campaign=campaignName.trim();
+  if(!campaign||/\{\{/.test(campaign))return null;
+  return{source:source.toLowerCase(),campaign:campaign.toLowerCase()};
+ }catch{return null}
+}
 
 export async function getLifecycleAnalytics(){
  const now=Date.now();const paidSince=new Date(now-PAID_WINDOW_DAYS*DAY);paidSince.setUTCHours(0,0,0,0);
@@ -56,7 +73,7 @@ export async function getLifecycleAnalytics(){
  });
  orders.reverse();
  const userIds=[...new Set(orders.map(order=>order.userId))];
- const [events,referrals,spendRows]=await Promise.all([
+ const [events,referrals,spendRows,metaRows]=await Promise.all([
   userIds.length?db.analyticsEvent.findMany({
    where:{userId:{in:userIds}},
    select:{userId:true,source:true,campaign:true,referrerHost:true,createdAt:true},
@@ -64,6 +81,7 @@ export async function getLifecycleAnalytics(){
   }):Promise.resolve([]),
   userIds.length?db.referral.findMany({where:{referredUserId:{in:userIds}},select:{referredUserId:true,referrerRewardPaise:true,rewardedAt:true}}).catch(()=>[]):Promise.resolve([]),
   db.marketingSpendDaily.findMany({where:{date:{gte:paidSince}},orderBy:{date:'asc'},take:5000}).catch(()=>[]),
+  db.metaAdsWindsorDaily.findMany({where:{date:{gte:paidSince}},orderBy:{date:'asc'},take:META_SAMPLE}).catch(()=>[]),
  ]);
 
  const firstTouch=new Map<string,Touch>();
@@ -113,10 +131,35 @@ export async function getLifecycleAnalytics(){
  const acquisition=acquisitionFull.sort((a,b)=>b.contribution-a.contribution||b.customers-a.customers).slice(0,20);
  const acquisitionByKey=new Map(acquisitionFull.map(row=>[row.key,row]));
 
- const spendMap=new Map<string,{source:string;campaign:string;spend:number;impressions:number;clicks:number;days:Set<string>}>();
+ const spendByDay=new Map<string,CanonicalSpendDay>();
  for(const row of spendRows){
-  const key=acquisitionKey(row.source,row.campaign);const current=spendMap.get(key)||{source:row.source,campaign:row.campaign,spend:0,impressions:0,clicks:0,days:new Set<string>()};
-  current.spend+=Number(row.spendPaise);current.impressions+=Number(row.impressions);current.clicks+=Number(row.clicks);current.days.add(row.date.toISOString().slice(0,10));spendMap.set(key,current);
+  if(row.currency.toUpperCase()!=='INR')continue;
+  const source=normalizedKey(row.source),campaign=normalizedKey(row.campaign);const key=spendDayKey(source,campaign,row.date);
+  spendByDay.set(key,{source,campaign,date:row.date,spend:Number(row.spendPaise),impressions:Number(row.impressions),clicks:Number(row.clicks),origin:'manual'});
+ }
+ let metaMappedRows=0,metaUnmappedRows=0,metaUnsupportedCurrencyRows=0;let metaLatestFetchedAt:Date|null=null,metaLatestDataDate:Date|null=null;let metaMappedSpend=0;
+ for(const row of metaRows){
+  const freshness=row.dataFetchedAt||row.importedAt;if(!metaLatestFetchedAt||freshness>metaLatestFetchedAt)metaLatestFetchedAt=freshness;
+  if(!metaLatestDataDate||row.date>metaLatestDataDate)metaLatestDataDate=row.date;
+  const currency=(row.currency||'').trim().toUpperCase();
+  if(currency!=='INR'){metaUnsupportedCurrencyRows++;continue}
+  const attribution=parseMetaAttribution(row.urlTags,row.campaign);
+  if(!attribution){metaUnmappedRows++;continue}
+  const source=normalizedKey(attribution.source),campaign=normalizedKey(attribution.campaign);const key=spendDayKey(source,campaign,row.date);
+  const spendPaise=Math.max(0,Math.round(Number(row.spend)*100));
+  const existing=spendByDay.get(key);
+  if(existing?.origin==='windsor'){
+   existing.spend+=spendPaise;existing.impressions+=Number(row.impressions);existing.clicks+=Number(row.clicks);
+  }else{
+   spendByDay.set(key,{source,campaign,date:row.date,spend:spendPaise,impressions:Number(row.impressions),clicks:Number(row.clicks),origin:'windsor'});
+  }
+  metaMappedRows++;metaMappedSpend+=spendPaise;
+ }
+
+ const spendMap=new Map<string,{source:string;campaign:string;spend:number;impressions:number;clicks:number;days:Set<string>;windsorDays:number}>();
+ for(const row of spendByDay.values()){
+  const key=acquisitionKey(row.source,row.campaign);const current=spendMap.get(key)||{source:row.source,campaign:row.campaign,spend:0,impressions:0,clicks:0,days:new Set<string>(),windsorDays:0};
+  current.spend+=row.spend;current.impressions+=row.impressions;current.clicks+=row.clicks;current.days.add(row.date.toISOString().slice(0,10));if(row.origin==='windsor')current.windsorDays++;spendMap.set(key,current);
  }
  const paidRows=[...spendMap.entries()].map(([key,spend])=>{
   const group=sourceMap.get(key);const cohort=(group?.customers||[]).filter(customer=>customer.firstOrderAt>=paidSince);
@@ -137,16 +180,17 @@ export async function getLifecycleAnalytics(){
    else if(actualCac<=safeCac){factor=1.1;budgetAction='Scale 10%'}
    recommendedDailySpend=Math.round(avgDailySpend*factor);
   }
-  return{source:spend.source,campaign:spend.campaign,spend:spend.spend,impressions:spend.impressions,clicks:spend.clicks,daysWithSpend,customers,revenue,contribution,netAfterAds:contribution-spend.spend,actualCac,revenueRoas,contributionRoas,breakEvenCac,safeCac,status,avgDailySpend,recommendedDailySpend,budgetAction};
+  return{source:spend.source,campaign:spend.campaign,spend:spend.spend,impressions:spend.impressions,clicks:spend.clicks,daysWithSpend,windsorDays:spend.windsorDays,customers,revenue,contribution,netAfterAds:contribution-spend.spend,actualCac,revenueRoas,contributionRoas,breakEvenCac,safeCac,status,avgDailySpend,recommendedDailySpend,budgetAction};
  }).sort((a,b)=>b.spend-a.spend);
  const paidSpend=paidRows.reduce((sum,row)=>sum+row.spend,0);const paidRevenue=paidRows.reduce((sum,row)=>sum+row.revenue,0);const paidContribution=paidRows.reduce((sum,row)=>sum+row.contribution,0);const paidCustomers=paidRows.reduce((sum,row)=>sum+row.customers,0);
 
  return{
-  sampled:orders.length>=ORDER_SAMPLE||events.length>=EVENT_SAMPLE||spendRows.length>=5000,unpricedCompletedOrders,
+  sampled:orders.length>=ORDER_SAMPLE||events.length>=EVENT_SAMPLE||spendRows.length>=5000||metaRows.length>=META_SAMPLE,unpricedCompletedOrders,
   customers:customerCount,totalOrders,totalRevenue,totalMargin,totalRewards,totalContribution,repeatCustomers,repeatRate,
   avgRevenueLtv:customerCount?totalRevenue/customerCount:0,avgContributionLtv:customerCount?totalContribution/customerCount:0,
   avgOrdersPerCustomer:customerCount?totalOrders/customerCount:0,medianContributionLtv:percentile(contributionValues,.5),
   retention:retentionPoints,cohorts,acquisition,
-  paidMedia:{periodDays:PAID_WINDOW_DAYS,spend:paidSpend,customers:paidCustomers,revenue:paidRevenue,contribution:paidContribution,netAfterAds:paidContribution-paidSpend,actualCac:paidCustomers?paidSpend/paidCustomers:null,revenueRoas:paidSpend?paidRevenue/paidSpend:null,contributionRoas:paidSpend?paidContribution/paidSpend:null,rows:paidRows},
+  paidMedia:{periodDays:PAID_WINDOW_DAYS,spend:paidSpend,customers:paidCustomers,revenue:paidRevenue,contribution:paidContribution,netAfterAds:paidContribution-paidSpend,actualCac:paidCustomers?paidSpend/paidCustomers:null,revenueRoas:paidSpend?paidRevenue/paidSpend:null,contributionRoas:paidSpend?paidContribution/paidSpend:null,rows:paidRows,
+   metaSync:{rawRows:metaRows.length,mappedRows:metaMappedRows,unmappedRows:metaUnmappedRows,unsupportedCurrencyRows:metaUnsupportedCurrencyRows,mappedSpend:metaMappedSpend,lastFetchedAt:metaLatestFetchedAt,latestDataDate:metaLatestDataDate}},
  };
 }
