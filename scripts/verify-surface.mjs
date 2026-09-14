@@ -49,7 +49,7 @@ checkPng('public/manglo-logo.png');
 const requiredPages=[
   'app/page.tsx','app/services/page.tsx','app/auth/page.tsx','app/auth/forgot/page.tsx',
   'app/auth/update-password/page.tsx','app/dashboard/page.tsx','app/order/page.tsx','app/invite/page.tsx',
-  'app/about/page.tsx','app/trust/page.tsx','app/contact/page.tsx','app/privacy/page.tsx',
+  'app/about/page.tsx','app/trust/page.tsx','app/help/page.tsx','app/faq/page.tsx','app/contact/page.tsx','app/privacy/page.tsx',
   'app/terms/page.tsx','app/refund/page.tsx'
 ];
 const requiredApis=[
