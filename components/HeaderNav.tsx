@@ -35,6 +35,12 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
   return()=>window.removeEventListener('keydown',onKey);
  },[]);
  useEffect(()=>{
+  const media=window.matchMedia('(max-width: 920px)');
+  function onChange(event:MediaQueryListEvent){if(!event.matches)setOpen(false)}
+  media.addEventListener('change',onChange);
+  return()=>media.removeEventListener('change',onChange);
+ },[]);
+ useEffect(()=>{
   if(!open)return;
   const previous=document.body.style.overflow;
   document.body.style.overflow='hidden';
