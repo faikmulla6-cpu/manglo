@@ -2,10 +2,11 @@
 
 import {FormEvent,useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {Check,LoaderCircle,PauseCircle,PlayCircle,Search} from 'lucide-react';
+import {Check,LoaderCircle,PauseCircle,PlayCircle,RefreshCcw,Search} from 'lucide-react';
 import styles from './AdminControls.module.css';
 
 type ServiceResult={providerServiceId:string;platform:string;category:string;name:string;active:boolean;operatorDisabled:boolean;retailRatePaisePerThousand:number;min:number;max:number;lastSyncedAt:string};
+type OperationAction='SYNC_CATALOG'|'RECONCILE_PAYMENTS'|'RECONCILE_ORDERS';
 
 const money=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(paise/100);
 
@@ -15,7 +16,22 @@ export function ServiceControls(){
  const [services,setServices]=useState<ServiceResult[]>([]);
  const [loading,setLoading]=useState(false);
  const [busy,setBusy]=useState<string|null>(null);
+ const [operationBusy,setOperationBusy]=useState<OperationAction|null>(null);
  const [message,setMessage]=useState('');
+
+ async function runOperation(action:OperationAction){
+  setOperationBusy(action);setMessage('');
+  try{
+   const res=await fetch('/api/admin/operations/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok)throw new Error(data.error||'Operation failed');
+   const result=data.result||{};
+   if(action==='SYNC_CATALOG')setMessage(`Catalog refreshed securely: ${Number(result.synced||0).toLocaleString('en-IN')} services processed.`);
+   else if(action==='RECONCILE_PAYMENTS')setMessage(`Payments reconciled: ${Number(result.checked||0)} checked, ${Number(result.paid||0)} paid, ${Number(result.pending||0)} still pending, ${Number(result.failed||0)} failed.`);
+   else setMessage(`Orders reconciled: ${Number(result.checked||0)} checked, ${Number(result.reconciled||0)} processed, ${Number(result.failed||0)} failed.`);
+   router.refresh();
+  }catch(error){setMessage(error instanceof Error?error.message:'Operation failed')}finally{setOperationBusy(null)}
+ }
 
  async function search(e?:FormEvent){
   e?.preventDefault();
@@ -44,6 +60,11 @@ export function ServiceControls(){
  }
 
  return <div className={styles.serviceControl}>
+  <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
+   <button type="button" className={styles.resume} disabled={operationBusy!==null} onClick={()=>runOperation('SYNC_CATALOG')}>{operationBusy==='SYNC_CATALOG'?<LoaderCircle className={styles.spin} size={14}/>:<RefreshCcw size={14}/>} Sync catalog now</button>
+   <button type="button" className={styles.resume} disabled={operationBusy!==null} onClick={()=>runOperation('RECONCILE_PAYMENTS')}>{operationBusy==='RECONCILE_PAYMENTS'?<LoaderCircle className={styles.spin} size={14}/>:<RefreshCcw size={14}/>} Reconcile payments</button>
+   <button type="button" className={styles.resume} disabled={operationBusy!==null} onClick={()=>runOperation('RECONCILE_ORDERS')}>{operationBusy==='RECONCILE_ORDERS'?<LoaderCircle className={styles.spin} size={14}/>:<RefreshCcw size={14}/>} Reconcile orders</button>
+  </div>
   <form onSubmit={search} className={styles.searchRow}><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search service ID, name, category or platform" aria-label="Search services"/><button disabled={loading}>{loading?<LoaderCircle className={styles.spin} size={14}/>:'Search'}</button></form>
   {message&&<p className={styles.message}>{message}</p>}
   <div className={styles.results}>{services.map(service=><article key={service.providerServiceId} className={service.operatorDisabled?styles.paused:''}>
