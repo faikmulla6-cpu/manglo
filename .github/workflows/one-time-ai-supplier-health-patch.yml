@@ -1,0 +1,41 @@
+name: One-time AI supplier health patch
+
+on:
+  push:
+    branches: [manglo-dev]
+    paths:
+      - '.github/workflows/one-time-ai-supplier-health-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: manglo-dev
+      - name: Patch MANGLO AI catalog safety
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('lib/manglo-ai.ts')
+          text=path.read_text()
+          if "./service-destination" not in text:
+              text=text.replace("import {trustworthyServiceName} from './catalog';", "import {trustworthyServiceName} from './catalog';\nimport {catalogFreshAfter} from './catalog-freshness';\nimport {validateServiceDestination} from './service-destination';")
+          text=text.replace("const rows=await db.service.findMany({where:{active:true,...(and.length?{AND:and}:{})},take:80});", "const rows=await db.service.findMany({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},...(and.length?{AND:and}:{})},take:80});")
+          text=text.replace("const service=await db.service.findFirst({where:{active:true,OR:[{id},{providerServiceId:id}]}});", "const service=await db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{id},{providerServiceId:id}]}});")
+          text=text.replace("const service=await db.service.findFirst({where:{active:true,OR:[{id:serviceId},{providerServiceId:serviceId}]}});", "const service=await db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{id:serviceId},{providerServiceId:serviceId}]}});")
+          needle="if(!Number.isInteger(quantity)||quantity<service.min||quantity>service.max)return {error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`};\n try{const url=new URL(link);if(!['http:','https:'].includes(url.protocol))throw new Error();}catch{return {error:'A valid public http(s) destination link is required.'}}"
+          replacement="if(!Number.isInteger(quantity)||quantity<service.min||quantity>service.max)return {error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`};\n const destination=validateServiceDestination(service,link);if(!destination.ok)return {error:destination.error};"
+          text=text.replace(needle,replacement)
+          path.write_text(text)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/manglo-ai.ts
+          git commit -m 'Align MANGLO AI with supplier health rules'
+          git push origin HEAD:manglo-dev
