@@ -1,12 +1,13 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {db} from '@/lib/db';
 import {reconcileProviderOrder} from '@/lib/order-reconciliation';
+import {cronAuthorized} from '@/lib/cron';
 
 export const dynamic='force-dynamic';
 
 export async function POST(req:NextRequest){
- if(req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`){
-  return NextResponse.json({error:'Unauthorized'},{status:401});
+ if(!cronAuthorized(req)){
+  return NextResponse.json({error:'Unauthorized'},{status:401,headers:{'Cache-Control':'no-store'}});
  }
 
  const orders=await db.order.findMany({
@@ -22,5 +23,5 @@ export async function POST(req:NextRequest){
    else failed++;
   }
  }
- return NextResponse.json({ok:true,checked:orders.length,reconciled,failed},{headers:{'Cache-Control':'no-store'}});
+ return NextResponse.json({ok:failed===0,checked:orders.length,reconciled,failed},{status:failed===0?200:207,headers:{'Cache-Control':'no-store'}});
 }
