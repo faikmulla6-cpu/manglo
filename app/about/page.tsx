@@ -127,9 +127,9 @@ export default function Page(){
      <div className={styles.founderCopy} data-about-reveal>
       <span className={styles.role}>05 / FOUNDER · FAIK HAMEED MULLA</span>
       <h2>Building internet products that make difficult workflows feel simpler.</h2>
-      <p><strong>Faik Hameed Mulla</strong> is the Founder of MANGLO and an entrepreneur and product builder focused on turning complex internet workflows into practical products people can actually use.</p>
-      <p>His work includes <strong>ClipKaro</strong>, an AI-powered creator platform, <strong>Fazzcart</strong>, an e-commerce project, and MANGLO. Across those products, the common direction is the same: combine product design, software, automation and business execution into experiences that feel much simpler than the systems behind them.</p>
-      <p>While pursuing Artificial Intelligence and Machine Learning, Faik has continued building across AI products, commerce and workflow automation. MANGLO reflects that approach: customer simplicity in front, serious operational controls behind it, and constant iteration from real usage.</p>
+      <p><strong>Faik Hameed Mulla</strong> is the Founder of MANGLO and an entrepreneur and product builder focused on turning complex internet workflows into practical businesses and products people can actually use.</p>
+      <p>He has built and operates <strong>ClipKaro</strong>, a live AI-powered creator platform, and <strong>Fazzcart</strong>, a live e-commerce business selling physical products, alongside MANGLO. ClipKaro and Fazzcart are active, revenue-generating businesses. Across them, his focus is consistent: combine product design, software, automation, commerce and execution to create useful experiences that feel much simpler than the systems behind them.</p>
+      <p>While pursuing Artificial Intelligence and Machine Learning, Faik continues building across AI products, e-commerce and workflow automation. MANGLO reflects that approach: customer simplicity in front, serious operational controls behind it, and constant iteration from real usage.</p>
       <div className={styles.ventureChips}><span>MANGLO</span><span>ClipKaro</span><span>Fazzcart</span><span>AI / ML products</span><span>Internet businesses</span></div>
       <div className={styles.socials}>
        <a className={styles.socialButton} href={founderInstagram} target="_blank" rel="noreferrer"><Instagram size={15}/> Founder Instagram <ExternalLink size={13}/></a>
