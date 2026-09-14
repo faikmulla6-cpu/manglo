@@ -185,19 +185,6 @@ model Referral {
   @@index([rewardedAt])
 }
 
-model MarketingSpend {
-  id String @id @default(cuid())
-  source String
-  campaign String @default("")
-  amountPaise BigInt
-  spentOn DateTime @db.Date
-  note String?
-  createdBy String
-  createdAt DateTime @default(now())
-  @@index([spentOn])
-  @@index([source, campaign, spentOn])
-}
-
 model WalletLedger {
   id String @id @default(cuid())
   userId String @db.Uuid
