@@ -2,6 +2,8 @@ import {db} from './db';
 import {providerStatus} from './provider';
 import {rewardReferralForCompletedOrder} from './referrals';
 
+const terminalLocalStatuses=new Set(['COMPLETED','PARTIAL','REFUNDED','CANCELED','FAILED']);
+
 function mappedStatus(raw:string){
  const s=raw.toLowerCase();
  if(s.includes('complete'))return 'COMPLETED' as const;
@@ -29,10 +31,15 @@ async function refundOrder(orderId:string,amount:bigint,keySuffix:string,note:st
 export async function reconcileProviderOrder(orderId:string){
  const order=await db.order.findUnique({where:{id:orderId}});
  if(!order)return null;
+ if(terminalLocalStatuses.has(order.status)){
+  if(order.status==='COMPLETED')await rewardReferralForCompletedOrder(order.id).catch(error=>console.error('[referral-reward]',error instanceof Error?error.message:'failed'));
+  return {status:order.status,providerStatus:order.providerStatus,startCount:order.startCount,remains:order.remains};
+ }
  if(!order.providerOrderId)return {status:order.status,providerStatus:order.providerStatus,startCount:order.startCount,remains:order.remains};
 
  const remote=await providerStatus(order.providerOrderId);
- const rawStatus=String(remote?.status||'');
+ const rawStatus=String(remote?.status||'').trim();
+ if(!rawStatus)throw new Error('Provider status response is missing a status');
  const status=mappedStatus(rawStatus);
  const remainsValue=Number(remote?.remains);
  const remains=Number.isFinite(remainsValue)?Math.max(0,Math.min(order.quantity,Math.trunc(remainsValue))):undefined;
