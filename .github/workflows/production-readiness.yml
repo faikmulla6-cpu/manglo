@@ -39,6 +39,9 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      - name: Verify routes and static assets
+        run: npm run verify:surface
+
       - name: Typecheck
         run: npm run typecheck
 
