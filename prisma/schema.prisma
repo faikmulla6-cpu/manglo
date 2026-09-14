@@ -277,3 +277,24 @@ model MarketingSpendDaily {
   @@index([date])
   @@index([source, campaign, date])
 }
+
+model MetaAdsWindsorDaily {
+  id String @id @default(uuid()) @db.Uuid
+  date DateTime @db.Date
+  accountId String @map("account_id")
+  campaign String
+  campaignId String @map("campaign_id")
+  adId String @map("ad_id")
+  adName String? @map("ad_name")
+  spend Decimal @default(0) @db.Decimal(18, 4)
+  impressions BigInt @default(0)
+  clicks BigInt @default(0)
+  currency String?
+  urlTags String? @db.Text @map("url_tags")
+  dataFetchedAt DateTime? @map("data_fetched_at")
+  importedAt DateTime @default(now()) @map("imported_at")
+  @@unique([accountId, adId, date])
+  @@index([date])
+  @@index([campaignId, date])
+  @@map("MetaAdsWindsorDaily")
+}
