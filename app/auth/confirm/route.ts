@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { provisionUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 
+function getPublicAppOrigin(request: NextRequest) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (configured) {
+    const url = new URL(configured);
+    if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
+      throw new Error('NEXT_PUBLIC_APP_URL must use HTTPS in production.');
+    }
+    return url.origin;
+  }
+
+  // Local-development fallback only. Production should always define NEXT_PUBLIC_APP_URL.
+  return request.nextUrl.origin;
+}
+
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get('token_hash');
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null;
@@ -10,9 +25,17 @@ export async function GET(request: NextRequest) {
   const requestedNext = request.nextUrl.searchParams.get('next') || '/dashboard';
   const nextPath = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
 
-  const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = nextPath;
-  redirectTo.search = '';
+  let appOrigin: string;
+  try {
+    appOrigin = getPublicAppOrigin(request);
+  } catch (error) {
+    console.error('[auth-confirm-origin]', error instanceof Error ? error.message : 'invalid public app URL');
+    return NextResponse.json({ error: 'Authentication redirect is unavailable.' }, { status: 503 });
+  }
+
+  // Never build external redirects from Host/X-Forwarded-Host or the internal Hostinger
+  // Node listener (for example 0.0.0.0:3000). Always use MANGLO's configured public origin.
+  const redirectTo = new URL(nextPath, `${appOrigin}/`);
 
   const supabase = await createClient();
 
@@ -46,8 +69,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const failed = request.nextUrl.clone();
-  failed.pathname = '/auth';
-  failed.search = '?error=confirmation_failed';
+  const failed = new URL('/auth?error=confirmation_failed', `${appOrigin}/`);
   return NextResponse.redirect(failed);
 }
