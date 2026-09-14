@@ -83,10 +83,10 @@ export async function POST(req:NextRequest){
   }catch(error){
    const providerError=error instanceof ProviderError?error:new ProviderError('Provider is temporarily unavailable',true);
    if(providerError.retryable){
-    await db.order.update({where:{id:orderId},data:{status:'QUEUED',providerStatus:'Submission confirmation pending'}}).catch(()=>undefined);
+    await db.order.update({where:{id:orderId},data:{status:'QUEUED',providerStatus:'Submission uncertain — manual verification required'}}).catch(()=>undefined);
     await recordRecovery();
     console.error(`Provider submission uncertain [${requestId}]`,providerError.message);
-    return json(requestId,{ok:true,publicId,status:'QUEUED',message:'Your order is being reviewed because the supplier confirmation was delayed. Your wallet has not been charged twice.'},202);
+    return json(requestId,{ok:true,publicId,status:'QUEUED',message:'Supplier confirmation was interrupted. Your order is safely held for verification and will not be submitted twice.'},202);
    }
    await refundDefinitiveProviderFailure(orderId);
    return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);
