@@ -137,10 +137,21 @@ export async function getLifecycleAnalytics(){
   const source=normalizedKey(row.source),campaign=normalizedKey(row.campaign);const key=spendDayKey(source,campaign,row.date);
   spendByDay.set(key,{source,campaign,date:row.date,spend:Number(row.spendPaise),impressions:Number(row.impressions),clicks:Number(row.clicks),origin:'manual'});
  }
- let metaMappedRows=0,metaUnmappedRows=0,metaUnsupportedCurrencyRows=0;let metaLatestFetchedAt:Date|null=null,metaLatestDataDate:Date|null=null;let metaMappedSpend=0;
+
+ const latestMetaByAdDay=new Map<string,(typeof metaRows)[number]>();
  for(const row of metaRows){
-  const freshness=row.dataFetchedAt||row.importedAt;if(!metaLatestFetchedAt||freshness>metaLatestFetchedAt)metaLatestFetchedAt=freshness;
-  if(!metaLatestDataDate||row.date>metaLatestDataDate)metaLatestDataDate=row.date;
+  const key=`${row.accountId}\u0000${row.adId}\u0000${row.date.toISOString().slice(0,10)}`;
+  const existing=latestMetaByAdDay.get(key);
+  const freshness=(row.dataFetchedAt||row.importedAt).getTime();
+  const existingFreshness=existing?(existing.dataFetchedAt||existing.importedAt).getTime():-1;
+  if(!existing||freshness>=existingFreshness)latestMetaByAdDay.set(key,row);
+ }
+ const canonicalMetaRows=[...latestMetaByAdDay.values()];
+
+ let metaMappedRows=0,metaUnmappedRows=0,metaUnsupportedCurrencyRows=0;let metaLatestFetchedAt:Date|null=null,metaLatestDataDate:Date|null=null;let metaMappedSpend=0;
+ for(const row of canonicalMetaRows){
+  const freshness=row.dataFetchedAt||row.importedAt;if(!metaLatestFetchedAt||freshness.getTime()>metaLatestFetchedAt.getTime())metaLatestFetchedAt=freshness;
+  if(!metaLatestDataDate||row.date.getTime()>metaLatestDataDate.getTime())metaLatestDataDate=row.date;
   const currency=(row.currency||'').trim().toUpperCase();
   if(currency!=='INR'){metaUnsupportedCurrencyRows++;continue}
   const attribution=parseMetaAttribution(row.urlTags,row.campaign);
@@ -191,6 +202,6 @@ export async function getLifecycleAnalytics(){
   avgOrdersPerCustomer:customerCount?totalOrders/customerCount:0,medianContributionLtv:percentile(contributionValues,.5),
   retention:retentionPoints,cohorts,acquisition,
   paidMedia:{periodDays:PAID_WINDOW_DAYS,spend:paidSpend,customers:paidCustomers,revenue:paidRevenue,contribution:paidContribution,netAfterAds:paidContribution-paidSpend,actualCac:paidCustomers?paidSpend/paidCustomers:null,revenueRoas:paidSpend?paidRevenue/paidSpend:null,contributionRoas:paidSpend?paidContribution/paidSpend:null,rows:paidRows,
-   metaSync:{rawRows:metaRows.length,mappedRows:metaMappedRows,unmappedRows:metaUnmappedRows,unsupportedCurrencyRows:metaUnsupportedCurrencyRows,mappedSpend:metaMappedSpend,lastFetchedAt:metaLatestFetchedAt,latestDataDate:metaLatestDataDate}},
+   metaSync:{rawRows:metaRows.length,canonicalRows:canonicalMetaRows.length,duplicatesIgnored:metaRows.length-canonicalMetaRows.length,mappedRows:metaMappedRows,unmappedRows:metaUnmappedRows,unsupportedCurrencyRows:metaUnsupportedCurrencyRows,mappedSpend:metaMappedSpend,lastFetchedAt:metaLatestFetchedAt,latestDataDate:metaLatestDataDate}},
  };
 }
