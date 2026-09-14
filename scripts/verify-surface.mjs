@@ -30,6 +30,18 @@ function checkPng(rel){
   if(!width||!height)fail.push(`Invalid PNG dimensions: ${rel}`);
   else note.push(`${rel}: ${width}x${height}, ${Math.round(data.length/1024)} KiB`);
 }
+function escapeRegex(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function routeRegex(rel){
+  let route=rel.replace(/^app\//,'').replace(/\/(?:page|route)\.tsx$/,'').replace(/^(?:page|route)\.tsx$/,'');
+  const segments=route.split('/').filter(segment=>segment&&!/^\(.+\)$/.test(segment)&&!segment.startsWith('@'));
+  const parts=segments.map(segment=>{
+    if(/^\[\[\.\.\..+\]\]$/.test(segment))return '.*';
+    if(/^\[\.\.\..+\]$/.test(segment))return '.+';
+    if(/^\[.+\]$/.test(segment))return '[^/]+';
+    return escapeRegex(segment);
+  });
+  return new RegExp(`^/${parts.join('/')}${parts.length?'/?':'?'}$`);
+}
 
 checkPng('public/manglo-icon.png');
 checkPng('public/manglo-logo.png');
@@ -51,7 +63,17 @@ const requiredApis=[
 for(const rel of [...requiredPages,...requiredApis])if(!exists(rel))fail.push(`Missing required route file: ${rel}`);
 
 const files=sourceRoots.flatMap(walk).filter(rel=>textExt.has(path.extname(rel)));
+const appFiles=walk('app');
+const routeMatchers=appFiles
+  .filter(rel=>/(?:^|\/)(?:page|route)\.tsx$/.test(rel))
+  .map(rel=>({rel,re:routeRegex(rel)}));
+const specialRoutes=new Set(['/robots.txt','/sitemap.xml']);
 const assetPattern=/\/(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+\.(?:png|jpe?g|webp|svg)(?:\?[^\s'"`)]+)?/gi;
+const staticLinkPatterns=[
+  /(?:href|action)\s*=\s*["'](\/[^"'#]*)["']/g,
+  /(?:fetch|router\.(?:push|replace))\(\s*["'`](\/[^"'`$]*)["'`]/g,
+];
+let checkedLinks=0;
 for(const rel of files){
   const text=fs.readFileSync(path.join(root,rel),'utf8');
   if(text.includes('manglo-hero-art.png'))fail.push(`Forbidden asset reference in ${rel}: manglo-hero-art.png`);
@@ -60,12 +82,25 @@ for(const rel of files){
     const local=`public${pathname}`;
     if(!exists(local))fail.push(`Missing static asset referenced by ${rel}: ${pathname}`);
   }
+  for(const pattern of staticLinkPatterns){
+    pattern.lastIndex=0;
+    for(const match of text.matchAll(pattern)){
+      const pathname=match[1].split('?')[0].replace(/#.*$/,'')||'/';
+      if(pathname.startsWith('/_next/')||pathname.includes('*'))continue;
+      checkedLinks++;
+      if(specialRoutes.has(pathname))continue;
+      if(!routeMatchers.some(route=>route.re.test(pathname))){
+        fail.push(`Broken static internal target in ${rel}: ${pathname}`);
+      }
+    }
+  }
 }
 
 // Guard the expected MANGLO asset roles so accidental swaps fail CI.
 const dashboardPolish=exists('app/dashboard/dashboard-polish.css')?fs.readFileSync(path.join(root,'app/dashboard/dashboard-polish.css'),'utf8'):'';
-if(!dashboardPolish.includes("manglo-logo.png"))fail.push('Dashboard hero must reference public/manglo-logo.png');
-const brandFiles=['components/Header.tsx','components/Footer.tsx','app/layout.tsx'];
+if(!dashboardPolish.includes('manglo-logo.png'))fail.push('Dashboard hero must reference public/manglo-logo.png');
+if(!dashboardPolish.includes('manglo-icon.png'))fail.push('Dashboard sidebar must reference public/manglo-icon.png');
+const brandFiles=['components/Header.tsx','components/Footer.tsx','app/layout.tsx','app/auth/AuthForm.tsx'];
 for(const rel of brandFiles){
   if(!exists(rel)||!fs.readFileSync(path.join(root,rel),'utf8').includes('manglo-icon.png')){
     fail.push(`${rel} must reference public/manglo-icon.png`);
@@ -81,4 +116,5 @@ console.log('MANGLO surface verification passed.');
 for(const item of note)console.log(`- ${item}`);
 console.log(`- ${requiredPages.length} core pages checked`);
 console.log(`- ${requiredApis.length} critical API routes checked`);
+console.log(`- ${checkedLinks} static internal targets checked`);
 console.log(`- ${files.length} source files scanned for static asset integrity`);
