@@ -260,3 +260,20 @@ model AnalyticsEvent {
   @@index([sessionId, createdAt])
   @@index([source, campaign, createdAt])
 }
+
+model MarketingSpendDaily {
+  id String @id @default(cuid())
+  source String
+  campaign String
+  date DateTime @db.Date
+  spendPaise BigInt
+  impressions BigInt @default(0)
+  clicks BigInt @default(0)
+  currency String @default("INR")
+  externalCampaignId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([source, campaign, date])
+  @@index([date])
+  @@index([source, campaign, date])
+}
