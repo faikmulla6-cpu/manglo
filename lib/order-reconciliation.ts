@@ -1,6 +1,7 @@
 import {db} from './db';
 import {providerStatus} from './provider';
 import {rewardReferralForCompletedOrder} from './referrals';
+import {refreshServiceHealth} from './service-health';
 
 const terminalLocalStatuses=new Set(['COMPLETED','PARTIAL','REFUNDED','CANCELED','FAILED']);
 
@@ -28,6 +29,10 @@ async function refundOrder(orderId:string,amount:bigint,keySuffix:string,note:st
  });
 }
 
+async function updateHealth(serviceId:string){
+ await refreshServiceHealth(serviceId).catch(error=>console.error('[service-health]',error instanceof Error?error.message:'failed'));
+}
+
 export async function reconcileProviderOrder(orderId:string){
  const order=await db.order.findUnique({where:{id:orderId}});
  if(!order)return null;
@@ -48,6 +53,7 @@ export async function reconcileProviderOrder(orderId:string){
  if(status==='CANCELED'||status==='FAILED'){
   await refundOrder(order.id,order.chargedPaise,`refund-${status.toLowerCase()}`,`Automatic refund: provider ${status.toLowerCase()}`);
   await db.order.update({where:{id:order.id},data:{status:'REFUNDED',providerStatus:rawStatus,startCount,remains}});
+  await updateHealth(order.serviceId);
   return {status:'REFUNDED' as const,providerStatus:rawStatus,startCount,remains};
  }
 
@@ -59,5 +65,6 @@ export async function reconcileProviderOrder(orderId:string){
 
  await db.order.update({where:{id:order.id},data:{status,providerStatus:rawStatus,startCount,remains}});
  if(status==='COMPLETED')await rewardReferralForCompletedOrder(order.id).catch(error=>console.error('[referral-reward]',error instanceof Error?error.message:'failed'));
+ if(status==='COMPLETED'||status==='PARTIAL')await updateHealth(order.serviceId);
  return {status,providerStatus:rawStatus,startCount,remains};
 }
