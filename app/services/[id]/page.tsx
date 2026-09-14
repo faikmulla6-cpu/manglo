@@ -3,12 +3,13 @@ import {notFound} from 'next/navigation';
 import {ArrowLeft,ArrowRight,BadgeCheck,Clock3,CreditCard,Info,ShieldCheck} from 'lucide-react';
 import {db} from '@/lib/db';
 import {trustworthyServiceName} from '@/lib/catalog';
+import {catalogFreshAfter} from '@/lib/catalog-freshness';
 import RememberViewed from './RememberViewed';
 import styles from './ServiceDetail.module.css';
 
 export const dynamic='force-dynamic';
 
-async function getService(id:string){return db.service.findFirst({where:{active:true,OR:[{providerServiceId:id},{id}]}}).catch(()=>null)}
+async function getService(id:string){return db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{providerServiceId:id},{id}]}}).catch(()=>null)}
 export async function generateMetadata({params}:{params:Promise<{id:string}>}){
  const {id}=await params;const service=await getService(id);if(!service)return{title:'Service unavailable',robots:{index:false,follow:true}};
  const name=trustworthyServiceName(service.name);const canonical=`/services/${service.providerServiceId}`;
@@ -17,7 +18,7 @@ export async function generateMetadata({params}:{params:Promise<{id:string}>}){
 
 export default async function ServiceDetail({params}:{params:Promise<{id:string}>}){
  const {id}=await params;const service=await getService(id);if(!service)notFound();
- const name=trustworthyServiceName(service.name);const rate=Number(service.retailRatePaisePerThousand);const related=await db.service.findMany({where:{active:true,platform:service.platform,id:{not:service.id}},orderBy:[{score:'desc'}],take:4}).catch(()=>[]);
+ const name=trustworthyServiceName(service.name);const rate=Number(service.retailRatePaisePerThousand);const related=await db.service.findMany({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},platform:service.platform,id:{not:service.id}},orderBy:[{score:'desc'}],take:4}).catch(()=>[]);
  return <main className={styles.page}><RememberViewed serviceId={service.id}/><div className="container">
   <div className={styles.crumbs}><Link href="/services"><ArrowLeft size={12}/> Services</Link><span>/</span><span>{service.platform}</span><span>/</span><span>#{service.providerServiceId}</span></div>
   <div className={styles.layout}>
