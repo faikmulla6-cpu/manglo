@@ -34,6 +34,12 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
   window.addEventListener('keydown',onKey);
   return()=>window.removeEventListener('keydown',onKey);
  },[]);
+ useEffect(()=>{
+  if(!open)return;
+  const previous=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  return()=>{document.body.style.overflow=previous};
+ },[open]);
 
  const inviteHref=signedIn?'/invite':'/auth?mode=signup&next=%2Finvite';
  const accountHref=signedIn?'/dashboard':'/auth';
@@ -48,8 +54,11 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
    </Link>
 
    <nav className={styles.links} aria-label="Primary navigation">
-    {primaryLinks.map(link=><Link key={link.href} href={link.href} className={isActive(pathname,link.href)?styles.activeLink:undefined} aria-current={isActive(pathname,link.href)?'page':undefined}>{link.label}</Link>)}
-    <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.activeLink:undefined} aria-current={isActive(pathname,'/invite')?'page':undefined}>Invite & earn</Link>
+    {primaryLinks.map(link=>{
+     const active=isActive(pathname,link.href);
+     return <Link key={link.href} href={link.href} className={active?styles.activeLink:undefined} aria-current={pathname===link.href?'page':undefined}>{link.label}</Link>;
+    })}
+    <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.activeLink:undefined} aria-current={pathname==='/invite'?'page':undefined}>Invite & earn</Link>
    </nav>
 
    <div className={styles.actions}>
