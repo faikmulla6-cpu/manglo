@@ -1,14 +1,19 @@
 import {BarChart3,RefreshCw,Search,Share2,TrendingUp} from 'lucide-react';
 import {getGrowthAnalytics} from '@/lib/growth-analytics';
+import {getLifecycleAnalytics} from '@/lib/lifecycle-analytics';
 import styles from './Ops.module.css';
 
 const money=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(paise/100);
 const labels:Record<string,string>={PAGE_VIEW:'Visitors',SERVICE_VIEW:'Service viewers',ORDER_REVIEW:'Order reviewers',WALLET_TOPUP_STARTED:'Top-up starters',WALLET_TOPUP_PAID:'Funded wallets',ORDER_PLACED:'Customers ordered'};
+function retentionLabel(point:{rate:number|null;mature:number}){return point.rate===null?'Not mature':`${point.rate.toFixed(1)}%`}
 
 export default async function GrowthPanel(){
- const growth=await getGrowthAnalytics(30).catch(error=>{console.error('[operations:growth]',error);return null});
+ const [growth,lifecycle]=await Promise.all([
+  getGrowthAnalytics(30).catch(error=>{console.error('[operations:growth]',error);return null}),
+  getLifecycleAnalytics().catch(error=>{console.error('[operations:lifecycle]',error);return null}),
+ ]);
  return <section id="growth" className={styles.panel}>
-  <div className={styles.panelHead}><div><span>GROWTH INTELLIGENCE · 30 DAYS</span><h2>Acquisition and conversion</h2></div><TrendingUp size={16}/></div>
+  <div className={styles.panelHead}><div><span>GROWTH INTELLIGENCE · 30 DAYS</span><h2>Acquisition, retention and customer value</h2></div><TrendingUp size={16}/></div>
   {!growth?<div className={styles.empty}><BarChart3/><b>Growth analytics unavailable</b><p>Ordering and operations are unaffected.</p></div>:<>
    <div className={styles.systemStrip}>{growth.stages.slice(0,4).map(stage=><article key={stage.event}><span>{labels[stage.event]||stage.event}</span><b>{stage.visitors.toLocaleString('en-IN')}</b><small>{stage.event==='PAGE_VIEW'?'Unique visitor/session identities':`${stage.stepRate.toFixed(1)}% from previous stage`}</small></article>)}</div>
    <div className={styles.gridTwo}>
@@ -21,6 +26,21 @@ export default async function GrowthPanel(){
    <div className={styles.panelHead}><div><span>VIRAL GROWTH</span><h2>Referral economics</h2></div><Share2 size={15}/></div>
    <div className={styles.systemStrip}><article><span>REFERRAL VISITORS</span><b>{growth.referrals.visitors}</b><small>{growth.referrals.pageViews} attributed page view{growth.referrals.pageViews===1?'':'s'}</small></article><article><span>REFERRED SIGNUPS</span><b>{growth.referrals.attributedSignups}</b><small>{growth.referrals.activationRate.toFixed(1)}% reached a rewarded qualifying order</small></article><article><span>REWARD COST</span><b>{money(growth.referrals.rewardCost)}</b><small>{growth.referrals.rewarded} rewarded referral{growth.referrals.rewarded===1?'':'s'}</small></article><article><span>NET CONTRIBUTION</span><b>{money(growth.referrals.netContribution)}</b><small>{money(growth.referrals.grossMargin)} realized margin before referral rewards</small></article></div>
    <p className={styles.foot}>Qualified referral orders produced {money(growth.referrals.orderValue)} in order value during this window. Rewards are only issued after completed qualifying orders and are capped by realized margin.</p>
+
+   {lifecycle?<>
+    <div className={styles.panelHead}><div><span>CUSTOMER VALUE</span><h2>LTV and repeat purchasing</h2></div><TrendingUp size={15}/></div>
+    <div className={styles.systemStrip}><article><span>COMPLETED CUSTOMERS</span><b>{lifecycle.customers.toLocaleString('en-IN')}</b><small>{lifecycle.totalOrders.toLocaleString('en-IN')} completed orders · {lifecycle.avgOrdersPerCustomer.toFixed(2)} per customer</small></article><article><span>AVG REVENUE LTV</span><b>{money(lifecycle.avgRevenueLtv)}</b><small>Completed order value per customer to date</small></article><article><span>AVG CONTRIBUTION LTV</span><b>{money(lifecycle.avgContributionLtv)}</b><small>Supplier cost and referral rewards removed</small></article><article><span>REPEAT PURCHASE RATE</span><b>{lifecycle.repeatRate.toFixed(1)}%</b><small>{lifecycle.repeatCustomers} customer{lifecycle.repeatCustomers===1?'':'s'} with 2+ completed orders</small></article></div>
+    <p className={styles.foot}>Completed customers have produced {money(lifecycle.totalRevenue)} in order value and {money(lifecycle.totalContribution)} in observed contribution after {money(lifecycle.totalRewards)} of referral rewards. Median observed contribution LTV is {money(lifecycle.medianContributionLtv)}.</p>
+    <div className={styles.gridTwo}>
+     <div><div className={styles.panelHead}><div><span>RETENTION</span><h2>Maturity-adjusted repeat rate</h2></div></div><div className={styles.tableWrap}><table><thead><tr><th>Window</th><th>Retention</th><th>Mature customers</th><th>Repeated</th></tr></thead><tbody>{lifecycle.retention.map(point=><tr key={point.days}><td><b>{point.days}-day</b></td><td>{retentionLabel(point)}</td><td>{point.mature}</td><td>{point.retained}</td></tr>)}</tbody></table></div><p className={styles.foot}>Only customers whose first completed order is at least the full window old enter each denominator. New customers are not misclassified as churned.</p></div>
+     <div><div className={styles.panelHead}><div><span>COHORTS</span><h2>First-order cohorts</h2></div></div>{lifecycle.cohorts.length?<div className={styles.tableWrap}><table><thead><tr><th>Cohort</th><th>Customers</th><th>Repeat</th><th>7d</th><th>30d</th><th>90d</th><th>Avg contribution</th></tr></thead><tbody>{lifecycle.cohorts.map(cohort=><tr key={cohort.key}><td><b>{cohort.label}</b></td><td>{cohort.customers}</td><td>{cohort.repeatRate.toFixed(1)}%</td><td>{retentionLabel(cohort.retention7)}</td><td>{retentionLabel(cohort.retention30)}</td><td>{retentionLabel(cohort.retention90)}</td><td>{money(cohort.avgContribution)}</td></tr>)}</tbody></table></div>:<div className={styles.empty}><TrendingUp/><b>No completed-order cohorts yet</b></div>}</div>
+    </div>
+    <div className={styles.panelHead}><div><span>MARKETING EFFICIENCY</span><h2>Contribution and CAC ceilings by first touch</h2></div><BarChart3 size={15}/></div>
+    {lifecycle.acquisition.length?<div className={styles.tableWrap}><table><thead><tr><th>Source</th><th>Campaign</th><th>Customers</th><th>Repeat</th><th>Order value</th><th>Contribution</th><th>Break-even CAC</th><th>Safe CAC target</th></tr></thead><tbody>{lifecycle.acquisition.map(row=><tr key={`${row.source}:${row.campaign}`}><td><b>{row.source}</b></td><td>{row.campaign}</td><td>{row.customers}</td><td>{row.repeatRate.toFixed(1)}%</td><td>{money(row.revenue)}</td><td>{money(row.contribution)}</td><td>{money(row.breakEvenCac)}<small>{row.cacBasis}</small></td><td><b>{money(row.safeCac)}</b><small>70% of break-even</small></td></tr>)}</tbody></table></div>:<div className={styles.empty}><BarChart3/><b>No customer-level attribution yet</b><p>First-touch campaign economics appear after attributed visitors complete orders.</p></div>}
+    <p className={styles.foot}>Break-even CAC uses average 30-day contribution once a source has mature 30-day customers; until then it is clearly marked as realized-to-date. The safe CAC target keeps a 30% contribution buffer. Actual ROAS/ROI is intentionally not invented: ad-spend data must be connected or recorded before MANGLO can calculate it.</p>
+    {lifecycle.sampled?<p className={styles.foot}>Lifecycle analytics reached an internal sampling cap; values should be treated as directional until the aggregation path is moved fully into SQL.</p>:null}
+   </>:<div className={styles.empty}><TrendingUp/><b>Lifecycle analytics unavailable</b><p>Acquisition and ordering remain unaffected.</p></div>}
+
    <div className={styles.panelHead}><div><span>ATTRIBUTION</span><h2>Traffic sources that reach orders</h2></div></div>
    {growth.sources.length?<div className={styles.tableWrap}><table><thead><tr><th>Source</th><th>Visitors</th><th>Ordering customers</th><th>Orders</th><th>Order value</th><th>Visitor → customer</th></tr></thead><tbody>{growth.sources.map(source=><tr key={source.source}><td><b>{source.source}</b></td><td>{source.visitors}</td><td>{source.customers}</td><td>{source.orders}</td><td>{money(source.gross)}</td><td>{source.conversionRate.toFixed(1)}%</td></tr>)}</tbody></table></div>:<div className={styles.empty}><TrendingUp/><b>No attribution data yet</b><p>UTM and referrer attribution will appear as new traffic arrives.</p></div>}
    {growth.eventsSampled?<p className={styles.foot}>Growth analytics are capped to the latest 30,000 events in the 30-day window.</p>:null}
