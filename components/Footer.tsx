@@ -4,11 +4,13 @@ import {ArrowRight,Headphones} from 'lucide-react';
 import {company} from '@/lib/company';
 import styles from './Footer.module.css';
 
+const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
+
 export default function Footer(){
  return <footer className={styles.footer}>
   <div className={`container ${styles.grid}`}>
    <div className={styles.lead}>
-    <Link className={styles.brand} href="/"><Image src="/manglo-icon.png" alt="" width={34} height={34}/><span>MANGLO</span></Link>
+    <Link className={styles.brand} href="/"><Image src={BRAND_ICON} alt="" width={34} height={34}/><span>MANGLO</span></Link>
     <h3>Jo chahiye, Manglo.</h3>
     <p>Live social growth services with clear pricing, wallet-based ordering, supplier-linked tracking and support connected to the order that needs it.</p>
    </div>
