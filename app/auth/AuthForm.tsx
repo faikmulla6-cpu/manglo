@@ -8,6 +8,8 @@ import {ArrowRight,CheckCircle2,Eye,EyeOff,Headphones,LayoutDashboard,LockKeyhol
 import {trackAnalytics} from '@/components/AnalyticsProvider';
 import styles from './AuthPage.module.css';
 
+const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
+
 export default function AuthForm({liveServices}:{liveServices:number|null}){
  const params=useSearchParams(),router=useRouter();
  const [signup,setSignup]=useState(params.get('mode')==='signup');
@@ -54,7 +56,7 @@ export default function AuthForm({liveServices}:{liveServices:number|null}){
 
     <div className={styles.productPreview}>
      <div className={styles.previewRail}>
-      <div className={styles.previewBrand}><Image src="/manglo-icon.png" alt="" width={24} height={24}/><b>MANGLO</b></div>
+      <div className={styles.previewBrand}><Image src={BRAND_ICON} alt="" width={24} height={24}/><b>MANGLO</b></div>
       <span className={styles.previewActive}><LayoutDashboard size={13}/> Dashboard</span>
       <span><PackageCheck size={13}/> My orders</span>
       <span><WalletCards size={13}/> Wallet</span>
