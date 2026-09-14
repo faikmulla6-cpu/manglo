@@ -1,22 +1,8 @@
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { provisionUser } from '@/lib/auth';
+import { getPublicAppOrigin } from '@/lib/public-app-origin';
 import { createClient } from '@/lib/supabase/server';
-
-function getPublicAppOrigin(request: NextRequest) {
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
-
-  if (configured) {
-    const url = new URL(configured);
-    if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
-      throw new Error('NEXT_PUBLIC_APP_URL must use HTTPS in production.');
-    }
-    return url.origin;
-  }
-
-  // Local-development fallback only. Production should always define NEXT_PUBLIC_APP_URL.
-  return request.nextUrl.origin;
-}
 
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get('token_hash');
@@ -33,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Authentication redirect is unavailable.' }, { status: 503 });
   }
 
-  // Never build external redirects from Host/X-Forwarded-Host or the internal Hostinger
+  // Never build external redirects from Host/X-Forwarded-Host or Hostinger's internal
   // Node listener (for example 0.0.0.0:3000). Always use MANGLO's configured public origin.
   const redirectTo = new URL(nextPath, `${appOrigin}/`);
 
