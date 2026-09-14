@@ -1,0 +1,21 @@
+/* About-page founder portrait orientation fix. Scoped to the founder image alt text so it cannot affect other site imagery. */
+img[alt="Faik Hameed Mulla, Founder of MANGLO"]{
+  transform:rotate(-90deg) scale(1.27)!important;
+  transform-origin:center center;
+  object-position:center center;
+  will-change:transform;
+}
+img[alt="Faik Hameed Mulla, Founder of MANGLO"]:hover{
+  transform:rotate(-90deg) scale(1.31)!important;
+}
+@media(max-width:760px){
+  img[alt="Faik Hameed Mulla, Founder of MANGLO"]{
+    transform:rotate(-90deg) scale(1.3)!important;
+  }
+  img[alt="Faik Hameed Mulla, Founder of MANGLO"]:hover{
+    transform:rotate(-90deg) scale(1.33)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  img[alt="Faik Hameed Mulla, Founder of MANGLO"]{transition:none!important}
+}
