@@ -46,6 +46,13 @@
   display:none !important;
 }
 
+/* Keep display names polished without mutating stored account data. */
+.manglo-dashboard [class*="accountMeta"] b,
+.manglo-dashboard [class*="topProfile"] b,
+.manglo-dashboard [class*="crystalHeroCopy"] h1{
+  text-transform:capitalize;
+}
+
 /* Prevent tall labels/cards from forcing the rail past the viewport. */
 .manglo-dashboard [class*="accountMeta"]{
   min-width:0;
@@ -60,6 +67,14 @@
 .manglo-dashboard [class*="sidebarTrust"],
 .manglo-dashboard [class*="logout"]{
   flex-shrink:0;
+}
+
+/* Keep compact Quick Action labels readable at the laptop width in the production screenshot. */
+.manglo-dashboard [class*="crystalQuickGrid"] button b{
+  white-space:nowrap;
+}
+.manglo-dashboard [class*="crystalQuickGrid"] button > div{
+  min-width:0;
 }
 
 /* Make interactive cards feel deliberate and avoid layout jump while hovering. */
