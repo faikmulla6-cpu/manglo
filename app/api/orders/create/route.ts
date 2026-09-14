@@ -5,6 +5,7 @@ import {db} from '@/lib/db';
 import {assertSameOrigin,cleanText,randomToken} from '@/lib/security';
 import {providerAdd,ProviderError} from '@/lib/provider';
 import {recordAnalytics} from '@/lib/analytics';
+import {serviceIsFresh} from '@/lib/catalog-freshness';
 
 const orderInput=z.object({
  serviceId:z.string().min(1).max(100),
@@ -32,11 +33,11 @@ async function refundDefinitiveProviderFailure(orderId:string){
 
 async function resolveService(serviceId:string){
  const requested=serviceId.trim();
- const direct=await db.service.findFirst({where:{id:requested,active:true}});
+ const direct=await db.service.findFirst({where:{id:requested,active:true,operatorDisabled:false}});
  if(direct)return direct;
  const providerServiceId=requested.startsWith('catalog-')?requested.slice('catalog-'.length):requested;
  if(!providerServiceId)return null;
- return db.service.findFirst({where:{provider:'primary',providerServiceId,active:true}});
+ return db.service.findFirst({where:{provider:'primary',providerServiceId,active:true,operatorDisabled:false}});
 }
 
 export async function POST(req:NextRequest){
@@ -52,6 +53,7 @@ export async function POST(req:NextRequest){
   const input=orderInput.parse(await req.json());
   const service=await resolveService(input.serviceId);
   if(!service)return json(requestId,{error:'This service is not currently available.'},404);
+  if(!serviceIsFresh(service.lastSyncedAt))return json(requestId,{error:'Live supplier data for this service is being refreshed. Please try again after the catalog sync completes.',code:'CATALOG_STALE'},503);
   if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);
 
   const charge=BigInt(Math.ceil(Number(service.retailRatePaisePerThousand)*input.quantity/1000));
