@@ -6,6 +6,8 @@ import {assertSameOrigin,cleanText,randomToken} from '@/lib/security';
 import {providerAdd,ProviderError} from '@/lib/provider';
 import {recordAnalytics} from '@/lib/analytics';
 import {serviceIsFresh} from '@/lib/catalog-freshness';
+import {validateServiceDestination} from '@/lib/service-destination';
+import {refreshServiceHealth} from '@/lib/service-health';
 
 const orderInput=z.object({
  serviceId:z.string().min(1).max(100),
@@ -55,6 +57,8 @@ export async function POST(req:NextRequest){
   if(!service)return json(requestId,{error:'This service is not currently available.'},404);
   if(!serviceIsFresh(service.lastSyncedAt))return json(requestId,{error:'Live supplier data for this service is being refreshed. Please try again after the catalog sync completes.',code:'CATALOG_STALE'},503);
   if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);
+  const destination=validateServiceDestination(service,input.link);
+  if(!destination.ok)return json(requestId,{error:destination.error,code:'DESTINATION_MISMATCH'},400);
 
   const charge=BigInt(Math.ceil(Number(service.retailRatePaisePerThousand)*input.quantity/1000));
   if(input.expectedChargePaise!==undefined&&BigInt(input.expectedChargePaise)!==charge){
@@ -80,7 +84,7 @@ export async function POST(req:NextRequest){
   const recordRecovery=()=>recoveredDraft?recordAnalytics({event:'ORDER_RECOVERED',userId:user.id,path:'/order',uniqueKey:`order:${orderId}:recovered`,metadata:{publicId,serviceId:service.providerServiceId,platform:service.platform,quantity:input.quantity,chargedPaise:Number(charge)}}):Promise.resolve(false);
 
   try{
-   const remote=await providerAdd(service.providerServiceId,input.link,input.quantity);
+   const remote=await providerAdd(service.providerServiceId,destination.providerLink,input.quantity);
    await db.order.update({where:{id:orderId},data:{providerOrderId:remote.order,status:'PROCESSING',providerStatus:'Pending'}});
   }catch(error){
    const providerError=error instanceof ProviderError?error:new ProviderError('Provider is temporarily unavailable',true);
@@ -91,6 +95,7 @@ export async function POST(req:NextRequest){
     return json(requestId,{ok:true,publicId,status:'QUEUED',message:'Supplier confirmation was interrupted. Your order is safely held for verification and will not be submitted twice.'},202);
    }
    await refundDefinitiveProviderFailure(orderId);
+   await refreshServiceHealth(service.id).catch(healthError=>console.error('[service-health]',healthError instanceof Error?healthError.message:'failed'));
    return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);
   }
 
