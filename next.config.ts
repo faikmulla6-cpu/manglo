@@ -3,7 +3,9 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   outputFileTracingRoot: process.cwd(),
-  images: { formats: ['image/webp'] },
+  // MANGLO currently uses local /public brand artwork only. Serving those files
+  // directly avoids Hostinger image-optimizer/cache inconsistencies after asset replacements.
+  images: { unoptimized: true },
   async headers() {
     return [{
       source: '/(.*)',
