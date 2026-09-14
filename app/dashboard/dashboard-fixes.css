@@ -95,13 +95,13 @@
     height:30px;
     flex-basis:30px;
   }
-  .manglo-dashboard [class*="account"]{
+  .manglo-dashboard > aside > button:first-of-type{
     margin-top:3px !important;
     margin-bottom:7px !important;
     padding-top:8px !important;
     padding-bottom:8px !important;
   }
-  .manglo-dashboard [class*="nav"]{
+  .manglo-dashboard > aside > nav{
     gap:0 !important;
   }
   .manglo-dashboard [class*="navButton"]{
@@ -135,7 +135,7 @@
 }
 
 @media (min-width:761px) and (max-height:730px){
-  .manglo-dashboard [class*="brand"] span,
+  .manglo-dashboard > aside > a:first-child span,
   .manglo-dashboard [class*="sidebarSignature"],
   .manglo-dashboard [class*="sidebarTrust"] p{
     display:none !important;
