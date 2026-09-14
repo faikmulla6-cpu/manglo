@@ -75,6 +75,7 @@ model Payment {
   user User @relation(fields: [userId], references: [id])
   ledger WalletLedger[]
   @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Service {
@@ -101,6 +102,7 @@ model Service {
   favorites Favorite[]
   @@unique([provider, providerServiceId])
   @@index([platform, category, active])
+  @@index([active, lastSyncedAt])
 }
 
 model Favorite {
@@ -112,6 +114,7 @@ model Favorite {
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   @@unique([userId, serviceId])
   @@index([userId, createdAt])
+  @@index([serviceId])
 }
 
 model SupportTicket {
@@ -127,6 +130,7 @@ model SupportTicket {
   updatedAt DateTime @updatedAt
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Order {
@@ -150,6 +154,9 @@ model Order {
   ledger WalletLedger[]
   referralQualification Referral? @relation("ReferralQualification")
   @@index([userId, createdAt])
+  @@index([serviceId])
+  @@index([status, updatedAt])
+  @@index([status, createdAt])
 }
 
 model OrderDraft {
@@ -200,6 +207,8 @@ model WalletLedger {
   payment Payment? @relation(fields: [paymentId], references: [id])
   order Order? @relation(fields: [orderId], references: [id])
   @@index([userId, createdAt])
+  @@index([orderId])
+  @@index([paymentId])
 }
 
 model AiConversation {
