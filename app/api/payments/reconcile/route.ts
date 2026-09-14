@@ -1,12 +1,13 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {db} from '@/lib/db';
 import {reconcileCashfreePayment} from '@/lib/payments';
+import {cronAuthorized} from '@/lib/cron';
 
 export const dynamic='force-dynamic';
 
 export async function POST(req:NextRequest){
- if(req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`){
-  return NextResponse.json({error:'Unauthorized'},{status:401});
+ if(!cronAuthorized(req)){
+  return NextResponse.json({error:'Unauthorized'},{status:401,headers:{'Cache-Control':'no-store'}});
  }
 
  const cutoffMinutes=Math.max(2,Math.min(120,Number(process.env.PAYMENT_RECONCILE_MIN_AGE_MINUTES||5)));
