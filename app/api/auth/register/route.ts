@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { provisionUser } from '@/lib/auth';
 import { claimReferralForUser } from '@/lib/referrals';
 import { assertPasswordNotCompromised, CompromisedPasswordError, PasswordSecurityUnavailableError } from '@/lib/password-security';
+import { getPublicAppOrigin } from '@/lib/public-app-origin';
 import { assertSameOrigin, cleanText } from '@/lib/security';
 import { createClient } from '@/lib/supabase/server';
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     await assertPasswordNotCompromised(input.password);
     const email = input.email.trim().toLowerCase();
     const name = cleanText(input.name, 80);
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
+    const appUrl = getPublicAppOrigin(req);
     const referralCode=req.cookies.get('manglo_referral')?.value;
 
     const existingProfile = await db.user.findFirst({
