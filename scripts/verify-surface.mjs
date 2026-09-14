@@ -32,7 +32,7 @@ function checkPng(rel){
 }
 function escapeRegex(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 function routeRegex(rel){
-  let route=rel.replace(/^app\//,'').replace(/\/(?:page|route)\.tsx$/,'').replace(/^(?:page|route)\.tsx$/,'');
+  let route=rel.replace(/^app\//,'').replace(/\/(?:page\.tsx|route\.ts)$/,'').replace(/^(?:page\.tsx|route\.ts)$/,'');
   const segments=route.split('/').filter(segment=>segment&&!/^\(.+\)$/.test(segment)&&!segment.startsWith('@'));
   const parts=segments.map(segment=>{
     if(/^\[\[\.\.\..+\]\]$/.test(segment))return '.*';
@@ -65,7 +65,7 @@ for(const rel of [...requiredPages,...requiredApis])if(!exists(rel))fail.push(`M
 const files=sourceRoots.flatMap(walk).filter(rel=>textExt.has(path.extname(rel)));
 const appFiles=walk('app');
 const routeMatchers=appFiles
-  .filter(rel=>/(?:^|\/)(?:page|route)\.tsx$/.test(rel))
+  .filter(rel=>/(?:^|\/)(?:page\.tsx|route\.ts)$/.test(rel))
   .map(rel=>({rel,re:routeRegex(rel)}));
 const specialRoutes=new Set(['/robots.txt','/sitemap.xml']);
 const assetPattern=/\/(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+\.(?:png|jpe?g|webp|svg)(?:\?[^\s'"`)]+)?/gi;
