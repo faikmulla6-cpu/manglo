@@ -1,0 +1,32 @@
+create index if not exists "Favorite_serviceId_idx" on public."Favorite"("serviceId");
+create index if not exists "Order_serviceId_idx" on public."Order"("serviceId");
+create index if not exists "WalletLedger_orderId_idx" on public."WalletLedger"("orderId");
+create index if not exists "WalletLedger_paymentId_idx" on public."WalletLedger"("paymentId");
+create index if not exists "Payment_status_createdAt_idx" on public."Payment"(status,"createdAt");
+create index if not exists "Order_status_updatedAt_idx" on public."Order"(status,"updatedAt");
+create index if not exists "Order_status_createdAt_idx" on public."Order"(status,"createdAt");
+create index if not exists "SupportTicket_status_createdAt_idx" on public."SupportTicket"(status,"createdAt");
+create index if not exists "Service_active_lastSyncedAt_idx" on public."Service"(active,"lastSyncedAt");
+create unique index if not exists "Order_providerOrderId_unique_not_null" on public."Order"("providerOrderId") where "providerOrderId" is not null;
+
+alter table public."User" add constraint "User_walletPaise_nonnegative_chk" check ("walletPaise" >= 0) not valid;
+alter table public."Payment" add constraint "Payment_amountPaise_positive_chk" check ("amountPaise" > 0) not valid;
+alter table public."Service" add constraint "Service_rates_valid_chk" check ("providerRatePaisePerThousand" > 0 and "retailRatePaisePerThousand" >= "providerRatePaisePerThousand") not valid;
+alter table public."Service" add constraint "Service_limits_valid_chk" check (min > 0 and max >= min) not valid;
+alter table public."Order" add constraint "Order_amounts_valid_chk" check (quantity > 0 and "chargedPaise" >= 0 and ("providerCostPaise" is null or ("providerCostPaise" >= 0 and "providerCostPaise" <= "chargedPaise"))) not valid;
+alter table public."OrderDraft" add constraint "OrderDraft_quantity_positive_chk" check (quantity > 0) not valid;
+alter table public."Referral" add constraint "Referral_reward_nonnegative_chk" check ("referrerRewardPaise" >= 0) not valid;
+alter table public."MarketingSpendDaily" add constraint "MarketingSpendDaily_metrics_nonnegative_chk" check ("spendPaise" >= 0 and impressions >= 0 and clicks >= 0) not valid;
+alter table public."MetaAdsWindsorDaily" add constraint "MetaAdsWindsorDaily_metrics_nonnegative_chk" check (spend >= 0 and impressions >= 0 and clicks >= 0) not valid;
+alter table public."WalletLedger" add constraint "WalletLedger_sign_chk" check ((type = 'ORDER_DEBIT' and "amountPaise" < 0) or (type <> 'ORDER_DEBIT' and "amountPaise" >= 0)) not valid;
+
+alter table public."User" validate constraint "User_walletPaise_nonnegative_chk";
+alter table public."Payment" validate constraint "Payment_amountPaise_positive_chk";
+alter table public."Service" validate constraint "Service_rates_valid_chk";
+alter table public."Service" validate constraint "Service_limits_valid_chk";
+alter table public."Order" validate constraint "Order_amounts_valid_chk";
+alter table public."OrderDraft" validate constraint "OrderDraft_quantity_positive_chk";
+alter table public."Referral" validate constraint "Referral_reward_nonnegative_chk";
+alter table public."MarketingSpendDaily" validate constraint "MarketingSpendDaily_metrics_nonnegative_chk";
+alter table public."MetaAdsWindsorDaily" validate constraint "MetaAdsWindsorDaily_metrics_nonnegative_chk";
+alter table public."WalletLedger" validate constraint "WalletLedger_sign_chk";
