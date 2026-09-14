@@ -83,7 +83,7 @@ async function searchServices(args:any){
  if(args.refill===true)and.push({refill:true});
  if(Number.isFinite(args.max_rate_paise_per_thousand))and.push({retailRatePaisePerThousand:{lte:BigInt(Math.max(0,Math.trunc(args.max_rate_paise_per_thousand)))}});
  for(const token of tokens)and.push({OR:[{name:{contains:token,mode:'insensitive'}},{category:{contains:token,mode:'insensitive'}},{description:{contains:token,mode:'insensitive'}},{providerServiceId:{contains:token}}]});
- const rows=await db.service.findMany({where:{active:true,...(and.length?{AND:and}:{})},take:80});
+ const rows=await db.service.findMany({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},...(and.length?{AND:and}:{})},take:80});
  let sorted=rows;
  if(args.sort==='price')sorted=[...rows].sort((a,b)=>Number(a.retailRatePaisePerThousand-b.retailRatePaisePerThousand));
  else if(args.sort==='fastest')sorted=[...rows].sort((a,b)=>averageMinutes(a.averageTime)-averageMinutes(b.averageTime));
@@ -92,16 +92,16 @@ async function searchServices(args:any){
 }
 async function getService(serviceId:string){
  const id=serviceId.trim().replace(/^#/, '');
- const service=await db.service.findFirst({where:{active:true,OR:[{id},{providerServiceId:id}]}});
+ const service=await db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{id},{providerServiceId:id}]}});
  return service?serviceView(service):null;
 }
 async function prepareOrder(userId:string,args:any):Promise<OrderProposal|{error:string}> {
  const serviceId=String(args.service_id||'').trim().replace(/^#/, '');
  const quantity=Number(args.quantity);const link=String(args.link||'').trim();
- const service=await db.service.findFirst({where:{active:true,OR:[{id:serviceId},{providerServiceId:serviceId}]}});
+ const service=await db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{id:serviceId},{providerServiceId:serviceId}]}});
  if(!service)return {error:'Service is not currently available.'};
  if(!Number.isInteger(quantity)||quantity<service.min||quantity>service.max)return {error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`};
- try{const url=new URL(link);if(!['http:','https:'].includes(url.protocol))throw new Error();}catch{return {error:'A valid public http(s) destination link is required.'}}
+ const destination=validateServiceDestination(service,link);if(!destination.ok)return {error:destination.error};
  const user=await db.user.findUnique({where:{id:userId},select:{walletPaise:true}});if(!user)return {error:'Account was not found.'};
  const chargePaise=Math.ceil(Number(service.retailRatePaisePerThousand)*quantity/1000);const walletBalancePaise=Number(user.walletPaise);
  return{serviceDbId:service.id,serviceId:service.providerServiceId,serviceName:trustworthyServiceName(service.name),platform:service.platform,link,quantity,ratePaisePerThousand:Number(service.retailRatePaisePerThousand),chargePaise,walletBalancePaise,balanceAfterPaise:walletBalancePaise-chargePaise,sufficient:walletBalancePaise>=chargePaise,min:service.min,max:service.max,averageTime:service.averageTime,refill:service.refill,quotedAt:new Date().toISOString()};
