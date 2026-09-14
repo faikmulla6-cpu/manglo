@@ -27,7 +27,7 @@
 
 /* Hero: public/manglo-logo.png is the approved dashboard artwork.
    Do not use manglo-hero-art.png. */
-.manglo-dashboard [class*="crystalHero"]{
+.manglo-dashboard [class*="crystalOverview"] > section:first-child{
   min-height:188px;
 }
 .manglo-dashboard [class*="crystalHeroCopy"]{
@@ -67,6 +67,7 @@
   gap:10px !important;
   width:auto !important;
   height:auto !important;
+  min-height:0 !important;
 }
 .manglo-dashboard [class*="heroPrimary"],
 .manglo-dashboard [class*="heroSecondary"]{
@@ -195,7 +196,7 @@
 
 /* Mobile follows the existing mobile dashboard layout. */
 @media (max-width:760px){
-  .manglo-dashboard [class*="crystalHero"]{
+  .manglo-dashboard [class*="crystalOverview"] > section:first-child{
     min-height:166px;
   }
   .manglo-dashboard [class*="crystalHeroCopy"]{
