@@ -6,6 +6,7 @@ import {assertSameOrigin} from '@/lib/security';
 import {OrderProposal,runMangloAi} from '@/lib/manglo-ai';
 
 const inputSchema=z.object({conversationId:z.string().min(1).max(80).optional(),message:z.string().trim().min(1).max(2000)});
+const MAX_USER_MESSAGES_PER_DAY=200;
 
 function titleFrom(text:string){const clean=text.replace(/\s+/g,' ').trim();return clean.length>58?`${clean.slice(0,57)}…`:clean;}
 function proposalFrom(metadata:unknown):OrderProposal|null{
@@ -22,9 +23,14 @@ export async function POST(req:NextRequest){
   if(!process.env.GROQ_API_KEY)return NextResponse.json({error:'MANGLO AI is not configured yet.'},{status:503});
   const input=inputSchema.parse(await req.json());
 
-  const since=new Date(Date.now()-60_000);
-  const recent=await db.aiMessage.count({where:{createdAt:{gte:since},conversation:{userId:user.id}}});
+  const minuteAgo=new Date(Date.now()-60_000);
+  const dayAgo=new Date(Date.now()-24*60*60_000);
+  const [recent,daily]=await Promise.all([
+   db.aiMessage.count({where:{createdAt:{gte:minuteAgo},conversation:{userId:user.id}}}),
+   db.aiMessage.count({where:{role:'user',createdAt:{gte:dayAgo},conversation:{userId:user.id}}}),
+  ]);
   if(recent>=24)return NextResponse.json({error:'You’re moving fast. Please wait a moment before sending another AI message.'},{status:429});
+  if(daily>=MAX_USER_MESSAGES_PER_DAY)return NextResponse.json({error:'You’ve reached today’s MANGLO AI usage limit. Ordering, wallet and support remain available.'},{status:429});
 
   let conversation=input.conversationId?await db.aiConversation.findFirst({where:{id:input.conversationId,userId:user.id}}):null;
   if(input.conversationId&&!conversation)return NextResponse.json({error:'Conversation not found.'},{status:404});
@@ -40,7 +46,7 @@ export async function POST(req:NextRequest){
   const assistant=await db.aiMessage.create({data:{conversationId:conversation.id,role:'assistant',content:ai.content,metadata:ai.artifacts as any}});
   await db.aiConversation.update({where:{id:conversation.id},data:{updatedAt:new Date()}});
 
-  return NextResponse.json({ok:true,conversationId:conversation.id,title:conversation.title,message:{id:assistant.id,role:'assistant',content:assistant.content,metadata:assistant.metadata},action:ai.artifacts.executeProposal?{type:'place_order',proposal:ai.artifacts.executeProposal}:null});
+  return NextResponse.json({ok:true,conversationId:conversation.id,title:conversation.title,message:{id:assistant.id,role:'assistant',content:assistant.content,metadata:assistant.metadata},action:ai.artifacts.executeProposal?{type:'place_order',proposal:ai.artifacts.executeProposal}:null},{headers:{'Cache-Control':'no-store'}});
  }catch(error){
   if(error instanceof z.ZodError)return NextResponse.json({error:'Please send a valid message.'},{status:400});
   const text=error instanceof Error?error.message:'unknown';
