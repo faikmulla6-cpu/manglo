@@ -1,13 +1,106 @@
 'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
 import {useSearchParams,useRouter} from 'next/navigation';
 import {useState} from 'react';
+import {ArrowRight,CheckCircle2,Eye,EyeOff,Headphones,LayoutDashboard,LockKeyhole,Mail,PackageCheck,Search,ShieldCheck,WalletCards} from 'lucide-react';
 import {trackAnalytics} from '@/components/AnalyticsProvider';
+import styles from './AuthPage.module.css';
 
-export default function AuthForm(){
+export default function AuthForm({liveServices}:{liveServices:number|null}){
  const params=useSearchParams(),router=useRouter();
- const [signup,setSignup]=useState(params.get('mode')==='signup'),[message,setMessage]=useState(''),[messageKind,setMessageKind]=useState<'error'|'success'>('error'),[busy,setBusy]=useState(false);
+ const [signup,setSignup]=useState(params.get('mode')==='signup');
+ const [message,setMessage]=useState('');
+ const [messageKind,setMessageKind]=useState<'error'|'success'>('error');
+ const [busy,setBusy]=useState(false);
+ const [showPassword,setShowPassword]=useState(false);
  const requested=params.get('next')||'/dashboard';
  const destination=requested.startsWith('/')&&!requested.startsWith('//')?requested:'/dashboard';
- async function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();setBusy(true);setMessage('');setMessageKind('error');try{const body=Object.fromEntries(new FormData(event.currentTarget).entries());const response=await fetch(`/api/auth/${signup?'register':'login'}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'Something went wrong.');if(result.confirmationRequired){trackAnalytics('SIGNUP_SUBMITTED');setMessageKind('success');setMessage('Account created. Check your email to verify your address, then log in.');setBusy(false);return;}trackAnalytics('AUTH_SUCCESS',{mode:signup?'signup':'login'});router.replace(destination);router.refresh()}catch(error){setMessageKind('error');setMessage((error as Error).message);setBusy(false)}}
- return <main className="auth-wrap"><div className="auth-card"><span className="kicker">MANGLO ACCOUNT</span><h1>{signup?'Create your account':'Welcome back'}</h1><p className="auth-intro">{signup?'One account for live services, your wallet, orders, support and optional MANGLO AI assistance.':'Continue to your marketplace account, wallet and live order activity.'}</p>{message?<div className={`notice ${messageKind==='error'?'danger':''}`}>{message}</div>:null}<form onSubmit={submit}>{signup?<><div className="field"><label htmlFor="auth-name">Full name</label><input id="auth-name" name="name" minLength={2} maxLength={80} autoComplete="name" required/></div><div className="field"><label htmlFor="auth-phone">Mobile number</label><input id="auth-phone" name="phone" inputMode="tel" pattern="[0-9]{10}" placeholder="10-digit Indian mobile" autoComplete="tel" required/></div></>:null}<div className="field"><label htmlFor="auth-email">Email</label><input id="auth-email" name="email" type="email" autoComplete="email" required/></div><div className="field"><label htmlFor="auth-password">Password</label><input id="auth-password" name="password" type="password" minLength={signup?12:1} maxLength={128} autoComplete={signup?'new-password':'current-password'} required/></div>{signup?<small className="auth-footnote">Use at least 12 characters. New passwords are screened against known breach data without sending the password itself.</small>:null}{!signup?<a href="/auth/forgot" className="auth-footnote">Forgot password?</a>:null}<button className="btn btn-primary" type="submit" disabled={busy}>{busy?'Please wait…':signup?'Create account':'Continue securely'}</button></form><button type="button" onClick={()=>{setSignup(!signup);setMessage('');setMessageKind('error')}} className="btn btn-ghost">{signup?'Already have an account? Log in':'New to MANGLO? Create account'}</button><small className="auth-footnote">Authentication is handled by Supabase. Payment credentials are entered through Cashfree hosted checkout and are not stored by MANGLO.</small></div></main>
+
+ async function submit(event:React.FormEvent<HTMLFormElement>){
+  event.preventDefault();setBusy(true);setMessage('');setMessageKind('error');
+  try{
+   const body=Object.fromEntries(new FormData(event.currentTarget).entries());
+   const response=await fetch(`/api/auth/${signup?'register':'login'}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+   const result=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(result.error||'Something went wrong.');
+   if(result.confirmationRequired){
+    trackAnalytics('SIGNUP_SUBMITTED');
+    setMessageKind('success');setMessage('Account created. Check your email to verify your address, then log in.');setBusy(false);return;
+   }
+   trackAnalytics('AUTH_SUCCESS',{mode:signup?'signup':'login'});
+   router.replace(destination);router.refresh();
+  }catch(error){setMessageKind('error');setMessage((error as Error).message);setBusy(false)}
+ }
+
+ function switchMode(next:boolean){setSignup(next);setMessage('');setMessageKind('error');setShowPassword(false)}
+ const liveLabel=liveServices===null?'Live catalog':`${liveServices.toLocaleString('en-IN')} live services`;
+
+ return <main className={styles.page}>
+  <div className={styles.glowOne}/><div className={styles.glowTwo}/>
+  <section className={`container ${styles.layout}`}>
+   <div className={styles.story}>
+    <span className={styles.eyebrow}>MANGLO ACCOUNT</span>
+    <h1>{signup?'Start your':'Welcome back to'} <span>{signup?'smarter growth.':'smarter growth.'}</span></h1>
+    <p>{signup?'Create one secure account for live services, wallet funding, order tracking and support.':'Manage your orders, wallet, and service tracking all in one place — clear, secure and easy to use.'}</p>
+
+    <div className={styles.benefits}>
+     <article><span><ShieldCheck/></span><div><b>Secure sign-in</b><small>Supabase-backed authentication and protected sessions.</small></div></article>
+     <article><span><PackageCheck/></span><div><b>Real order tracking</b><small>Follow supplier-linked status from your account.</small></div></article>
+     <article><span><WalletCards/></span><div><b>Wallet-based checkout</b><small>Fund securely through Cashfree hosted checkout.</small></div></article>
+     <article><span><Headphones/></span><div><b>Human support</b><small>Open support with the right order context attached.</small></div></article>
+    </div>
+
+    <div className={styles.productPreview}>
+     <div className={styles.previewRail}>
+      <div className={styles.previewBrand}><Image src="/manglo-icon.png" alt="" width={24} height={24}/><b>MANGLO</b></div>
+      <span className={styles.previewActive}><LayoutDashboard size={13}/> Dashboard</span>
+      <span><PackageCheck size={13}/> My orders</span>
+      <span><WalletCards size={13}/> Wallet</span>
+      <span><Headphones size={13}/> Support</span>
+     </div>
+     <div className={styles.previewMain}>
+      <div className={styles.previewTop}><div><small>YOUR MARKETPLACE</small><strong>Everything in one account.</strong></div><span><CheckCircle2 size={13}/> Live</span></div>
+      <Link href="/services" className={styles.previewSearch}><Search size={14}/> Search live services…</Link>
+      <div className={styles.previewCards}>
+       <Link href="/services?platform=Instagram"><b>Instagram</b><small>Browse services</small></Link>
+       <Link href="/services?platform=YouTube"><b>YouTube</b><small>Browse services</small></Link>
+       <Link href="/services?platform=TikTok"><b>TikTok</b><small>Browse services</small></Link>
+       <Link href="/services?platform=Telegram"><b>Telegram</b><small>Browse services</small></Link>
+      </div>
+      <div className={styles.previewStats}><div><small>LIVE CATALOG</small><strong>{liveServices===null?'Available now':liveServices.toLocaleString('en-IN')}</strong></div><div><small>CHECKOUT</small><strong>Cashfree hosted</strong></div></div>
+     </div>
+     <div className={styles.successChip}><CheckCircle2 size={18}/><div><b>Built for clarity</b><small>Review before you order.</small></div></div>
+    </div>
+   </div>
+
+   <div className={styles.authSide}>
+    <div className={styles.note}>Same marketplace.<br/>Smarter account.</div>
+    <div className={styles.liveBadge}><span>↗</span><div><b>{liveLabel}</b><small>Fresh catalog available now</small></div></div>
+
+    <section className={styles.card}>
+     <div className={styles.cardTop}><span className={styles.mark}>M</span><button type="button" onClick={()=>switchMode(!signup)}>{signup?'Already a member?':'New here?'} <b>{signup?'Log in':'Create account'}</b></button></div>
+     <h2>{signup?'Create your account':'Welcome back'}</h2>
+     <p>{signup?'Set up your MANGLO account and verify your email to continue.':'Continue to your marketplace account, wallet and live order activity.'}</p>
+     {message?<div className={`${styles.notice} ${messageKind==='success'?styles.success:styles.error}`}>{message}</div>:null}
+
+     <form onSubmit={submit} className={styles.form}>
+      {signup?<div className={styles.twoCol}>
+       <label><span>Full name</span><div className={styles.inputWrap}><input name="name" minLength={2} maxLength={80} autoComplete="name" placeholder="Your name" required/></div></label>
+       <label><span>Mobile number</span><div className={styles.inputWrap}><input name="phone" inputMode="tel" pattern="[0-9]{10}" placeholder="10-digit mobile" autoComplete="tel" required/></div></label>
+      </div>:null}
+      <label><span>Email</span><div className={styles.inputWrap}><Mail size={18}/><input name="email" type="email" autoComplete="email" placeholder="you@example.com" required/></div></label>
+      <label><span>Password</span><div className={styles.inputWrap}><LockKeyhole size={17}/><input name="password" type={showPassword?'text':'password'} minLength={signup?12:1} maxLength={128} autoComplete={signup?'new-password':'current-password'} placeholder={signup?'Create a secure password':'Enter your password'} required/><button type="button" className={styles.eye} onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword?'Hide password':'Show password'}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
+      {signup?<small className={styles.passwordHelp}>Use at least 12 characters. New passwords are screened against known breach data without sending the password itself.</small>:<Link href="/auth/forgot" className={styles.forgot}>Forgot password?</Link>}
+      <button className={styles.primary} type="submit" disabled={busy}>{busy?'Please wait…':signup?'Create account':'Continue securely'} <ArrowRight size={17}/></button>
+     </form>
+
+     <div className={styles.divider}><span>Or</span></div>
+     <button type="button" className={styles.secondary} onClick={()=>switchMode(!signup)}>{signup?'Back to log in':'Create your MANGLO account'}</button>
+     <div className={styles.security}><LockKeyhole size={17}/><p>Authentication is handled by Supabase. Payment credentials are entered through Cashfree hosted checkout and are not stored by MANGLO.</p></div>
+    </section>
+   </div>
+  </section>
+ </main>;
 }
