@@ -27,5 +27,9 @@
     "@types/react-dom": "^19.0.2",
     "prisma": "^6.15.0",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.1",
+    "postcss": "8.5.23"
   }
 }
