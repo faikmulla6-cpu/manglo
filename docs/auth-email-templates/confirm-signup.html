@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verify your MANGLO email</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f7f9;font-family:Inter,Arial,sans-serif;color:#15171b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f6f7f9;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid #e6e8eb;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:34px 36px 10px;">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#111318;">MANGLO</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 36px 36px;">
+              <div style="font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#f26419;margin-bottom:14px;">Verify your email</div>
+              <h1 style="margin:0 0 14px;font-size:30px;line-height:1.15;letter-spacing:-1px;color:#111318;">Confirm your MANGLO account</h1>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#68717d;">Use the button below to verify this email address and finish creating your account.</p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="border-radius:10px;background:#ff6a00;">
+                    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=/dashboard" style="display:inline-block;padding:13px 20px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;">Verify email address</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:26px 0 0;font-size:12px;line-height:1.6;color:#8a929c;">If you did not create a MANGLO account, you can ignore this email. Do not forward this verification message.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 36px;border-top:1px solid #eef0f2;font-size:11px;line-height:1.5;color:#9aa1a9;">This is an authentication email from MANGLO. It contains one account-verification action and no marketing content.</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
