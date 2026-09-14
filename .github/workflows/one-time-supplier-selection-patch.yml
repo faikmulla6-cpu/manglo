@@ -1,0 +1,37 @@
+name: One-time supplier selection patch
+
+on:
+  push:
+    branches: [manglo-dev]
+    paths:
+      - '.github/workflows/one-time-supplier-selection-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: manglo-dev
+      - name: Patch order route safely
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('app/api/orders/create/route.ts')
+          text=path.read_text()
+          text=text.replace("import {serviceIsFresh} from '@/lib/catalog-freshness';", "import {serviceIsFresh} from '@/lib/catalog-freshness';\nimport {validateServiceDestination} from '@/lib/service-destination';\nimport {refreshServiceHealth} from '@/lib/service-health';")
+          text=text.replace("  if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);", "  if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);\n  const destination=validateServiceDestination(service,input.link);\n  if(!destination.ok)return json(requestId,{error:destination.error,code:'DESTINATION_MISMATCH'},400);")
+          text=text.replace("const remote=await providerAdd(service.providerServiceId,input.link,input.quantity);", "const remote=await providerAdd(service.providerServiceId,destination.providerLink,input.quantity);")
+          text=text.replace("   await refundDefinitiveProviderFailure(orderId);\n   return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);", "   await refundDefinitiveProviderFailure(orderId);\n   await refreshServiceHealth(service.id).catch(healthError=>console.error('[service-health]',healthError instanceof Error?healthError.message:'failed'));\n   return json(requestId,{error:'The supplier rejected this order. Your wallet was restored automatically.'},502);")
+          path.write_text(text)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/api/orders/create/route.ts
+          git commit -m 'Harden supplier selection and destination validation'
+          git push origin HEAD:manglo-dev
