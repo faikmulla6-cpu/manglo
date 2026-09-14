@@ -1,52 +1,218 @@
 import Link from 'next/link';
-import {ArrowRight,BadgeCheck,Bot,Clock3,CreditCard,LockKeyhole,Search,ShieldCheck,Wallet} from 'lucide-react';
+import {
+  ArrowRight,
+  BadgeCheck,
+  BarChart3,
+  CreditCard,
+  Facebook,
+  FileText,
+  Gift,
+  Headphones,
+  Instagram,
+  LockKeyhole,
+  MoreHorizontal,
+  Music2,
+  PlayCircle,
+  Search,
+  Send,
+  ShieldCheck,
+  Wallet,
+  X,
+  Youtube,
+} from 'lucide-react';
+import {db} from '@/lib/db';
+import {catalogFreshAfter} from '@/lib/catalog-freshness';
+import {presentService} from '@/lib/catalog';
 import styles from './CommerceHome.module.css';
 
-export const metadata={alternates:{canonical:'/'}};
+export const metadata={
+  alternates:{canonical:'/'},
+  title:'MANGLO — Growth services, made simple',
+  description:'Search the live MANGLO marketplace, compare current service rates and limits, fund your wallet securely, place orders and track them from one account.',
+};
 
-const platforms=['Instagram','YouTube','TikTok','Telegram','Facebook','X'];
-const quickStarts=[
- {label:'LOWEST RATE',title:'Instagram views',copy:'Compare current rates, IDs and limits before ordering.',href:'/services?platform=Instagram&q=views&filter=Lowest%20rate'},
- {label:'REFILL',title:'Instagram followers',copy:'Find listings where refill support is currently shown.',href:'/services?platform=Instagram&q=followers&filter=Refill'},
- {label:'DISCOVERY',title:'YouTube subscribers',copy:'Compare subscriber listings by rate, minimum and timing.',href:'/services?platform=YouTube&q=subscribers'},
- {label:'EXACT MATCH',title:'Search by service ID',copy:'Already know the service ID? Jump straight to it.',href:'/services'},
-];
+const platformMeta=[
+  {name:'Instagram',icon:Instagram,copy:'Followers, views & more',tone:'instagram'},
+  {name:'YouTube',icon:Youtube,copy:'Views, subscribers & more',tone:'youtube'},
+  {name:'TikTok',icon:Music2,copy:'Followers, likes & more',tone:'tiktok'},
+  {name:'Telegram',icon:Send,copy:'Members, views & more',tone:'telegram'},
+  {name:'Facebook',icon:Facebook,copy:'Followers, page growth & more',tone:'facebook'},
+  {name:'X',icon:X,copy:'Followers, engagement & more',tone:'x'},
+] as const;
 
-export default function Home(){
- return <main className={styles.home}>
-  <section className={styles.hero}><div className={`container ${styles.heroGrid}`}>
-   <div className={styles.heroCopy}>
-    <span className={styles.eyebrow}>JO CHAHIYE, MANGLO.</span>
-    <h1>Growth services,<br/><span>made easy to choose.</span></h1>
-    <p>Search the live catalog, compare exact service IDs, rates and limits, pay from your MANGLO Wallet, and track everything from one account.</p>
-    <form className={styles.searchBox} action="/services" method="get"><Search size={18}/><input name="q" aria-label="Search services" placeholder="Search Instagram views, YouTube subscribers, service ID…"/><button type="submit">Search</button></form>
-    <div className={styles.quickLinks}><Link href="/services?platform=Instagram">Instagram</Link><Link href="/services?platform=YouTube">YouTube</Link><Link href="/services?platform=TikTok">TikTok</Link><Link href="/services?filter=Lowest%20rate">Lowest rates</Link><Link href="/services?filter=Refill">Refill listings</Link></div>
-    <div className={styles.assurance}><span><ShieldCheck size={14}/>Server-validated orders</span><span><CreditCard size={14}/>Cashfree hosted payments</span><span><BadgeCheck size={14}/>Order-linked support</span></div>
-   </div>
-   <div className={styles.preview} aria-label="Illustrative MANGLO marketplace preview">
-    <div className={styles.previewTop}><div><span className={styles.previewMark}>M</span><div><b>MANGLO Marketplace</b><small>Live catalog discovery</small></div></div><span className={styles.live}>LIVE CATALOG</span></div>
-    <div className={styles.previewBody}><div className={styles.previewSearch}><Search size={14}/>Search service, platform or ID…</div><div className={styles.previewService}><div className={styles.previewServiceHead}><span className={styles.platformMark}>IG</span><div><b>Instagram Views</b><small>Review service details before ordering</small></div><span className={styles.serviceId}>ID shown</span></div><div className={styles.metrics}><div><span>RATE / 1K</span><strong>Live</strong></div><div><span>MINIMUM</span><strong>Visible</strong></div><div><span>MAXIMUM</span><strong>Visible</strong></div><div><span>AVG.</span><strong>Listed</strong></div></div><div className={styles.orderSummary}><div><span>Wallet charge</span><strong>Calculated at review</strong></div><Link href="/services">Browse services</Link></div></div></div>
-    <div className={styles.previewFoot}><LockKeyhole size={12}/>Pricing and limits are checked again before an order is submitted.</div>
-   </div>
-  </div></section>
+const moneyRate=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(paise/100);
 
-  <section className={styles.proof}><div className={`container ${styles.proofGrid}`}>
-   <article><span className={styles.proofIcon}><Search size={15}/></span><div><b>Find services quickly</b><small>Search by platform, phrase or exact ID.</small></div></article>
-   <article><span className={styles.proofIcon}><Wallet size={15}/></span><div><b>Know the charge first</b><small>See quantity and wallet impact before submission.</small></div></article>
-   <article><span className={styles.proofIcon}><Clock3 size={15}/></span><div><b>Track from one account</b><small>Order status stays attached to your account.</small></div></article>
-   <article><span className={styles.proofIcon}><ShieldCheck size={15}/></span><div><b>Support with context</b><small>Attach the relevant order when you need help.</small></div></article>
-  </div></section>
+async function homepageData(){
+  try{
+    const freshAfter=catalogFreshAfter();
+    const [rows,recentCompleted,totalOrders,customers]=await Promise.all([
+      db.service.findMany({
+        where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:freshAfter}},
+        orderBy:[{score:'desc'},{platform:'asc'}],
+        take:240,
+        select:{
+          id:true,providerServiceId:true,platform:true,category:true,name:true,description:true,averageTime:true,
+          retailRatePaisePerThousand:true,min:true,max:true,refill:true,cancel:true,score:true,lastSyncedAt:true,
+        },
+      }),
+      db.order.findMany({where:{status:'COMPLETED'},select:{serviceId:true},orderBy:{createdAt:'desc'},take:1500}),
+      db.order.count(),
+      db.user.count(),
+    ]);
 
-  <section className={styles.section}><div className="container"><div className={styles.sectionHead}><div><span>START WITH A PLATFORM</span><h2>Choose the channel you want to grow.</h2></div><p>Start broad, narrow by service type, then compare the terms that matter.</p></div><div className={styles.platforms}>{platforms.map(name=><Link href={`/services?platform=${name}`} key={name}><div className={styles.platformTop}><span className={styles.platformCode}>{name.slice(0,2).toUpperCase()}</span><ArrowRight size={14}/></div><div><b>{name}</b><small>Browse live services</small></div></Link>)}</div></div></section>
+    const completedByService=new Map<string,number>();
+    for(const order of recentCompleted)completedByService.set(order.serviceId,(completedByService.get(order.serviceId)||0)+1);
 
-  <section className={styles.sectionAlt}><div className="container"><div className={styles.sectionHead}><div><span>QUICK STARTS</span><h2>Get to the right list faster.</h2></div><p>Open focused marketplace views without fake discounts or invented rankings.</p></div><div className={styles.quickStarts}>{quickStarts.map(item=><Link href={item.href} key={item.title}><span>{item.label}</span><h3>{item.title}</h3><p>{item.copy}</p><ArrowRight size={15}/></Link>)}</div></div></section>
+    const services=rows.map(row=>presentService({
+      ...row,
+      retailRatePaisePerThousand:Number(row.retailRatePaisePerThousand),
+      lastSyncedAt:row.lastSyncedAt.toISOString(),
+      completedCount:completedByService.get(row.id)||0,
+    }));
 
-  <section className={styles.section}><div className="container"><div className={styles.sectionHead}><div><span>HOW ORDERING WORKS</span><h2>A short path from discovery to tracking.</h2></div><p>You choose the service; MANGLO rechecks price, limits and wallet balance before submission.</p></div><div className={styles.steps}><article className={styles.step}><span>01 · DISCOVER</span><h3>Find a service</h3><p>Browse manually, filter the marketplace, or enter an exact service ID.</p></article><article className={styles.step}><span>02 · REVIEW</span><h3>Read the live terms</h3><p>Check rate, minimum, maximum, timing and refill listing.</p></article><article className={styles.step}><span>03 · CONFIRM</span><h3>Approve the wallet charge</h3><p>See the calculated charge before placing the order.</p></article><article className={styles.step}><span>04 · TRACK</span><h3>Follow the order</h3><p>Track processing, completion and wallet outcomes from your account.</p></article></div><div className={styles.aiAssist}><div><span><Bot size={17}/></span><div><b>Need help choosing?</b><small>MANGLO AI can help compare the live catalog.</small></div></div><Link href="/dashboard?view=ai">Ask MANGLO AI</Link></div></div></section>
+    const ranked=[...services].sort((a,b)=>(b.completedCount-a.completedCount)||(b.score-a.score));
+    const preferred=['Instagram','YouTube','TikTok','Telegram'];
+    const featured=preferred.map(platform=>ranked.find(service=>service.platform===platform)).filter(Boolean) as typeof services;
+    for(const service of ranked){
+      if(featured.length>=4)break;
+      if(!featured.some(item=>item.id===service.id))featured.push(service);
+    }
 
-  <section className={styles.sectionAlt}><div className={`container ${styles.trustGrid}`}><div className={styles.trustCopy}><span>TRUST BY DESIGN</span><h2>Know what happens before and after you pay.</h2><p>Discovery, wallet funding and order execution are kept clear so you can review each step.</p></div><div className={styles.trustCards}><article><span><CreditCard size={16}/></span><div><b>Cashfree hosted checkout</b><p>Wallet top-ups are completed through Cashfree hosted checkout.</p></div></article><article><span><LockKeyhole size={16}/></span><div><b>Protected infrastructure</b><p>Sensitive integration credentials remain on the server.</p></div></article><article><span><ShieldCheck size={16}/></span><div><b>Clear service terms</b><p>Provider-listed information is presented as listing data, not guaranteed outcomes.</p></div></article></div></div></section>
+    return {services,featured,totalOrders,customers};
+  }catch(error){
+    console.error('[homepage-data]',error instanceof Error?error.message:'homepage data unavailable');
+    return {services:[],featured:[],totalOrders:0,customers:0};
+  }
+}
 
-  <section className={styles.section}><div className={`container ${styles.faq}`}><div className={styles.faqIntro}><span className={styles.eyebrow}>BEFORE YOU ORDER</span><h2>Common questions, answered clearly.</h2><p>Know how pricing, funding, tracking and support work before placing an order.</p></div><div className={styles.faqList}><details><summary>How do I know what I will be charged?</summary><p>Every service shows its customer rate. The exact wallet charge is calculated from the selected quantity and checked again before submission.</p></details><details><summary>Where do I add money?</summary><p>Use MANGLO Wallet in your account. Funding is completed through Cashfree hosted checkout.</p></details><details><summary>How do I track an order?</summary><p>Your Orders section shows the current MANGLO status and supplier-linked updates.</p></details><details><summary>What if I need help with an order?</summary><p>Open Support from your account and attach the relevant order so the request includes the right context.</p></details></div></div></section>
+function PlatformGlyph({name}:{name:string}){
+  const meta=platformMeta.find(item=>item.name===name);
+  if(!meta)return <MoreHorizontal size={21}/>;
+  const Icon=meta.icon;
+  return <Icon size={21}/>;
+}
 
-  <section className={`container ${styles.cta}`}><div><span>READY TO START</span><h2>Search the live marketplace and review before you order.</h2></div><div className={styles.ctaActions}><Link className={styles.ctaPrimary} href="/services">Browse services <ArrowRight size={14}/></Link><Link className={styles.ctaSecondary} href="/auth?mode=signup">Create account</Link></div></section>
- </main>;
+export default async function Home(){
+  const data=await homepageData();
+  const previewServices=data.featured.slice(0,3);
+
+  return <main className={styles.home}>
+    <section className={styles.hero}>
+      <div className={`container ${styles.heroGrid}`}>
+        <div className={styles.heroCopy}>
+          <span className={styles.eyebrow}>JO CHAHIYE, MANGLO.</span>
+          <h1>Growth services,<br/><em>made simple.</em></h1>
+          <p>The MANGLO marketplace for social media growth services. Compare the live catalog, choose clearly, and order from one account.</p>
+
+          <form className={styles.heroSearch} action="/services" method="get">
+            <Search size={19}/>
+            <input name="q" aria-label="Search MANGLO services" placeholder="Search Instagram followers, YouTube views, service ID…"/>
+            <button type="submit">Search</button>
+          </form>
+
+          <div className={styles.heroActions}>
+            <Link className={styles.primaryCta} href="/services">Browse all services <ArrowRight size={15}/></Link>
+            <a className={styles.secondaryCta} href="#how-it-works"><PlayCircle size={17}/> How it works</a>
+          </div>
+
+          <div className={styles.assurance}>
+            <span><ShieldCheck size={16}/>Server-validated orders</span>
+            <span><Wallet size={16}/>Wallet-based checkout</span>
+            <span><FileText size={16}/>Transparent service terms</span>
+            <span><Headphones size={16}/>Order-linked support</span>
+          </div>
+        </div>
+
+        <div className={styles.heroVisual} aria-label="MANGLO live marketplace preview">
+          <div className={styles.appFrame}>
+            <aside className={styles.appRail}>
+              <div className={styles.miniBrand}><span>M</span><b>MANGLO</b></div>
+              <div className={`${styles.railItem} ${styles.activeRail}`}>Home</div>
+              <div className={styles.railItem}>Orders</div>
+              <div className={styles.railItem}>Wallet</div>
+              <div className={styles.railItem}>Favorites</div>
+              <div className={styles.railItem}>Support</div>
+            </aside>
+            <div className={styles.appMain}>
+              <div className={styles.appTop}><div className={styles.appSearch}><Search size={13}/> Search services…</div><span className={styles.avatar}>M</span></div>
+              <div className={styles.appIntro}><div><small>LIVE MARKETPLACE</small><h3>Find the right service<br/>for your growth</h3></div><div className={styles.platformDots}>{platformMeta.map(item=><span key={item.name} className={styles[item.tone]}><PlatformGlyph name={item.name}/></span>)}</div></div>
+              <div className={styles.previewLabel}><b>Live picks</b><Link href="/services">View all <ArrowRight size={11}/></Link></div>
+              <div className={styles.previewCards}>{previewServices.length?previewServices.map(service=><Link href={`/services?q=${encodeURIComponent(service.providerServiceId)}`} key={service.id} className={styles.previewCard}><span className={`${styles.previewIcon} ${styles[(platformMeta.find(item=>item.name===service.platform)?.tone)||'neutral']}`}><PlatformGlyph name={service.platform}/></span><b>{service.name}</b><small>{moneyRate(service.retailRatePaisePerThousand)} / 1K</small></Link>):<Link href="/services" className={styles.previewEmpty}>Open the live catalog <ArrowRight size={13}/></Link>}</div>
+            </div>
+          </div>
+
+          <div className={styles.orderStat}><span>Live services</span><strong>{data.services.length.toLocaleString('en-IN')}</strong><small><BadgeCheck size={12}/> Fresh catalog</small><div><i/><i/><i/><i/></div></div>
+          <div className={styles.peopleCard}><span className={styles.people}><i>M</i><i>G</i><i>+</i></span><div><b>Real catalog.<br/>Real order tracking.</b><small>{data.customers.toLocaleString('en-IN')} registered customer{data.customers===1?'':'s'}</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section className={styles.trustStrip}><div className={`container ${styles.trustStripInner}`}>
+      <article><ShieldCheck size={18}/><div><b>Validated before order</b><small>Price and limits are checked again.</small></div></article>
+      <article><CreditCard size={18}/><div><b>Cashfree hosted funding</b><small>Wallet top-ups use hosted checkout.</small></div></article>
+      <article><BarChart3 size={18}/><div><b>Track from your account</b><small>Supplier-linked updates stay attached.</small></div></article>
+      <article><Headphones size={18}/><div><b>Support with context</b><small>Attach the order when you need help.</small></div></article>
+    </div></section>
+
+    <section className={styles.section}>
+      <div className="container">
+        <div className={styles.sectionTitleRow}><div><span>START WITH A PLATFORM</span><h2>Grow on your favourite platforms</h2><p>Quality marketplace listings for the channels you care about.</p></div><Link href="/services">Explore all platforms <ArrowRight size={14}/></Link></div>
+        <div className={styles.platformGrid}>{platformMeta.map(item=>{const Icon=item.icon;return <Link href={`/services?platform=${encodeURIComponent(item.name)}`} key={item.name} className={styles.platformCard}><span className={`${styles.bigPlatformIcon} ${styles[item.tone]}`}><Icon size={28}/></span><b>{item.name}</b><small>{item.copy}</small><ArrowRight className={styles.platformArrow} size={14}/></Link>})}<Link href="/services" className={styles.platformCard}><span className={`${styles.bigPlatformIcon} ${styles.neutral}`}><MoreHorizontal size={28}/></span><b>More</b><small>Explore the full live catalog</small><ArrowRight className={styles.platformArrow} size={14}/></Link></div>
+      </div>
+    </section>
+
+    <section className={styles.sectionCompact}>
+      <div className="container">
+        <div className={styles.sectionTitleRow}><div><span>LIVE CATALOG</span><h2>Popular services to get started</h2><p>Selected from the fresh catalog, prioritising services customers have actually completed.</p></div><Link href="/services">View all services <ArrowRight size={14}/></Link></div>
+        <div className={styles.serviceGrid}>{data.featured.length?data.featured.map((service,index)=><Link key={service.id} href={`/services?q=${encodeURIComponent(service.providerServiceId)}`} className={styles.serviceCard}>
+          <div className={styles.serviceTop}><span className={`${styles.servicePlatform} ${styles[(platformMeta.find(item=>item.name===service.platform)?.tone)||'neutral']}`}><PlatformGlyph name={service.platform}/></span><span className={styles.liveBadge}>{service.refill?'Refill listed':index===0&&service.completedCount>0?'Most completed':'Live service'}</span></div>
+          <h3>{service.name}</h3>
+          <p>{service.category}</p>
+          <strong>{moneyRate(service.retailRatePaisePerThousand)} <small>/ 1K</small></strong>
+          <div className={styles.serviceFacts}><span>ID {service.providerServiceId}</span><span>Min {service.min.toLocaleString('en-IN')}</span></div>
+          <span className={styles.roundArrow}><ArrowRight size={15}/></span>
+        </Link>):<div className={styles.catalogUnavailable}><b>Live service cards are temporarily unavailable.</b><p>Use the marketplace to retry the fresh catalog.</p><Link href="/services">Open services <ArrowRight size={14}/></Link></div>}</div>
+      </div>
+    </section>
+
+    <section id="how-it-works" className={styles.section}>
+      <div className="container">
+        <div className={styles.sectionTitleRow}><div><span>HOW ORDERING WORKS</span><h2>From discovery to tracking in four clear steps.</h2><p>MANGLO rechecks the live terms and wallet charge before an order is submitted.</p></div><span className={styles.handNote}>Simple.<br/>Fast. Secure. ↘</span></div>
+        <div className={styles.steps}>
+          <article><span>01</span><div className={styles.stepIcon}><Search size={20}/></div><h3>Find a service</h3><p>Search or browse live services across your favourite platforms.</p></article>
+          <article><span>02</span><div className={styles.stepIcon}><FileText size={20}/></div><h3>Read the details</h3><p>Review current rate, quantity limits, timing and provider-listed terms.</p></article>
+          <article><span>03</span><div className={styles.stepIcon}><CreditCard size={20}/></div><h3>Place your order</h3><p>Approve the exact MANGLO Wallet charge before submission.</p></article>
+          <article><span>04</span><div className={styles.stepIcon}><BarChart3 size={20}/></div><h3>Track your order</h3><p>Follow processing, completion and wallet outcomes from your account.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section className={styles.trustSection}>
+      <div className={`container ${styles.trustGrid}`}>
+        <div className={styles.trustCopy}><span>TRUST & SAFETY</span><h2>Your growth is in safe hands.</h2><p>MANGLO keeps discovery, wallet funding, order execution and support clearly separated so you can review every step.</p><Link href="/trust">Learn more about our policies <ArrowRight size={14}/></Link></div>
+        <div className={styles.trustCards}>
+          <article><span><LockKeyhole size={19}/></span><div><b>Protected payments</b><p>Wallet funding is completed through Cashfree hosted checkout.</p></div></article>
+          <article><span><FileText size={19}/></span><div><b>Transparent terms</b><p>Current service rates, limits and provider information stay visible.</p></div></article>
+          <article><span><BarChart3 size={19}/></span><div><b>Real order tracking</b><p>Order status and supplier-linked updates stay in your account.</p></div></article>
+          <article><span><Headphones size={19}/></span><div><b>Human support</b><p>Open a support request and attach the relevant order for context.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section className={styles.inviteSection}><div className={`container ${styles.inviteBanner}`}><div><span>INVITE & EARN</span><h2>Grow together. Earn together.</h2><p>Invite a friend. Referral rewards are credited only after a qualifying completed order.</p></div><div className={styles.giftArt}><i>₹</i><span><Gift size={62}/></span><i>+</i></div><Link href="/invite">Invite friends <ArrowRight size={14}/></Link></div></section>
+
+    <section className={styles.faqSection}>
+      <div className={`container ${styles.faqGrid}`}>
+        <div className={styles.faqIntro}><span>FAQ</span><h2>Common questions,<br/>answered clearly.</h2><p>Everything you need to know before ordering.</p><Link href="/contact">Need more help? <ArrowRight size={14}/></Link></div>
+        <div className={styles.faqList}>
+          <details><summary>How do I know what I will be charged?</summary><p>The current customer rate is shown in the live catalog. MANGLO calculates the exact wallet charge from your quantity and validates it again before submission.</p></details>
+          <details><summary>Where do I add money?</summary><p>Open your MANGLO Wallet from your account. Funding is completed through Cashfree hosted checkout and credited only after verified payment confirmation.</p></details>
+          <details><summary>How long does delivery take?</summary><p>Provider-reported timing is shown where available. It is an estimate, not a guaranteed completion time.</p></details>
+          <details><summary>What if I need help with an order?</summary><p>Open Support from your account and attach the relevant order so the support request includes the correct context.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section className={styles.finalCta}><div className="container"><div className={styles.finalCtaCard}><div><span>READY TO START</span><h2>Search the live marketplace and review before you order.</h2></div><div><Link className={styles.primaryCta} href="/services">Browse services <ArrowRight size={14}/></Link><Link className={styles.finalSecondary} href="/auth?mode=signup">Create account</Link></div></div></div></section>
+  </main>;
 }
