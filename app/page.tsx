@@ -26,10 +26,13 @@ import {presentService} from '@/lib/catalog';
 import FeatureSection from '@/components/ui/feature-section';
 import styles from './CommerceHome.module.css';
 
+export const revalidate=300;
+
 export const metadata={
   alternates:{canonical:'/'},
-  title:'MANGLO — Growth services, made simple',
-  description:'Search the live MANGLO marketplace, compare current service rates and limits, fund your wallet securely, place orders and track them from one account.',
+  title:{absolute:'MANGLO — Social Media Growth Services Marketplace'},
+  description:'Compare live Instagram, YouTube, TikTok and other social media growth services on MANGLO. See current rates, limits and provider-reported timing before you order.',
+  openGraph:{title:'MANGLO — Social Media Growth Services Marketplace',description:'A clearer alternative to traditional SMM panels: compare live social media growth services, current customer pricing and order protections.',url:'/',type:'website'},
 };
 
 const platformMeta=[
@@ -46,9 +49,10 @@ const moneyRate=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',
 async function homepageData(){
   try{
     const freshAfter=catalogFreshAfter();
-    const [rows,recentCompleted,totalOrders,customers]=await Promise.all([
+    const liveWhere={active:true,operatorDisabled:false,lastSyncedAt:{gte:freshAfter}};
+    const [rows,recentCompleted,totalLiveServices,platformRows,completedOrders,lowestInstagramViews]=await Promise.all([
       db.service.findMany({
-        where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:freshAfter}},
+        where:liveWhere,
         orderBy:[{score:'desc'},{platform:'asc'}],
         take:240,
         select:{
@@ -57,8 +61,14 @@ async function homepageData(){
         },
       }),
       db.order.findMany({where:{status:'COMPLETED'},select:{serviceId:true},orderBy:{createdAt:'desc'},take:1500}),
-      db.order.count(),
-      db.user.count(),
+      db.service.count({where:liveWhere}),
+      db.service.findMany({where:liveWhere,select:{platform:true},distinct:['platform']}),
+      db.order.count({where:{status:'COMPLETED'}}),
+      db.service.findFirst({
+        where:{...liveWhere,platform:'Instagram',OR:[{name:{contains:'view',mode:'insensitive'}},{category:{contains:'view',mode:'insensitive'}}]},
+        orderBy:[{retailRatePaisePerThousand:'asc'},{score:'desc'}],
+        select:{id:true,providerServiceId:true,name:true,retailRatePaisePerThousand:true,score:true},
+      }),
     ]);
 
     const completedByService=new Map<string,number>();
@@ -79,10 +89,18 @@ async function homepageData(){
       if(!featured.some(item=>item.id===service.id))featured.push(service);
     }
 
-    return {services,featured,totalOrders,customers};
+    const instagramViewsOffer=lowestInstagramViews?{
+      id:lowestInstagramViews.id,
+      providerServiceId:lowestInstagramViews.providerServiceId,
+      name:lowestInstagramViews.name,
+      ratePaise:Number(lowestInstagramViews.retailRatePaisePerThousand),
+      score:lowestInstagramViews.score,
+    }:null;
+
+    return {services,featured,totalLiveServices,platformCount:platformRows.length,completedOrders,instagramViewsOffer};
   }catch(error){
     console.error('[homepage-data]',error instanceof Error?error.message:'homepage data unavailable');
-    return {services:[],featured:[],totalOrders:0,customers:0};
+    return {services:[],featured:[],totalLiveServices:0,platformCount:0,completedOrders:0,instagramViewsOffer:null};
   }
 }
 
@@ -96,14 +114,23 @@ function PlatformGlyph({name}:{name:string}){
 export default async function Home(){
   const data=await homepageData();
   const previewServices=data.featured.slice(0,3);
+  const origin=process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop';
+  const websiteSchema={
+    '@context':'https://schema.org',
+    '@graph':[
+      {'@type':'WebSite','@id':`${origin}/#website`,url:origin,name:'MANGLO',alternateName:'MANGLO Social Media Growth Marketplace',publisher:{'@id':`${origin}/#organization`}},
+      {'@type':'WebPage','@id':`${origin}/#webpage`,url:origin,name:'MANGLO — Social Media Growth Services Marketplace',description:'Compare live social media growth services, current customer rates, limits and provider-reported timing before ordering.',isPartOf:{'@id':`${origin}/#website`},about:{'@id':`${origin}/#organization`}},
+    ],
+  };
 
   return <main className={styles.home}>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(websiteSchema)}}/>
     <section className={styles.hero}>
       <div className={`container ${styles.heroGrid}`}>
         <div className={styles.heroCopy}>
           <span className={styles.eyebrow}>JO CHAHIYE, MANGLO.</span>
           <h1>Growth services,<br/><em>made simple.</em></h1>
-          <p>The MANGLO marketplace for social media growth services. Compare the live catalog, choose clearly, and order from one account.</p>
+          <p>MANGLO is a clearer alternative to traditional SMM panels: compare live Instagram, YouTube, TikTok and other social media growth services before you spend.{data.instagramViewsOffer?<> Instagram Views currently start at <strong>{moneyRate(data.instagramViewsOffer.ratePaise)} per 1,000</strong> in the live catalog.</>:null}</p>
 
           <form className={styles.heroSearch} action="/services" method="get">
             <Search size={19}/>
@@ -112,8 +139,8 @@ export default async function Home(){
           </form>
 
           <div className={styles.heroActions}>
-            <Link className={styles.primaryCta} href="/services">Browse all services <ArrowRight size={15}/></Link>
-            <a className={styles.secondaryCta} href="#how-it-works"><PlayCircle size={17}/> How it works</a>
+            <Link className={styles.primaryCta} href="/services">Compare live services <ArrowRight size={15}/></Link>
+            <a className={styles.secondaryCta} href="#how-it-works"><PlayCircle size={17}/> How MANGLO works</a>
           </div>
 
           <div className={styles.assurance}>
@@ -142,31 +169,31 @@ export default async function Home(){
             </div>
           </div>
 
-          <div className={styles.orderStat}><span>Live services</span><strong>{data.services.length.toLocaleString('en-IN')}</strong><small><BadgeCheck size={12}/> Fresh catalog</small><div><i/><i/><i/><i/></div></div>
-          <div className={styles.peopleCard}><span className={styles.people}><i>M</i><i>G</i><i>+</i></span><div><b>Real catalog.<br/>Real order tracking.</b><small>{data.customers.toLocaleString('en-IN')} registered customer{data.customers===1?'':'s'}</small></div></div>
+          <div className={styles.orderStat}><span>Live services</span><strong>{data.totalLiveServices.toLocaleString('en-IN')}</strong><small><BadgeCheck size={12}/> Fresh catalog</small><div><i/><i/><i/><i/></div></div>
+          <div className={styles.peopleCard}><span className={styles.people}><i>M</i><i>G</i><i>+</i></span><div><b>Real catalog.<br/>Real outcomes.</b><small>{data.completedOrders.toLocaleString('en-IN')} provider-confirmed completed order{data.completedOrders===1?'':'s'}</small></div></div>
         </div>
       </div>
     </section>
 
     <section className={styles.trustStrip}><div className={`container ${styles.trustStripInner}`}>
-      <article><ShieldCheck size={18}/><div><b>Validated before order</b><small>Price and limits are checked again.</small></div></article>
-      <article><CreditCard size={18}/><div><b>Cashfree hosted funding</b><small>Wallet top-ups use hosted checkout.</small></div></article>
-      <article><BarChart3 size={18}/><div><b>Track from your account</b><small>Supplier-linked updates stay attached.</small></div></article>
-      <article><Headphones size={18}/><div><b>Support with context</b><small>Attach the order when you need help.</small></div></article>
+      <article><BadgeCheck size={18}/><div><b>{data.totalLiveServices.toLocaleString('en-IN')} live services</b><small>Fresh active listings across {data.platformCount.toLocaleString('en-IN')} platforms.</small></div></article>
+      <article><Instagram size={18}/><div><b>{data.instagramViewsOffer?`Instagram Views from ${moneyRate(data.instagramViewsOffer.ratePaise)} / 1K`:'Live Instagram services'}</b><small>{data.instagramViewsOffer?'Current catalog rate; availability can change.':'Compare current rates in the marketplace.'}</small></div></article>
+      <article><BarChart3 size={18}/><div><b>{data.completedOrders.toLocaleString('en-IN')} completed orders</b><small>Counted from real provider-confirmed MANGLO outcomes.</small></div></article>
+      <article><ShieldCheck size={18}/><div><b>Supplier health monitored</b><small>Recent outcomes can change recommendations and availability.</small></div></article>
     </div></section>
 
     <FeatureSection/>
 
     <section className={styles.section}>
       <div className="container">
-        <div className={styles.sectionTitleRow}><div><span>START WITH A PLATFORM</span><h2>Grow on your favourite platforms</h2><p>Quality marketplace listings for the channels you care about.</p></div><Link href="/services">Explore all platforms <ArrowRight size={14}/></Link></div>
+        <div className={styles.sectionTitleRow}><div><span>CHOOSE YOUR PLATFORM</span><h2>Start with where you actually want to grow.</h2><p>Browse live marketplace listings by platform instead of memorising supplier IDs or panel categories.</p></div><Link href="/services">Explore all platforms <ArrowRight size={14}/></Link></div>
         <div className={styles.platformGrid}>{platformMeta.map(item=>{const Icon=item.icon;return <Link href={`/services?platform=${encodeURIComponent(item.name)}`} key={item.name} className={styles.platformCard}><span className={`${styles.bigPlatformIcon} ${styles[item.tone]}`}><Icon size={28}/></span><b>{item.name}</b><small>{item.copy}</small><ArrowRight className={styles.platformArrow} size={14}/></Link>})}<Link href="/services" className={styles.platformCard}><span className={`${styles.bigPlatformIcon} ${styles.neutral}`}><MoreHorizontal size={28}/></span><b>More</b><small>Explore the full live catalog</small><ArrowRight className={styles.platformArrow} size={14}/></Link></div>
       </div>
     </section>
 
     <section className={styles.sectionCompact}>
       <div className="container">
-        <div className={styles.sectionTitleRow}><div><span>LIVE CATALOG</span><h2>Popular services to get started</h2><p>Selected from the fresh catalog, prioritising services customers have actually completed.</p></div><Link href="/services">View all services <ArrowRight size={14}/></Link></div>
+        <div className={styles.sectionTitleRow}><div><span>LIVE PRICE DISCOVERY</span><h2>See current prices before you commit.</h2><p>These cards come from the fresh catalog, not a hard-coded promotion table. Availability and rates can change with supplier conditions.</p></div><Link href="/services">View all services <ArrowRight size={14}/></Link></div>
         <div className={styles.serviceGrid}>{data.featured.length?data.featured.map((service,index)=><Link key={service.id} href={`/services?q=${encodeURIComponent(service.providerServiceId)}`} className={styles.serviceCard}>
           <div className={styles.serviceTop}><span className={`${styles.servicePlatform} ${styles[(platformMeta.find(item=>item.name===service.platform)?.tone)||'neutral']}`}><PlatformGlyph name={service.platform}/></span><span className={styles.liveBadge}>{service.refill?'Refill listed':index===0&&service.completedCount>0?'Most completed':'Live service'}</span></div>
           <h3>{service.name}</h3>
@@ -192,12 +219,12 @@ export default async function Home(){
 
     <section className={styles.trustSection}>
       <div className={`container ${styles.trustGrid}`}>
-        <div className={styles.trustCopy}><span>TRUST & SAFETY</span><h2>Your growth is in safe hands.</h2><p>MANGLO keeps discovery, wallet funding, order execution and support clearly separated so you can review every step.</p><Link href="/trust">Learn more about our policies <ArrowRight size={14}/></Link></div>
+        <div className={styles.trustCopy}><span>TRUST & SAFETY</span><h2>Low prices matter more when the order system is accountable.</h2><p>MANGLO combines live pricing with server-side validation, supplier-health monitoring, wallet records, order tracking and support tied to the actual transaction.</p><Link href="/trust">See how MANGLO protects orders <ArrowRight size={14}/></Link></div>
         <div className={styles.trustCards}>
           <article><span><LockKeyhole size={19}/></span><div><b>Protected payments</b><p>Wallet funding is completed through Cashfree hosted checkout.</p></div></article>
           <article><span><FileText size={19}/></span><div><b>Transparent terms</b><p>Current service rates, limits and provider information stay visible.</p></div></article>
-          <article><span><BarChart3 size={19}/></span><div><b>Real order tracking</b><p>Order status and supplier-linked updates stay in your account.</p></div></article>
-          <article><span><Headphones size={19}/></span><div><b>Human support</b><p>Open a support request and attach the relevant order for context.</p></div></article>
+          <article><span><BarChart3 size={19}/></span><div><b>Outcome-based monitoring</b><p>Recent completions and failures feed supplier-health signals.</p></div></article>
+          <article><span><Headphones size={19}/></span><div><b>Order-linked support</b><p>Open a support request and attach the relevant order for context.</p></div></article>
         </div>
       </div>
     </section>
@@ -206,16 +233,16 @@ export default async function Home(){
 
     <section className={styles.faqSection}>
       <div className={`container ${styles.faqGrid}`}>
-        <div className={styles.faqIntro}><span>FAQ</span><h2>Common questions,<br/>answered clearly.</h2><p>Everything you need to know before ordering.</p><Link href="/contact">Need more help? <ArrowRight size={14}/></Link></div>
+        <div className={styles.faqIntro}><span>FAQ</span><h2>Know what happens<br/>before you order.</h2><p>Clear answers about pricing, delivery, wallet funding and support.</p><Link href="/faq">Browse all FAQs <ArrowRight size={14}/></Link></div>
         <div className={styles.faqList}>
           <details><summary>How do I know what I will be charged?</summary><p>The current customer rate is shown in the live catalog. MANGLO calculates the exact wallet charge from your quantity and validates it again before submission.</p></details>
-          <details><summary>Where do I add money?</summary><p>Open your MANGLO Wallet from your account. Funding is completed through Cashfree hosted checkout and credited only after verified payment confirmation.</p></details>
+          <details><summary>Why can a service price change?</summary><p>MANGLO uses synchronized supplier data. Availability and rates can change, so the transaction flow rechecks the current service and exact charge before accepting the order.</p></details>
           <details><summary>How long does delivery take?</summary><p>Provider-reported timing is shown where available. It is an estimate, not a guaranteed completion time.</p></details>
-          <details><summary>What if I need help with an order?</summary><p>Open Support from your account and attach the relevant order so the support request includes the correct context.</p></details>
+          <details><summary>What happens if a provider cancels or fails an eligible order?</summary><p>MANGLO reconciles the provider outcome and eligible failed or cancelled service orders are restored to the MANGLO Wallet through the recorded refund flow.</p></details>
         </div>
       </div>
     </section>
 
-    <section className={styles.finalCta}><div className="container"><div className={styles.finalCtaCard}><div><span>READY TO START</span><h2>Search the live marketplace and review before you order.</h2></div><div><Link className={styles.primaryCta} href="/services">Browse services <ArrowRight size={14}/></Link><Link className={styles.finalSecondary} href="/auth?mode=signup">Create account</Link></div></div></div></section>
+    <section className={styles.finalCta}><div className="container"><div className={styles.finalCtaCard}><div><span>START SMALL. COMPARE FIRST.</span><h2>See the live price, limits and service context before you spend.</h2></div><div><Link className={styles.primaryCta} href="/services">Compare services <ArrowRight size={14}/></Link><Link className={styles.finalSecondary} href="/about">Why MANGLO exists</Link></div></div></div></section>
   </main>;
 }
