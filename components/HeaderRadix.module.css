@@ -1,0 +1,5 @@
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.tooltip{z-index:220;border:1px solid rgba(27,31,36,.9);border-radius:8px;background:#17191d;color:#fff;padding:7px 9px;font-size:9px;font-weight:760;letter-spacing:.005em;box-shadow:0 10px 26px rgba(17,20,24,.18);user-select:none;animation:tooltipIn .14s ease-out}
+.tooltipArrow{fill:#17191d}
+@keyframes tooltipIn{from{opacity:0;transform:translateY(-2px) scale(.98)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tooltip{animation:none}}
