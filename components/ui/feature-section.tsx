@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import {motion,useReducedMotion} from 'framer-motion';
 import {
   ArrowRight,
   BadgeCheck,
@@ -58,9 +61,22 @@ const workflowItems=[
 ] as const;
 
 export default function FeatureSection(){
+  const reduceMotion=useReducedMotion();
+  const leftInitial=reduceMotion?false:{opacity:0,x:-18,y:8};
+  const rightInitial=reduceMotion?false:{opacity:0,x:18,y:8};
+  const visible={opacity:1,x:0,y:0};
+
   return <section className={styles.section} aria-labelledby="manglo-system-heading">
     <div className={`container ${styles.grid}`}>
-      <div className={styles.visualWrap} aria-label="MANGLO order workflow capabilities">
+      <motion.div
+        className={styles.visualWrap}
+        aria-label="MANGLO order workflow capabilities"
+        initial={leftInitial}
+        whileInView={visible}
+        viewport={{once:true,amount:.22}}
+        transition={{duration:.58,ease:'easeOut'}}
+        whileHover={reduceMotion?undefined:{y:-3}}
+      >
         <div className={styles.visualTop}>
           <div><span>MANGLO WORKFLOW</span><b>What sits between a service list and a real order</b></div>
           <span className={styles.live}><i/> Active workflow</span>
@@ -80,24 +96,36 @@ export default function FeatureSection(){
           <div className={styles.fadeTop}/>
           <div className={styles.fadeBottom}/>
         </div>
-      </div>
+      </motion.div>
 
-      <div className={styles.copy}>
+      <motion.div
+        className={styles.copy}
+        initial={rightInitial}
+        whileInView={visible}
+        viewport={{once:true,amount:.28}}
+        transition={{duration:.58,delay:reduceMotion?0:.08,ease:'easeOut'}}
+      >
         <span className={styles.eyebrow}>WHY MANGLO</span>
         <h2 id="manglo-system-heading">A marketplace layer, not another <em>panel maze.</em></h2>
         <p>Traditional SMM panels can expose huge service lists, supplier jargon and unclear choices. MANGLO keeps the live catalog but adds clearer discovery, destination checks, supplier-health signals, wallet safeguards, tracking and order-linked support around the purchase.</p>
 
-        <div className={styles.points}>
+        <motion.div
+          className={styles.points}
+          initial={reduceMotion?false:{opacity:0,y:10}}
+          whileInView={{opacity:1,y:0}}
+          viewport={{once:true,amount:.7}}
+          transition={{duration:.42,delay:reduceMotion?0:.16,ease:'easeOut'}}
+        >
           <span><ShieldCheck size={15}/> Server-side order validation</span>
           <span><CircleDollarSign size={15}/> Wallet-based recovery</span>
           <span><PackageCheck size={15}/> Supplier outcome monitoring</span>
-        </div>
+        </motion.div>
 
         <div className={styles.actions}>
           <Link className={styles.primary} href="/services">Compare live services <ArrowRight size={14}/></Link>
           <Link className={styles.secondary} href="/trust">See Trust & Safety</Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   </section>;
 }
