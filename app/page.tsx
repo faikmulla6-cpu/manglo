@@ -23,6 +23,7 @@ import {
 import {db} from '@/lib/db';
 import {catalogFreshAfter} from '@/lib/catalog-freshness';
 import {presentService} from '@/lib/catalog';
+import FeatureSection from '@/components/ui/feature-section';
 import styles from './CommerceHome.module.css';
 
 export const metadata={
@@ -153,6 +154,8 @@ export default async function Home(){
       <article><BarChart3 size={18}/><div><b>Track from your account</b><small>Supplier-linked updates stay attached.</small></div></article>
       <article><Headphones size={18}/><div><b>Support with context</b><small>Attach the order when you need help.</small></div></article>
     </div></section>
+
+    <FeatureSection/>
 
     <section className={styles.section}>
       <div className="container">
