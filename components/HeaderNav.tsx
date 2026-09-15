@@ -2,20 +2,22 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {
- ArrowRight,BookOpen,ChevronRight,Gift,Gauge,LayoutDashboard,LockKeyhole,Menu,Search,ShieldCheck,UserRound,X,
+ ArrowRight,ChevronRight,Gift,Gauge,LayoutDashboard,Menu,Search,UserRound,X,
 } from 'lucide-react';
 import styles from './Header.module.css';
 
 const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
+const COLLAPSE_AFTER=150;
+const EXPAND_DISTANCE=80;
 
 const primaryLinks=[
  {href:'/services',label:'Services'},
  {href:'/about',label:'About'},
- {href:'/trust',label:'Trust & safety'},
- {href:'/help',label:'Help center'},
+ {href:'/trust',label:'Trust & Safety'},
+ {href:'/help',label:'Help'},
 ] as const;
 
 function isActive(pathname:string,href:string){
@@ -26,81 +28,126 @@ function isActive(pathname:string,href:string){
 
 export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boolean}){
  const pathname=usePathname();
- const [open,setOpen]=useState(false);
+ const [mobileOpen,setMobileOpen]=useState(false);
+ const [compact,setCompact]=useState(false);
+ const compactRef=useRef(false);
+ const lastScrollY=useRef(0);
+ const collapsedAt=useRef(0);
 
- useEffect(()=>setOpen(false),[pathname]);
+ function updateCompact(value:boolean){
+  compactRef.current=value;
+  setCompact(value);
+ }
+
  useEffect(()=>{
-  function onKey(event:KeyboardEvent){if(event.key==='Escape')setOpen(false)}
+  setMobileOpen(false);
+  updateCompact(false);
+  lastScrollY.current=window.scrollY;
+ },[pathname]);
+
+ useEffect(()=>{
+  function onKey(event:KeyboardEvent){if(event.key==='Escape')setMobileOpen(false)}
   window.addEventListener('keydown',onKey);
   return()=>window.removeEventListener('keydown',onKey);
  },[]);
+
  useEffect(()=>{
-  const media=window.matchMedia('(max-width: 920px)');
-  function onChange(event:MediaQueryListEvent){if(!event.matches)setOpen(false)}
-  media.addEventListener('change',onChange);
-  return()=>media.removeEventListener('change',onChange);
+  const desktop=window.matchMedia('(min-width: 921px)');
+  function onBreakpoint(event:MediaQueryListEvent){
+   if(!event.matches){updateCompact(false);setMobileOpen(false)}
+  }
+  desktop.addEventListener('change',onBreakpoint);
+  return()=>desktop.removeEventListener('change',onBreakpoint);
  },[]);
+
  useEffect(()=>{
-  if(!open)return;
+  let ticking=false;
+  function readScroll(){
+   const latest=window.scrollY;
+   const previous=lastScrollY.current;
+   const desktop=window.innerWidth>920;
+
+   if(desktop&&!mobileOpen){
+    if(!compactRef.current&&latest>previous&&latest>COLLAPSE_AFTER){
+     collapsedAt.current=latest;
+     updateCompact(true);
+    }else if(compactRef.current&&latest<previous&&collapsedAt.current-latest>EXPAND_DISTANCE){
+     updateCompact(false);
+    }
+    if(latest<48&&compactRef.current)updateCompact(false);
+   }
+
+   lastScrollY.current=latest;
+   ticking=false;
+  }
+  function onScroll(){
+   if(ticking)return;
+   ticking=true;
+   window.requestAnimationFrame(readScroll);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  return()=>window.removeEventListener('scroll',onScroll);
+ },[mobileOpen]);
+
+ useEffect(()=>{
+  if(!mobileOpen)return;
   const previous=document.body.style.overflow;
   document.body.style.overflow='hidden';
   return()=>{document.body.style.overflow=previous};
- },[open]);
+ },[mobileOpen]);
 
  const inviteHref=signedIn?'/invite':'/auth?mode=signup&next=%2Finvite';
  const accountHref=signedIn?'/dashboard':'/auth';
- const accountLabel=signedIn?'Dashboard':'Log in';
 
- return <header className={styles.header}>
-  <div className={styles.accent}/>
-  <div className={`container ${styles.inner}`}>
-   <Link className={styles.brand} href="/" aria-label="MANGLO home">
-    <span className={styles.brandIcon}><Image src={BRAND_ICON} alt="" width={35} height={35} priority/></span>
-    <span className={styles.brandCopy}><b>MANGLO</b><small>Jo chahiye, Manglo.</small></span>
-   </Link>
+ return <header className={styles.headerShell}>
+  <div className={`${styles.navFrame} ${compact?styles.navCompact:''}`}>
+   <div className={styles.navContent} aria-hidden={compact}>
+    <Link className={styles.brand} href="/" aria-label="MANGLO home" tabIndex={compact?-1:undefined}>
+     <span className={styles.brandIcon}><Image src={BRAND_ICON} alt="" width={31} height={31} priority/></span>
+     <span className={styles.brandName}>MANGLO</span>
+    </Link>
 
-   <nav className={styles.links} aria-label="Primary navigation">
-    {primaryLinks.map(link=>{
-     const active=isActive(pathname,link.href);
-     return <Link key={link.href} href={link.href} className={active?styles.activeLink:undefined} aria-current={pathname===link.href?'page':undefined}>{link.label}</Link>;
-    })}
-    <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.activeLink:undefined} aria-current={pathname==='/invite'?'page':undefined}>Invite & earn</Link>
-   </nav>
+    <nav className={styles.links} aria-label="Primary navigation">
+     {primaryLinks.map(link=>{
+      const active=isActive(pathname,link.href);
+      return <Link key={link.href} href={link.href} className={active?styles.activeLink:undefined} aria-current={pathname===link.href?'page':undefined} tabIndex={compact?-1:undefined}>{link.label}</Link>;
+     })}
+    </nav>
 
-   <div className={styles.actions}>
-    <span className={styles.trustBadge} title="Order pricing and wallet balance are revalidated server-side before submission"><ShieldCheck size={14}/> Protected ordering</span>
-    <Link className={styles.iconButton} href="/services" aria-label="Search services" title="Search services"><Search size={17}/></Link>
-    {signedIn?
-     <>
-      {admin?<Link className={styles.iconButton} href="/admin" aria-label="Open operations" title="Operations"><Gauge size={16}/></Link>:null}
-      <Link className={styles.accountButton} href="/dashboard"><LayoutDashboard size={15}/><span>Dashboard</span></Link>
-     </>:
-     <>
-      <Link className={styles.login} href="/auth"><UserRound size={15}/> Log in</Link>
-      <Link className={styles.primary} href="/services">Browse services <ArrowRight size={14}/></Link>
-     </>}
-
-    <button type="button" className={styles.mobileTrigger} onClick={()=>setOpen(value=>!value)} aria-expanded={open} aria-controls="manglo-mobile-nav" aria-label={open?'Close navigation':'Open navigation'}>{open?<X size={20}/>:<Menu size={20}/>}</button>
+    <div className={styles.actions}>
+     <Link className={styles.utilityButton} href={inviteHref} aria-label="Invite and earn" title="Invite & earn" tabIndex={compact?-1:undefined}><Gift size={15}/></Link>
+     <Link className={styles.utilityButton} href="/services" aria-label="Search services" title="Search services" tabIndex={compact?-1:undefined}><Search size={15}/></Link>
+     {admin?<Link className={styles.utilityButton} href="/admin" aria-label="Open operations" title="Operations" tabIndex={compact?-1:undefined}><Gauge size={15}/></Link>:null}
+     {signedIn?
+      <Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Dashboard</Link>:
+      <><Link className={styles.login} href="/auth" tabIndex={compact?-1:undefined}>Log in</Link><Link className={styles.primary} href="/services" tabIndex={compact?-1:undefined}>Explore services <ArrowRight size={13}/></Link></>}
+     <button type="button" className={styles.mobileTrigger} onClick={()=>{updateCompact(false);setMobileOpen(value=>!value)}} aria-expanded={mobileOpen} aria-controls="manglo-mobile-nav" aria-label={mobileOpen?'Close navigation':'Open navigation'} tabIndex={compact?-1:undefined}>{mobileOpen?<X size={19}/>:<Menu size={19}/>}</button>
+    </div>
    </div>
+
+   <button type="button" className={styles.compactTrigger} onClick={()=>updateCompact(false)} aria-label="Expand MANGLO navigation" aria-hidden={!compact} tabIndex={compact?0:-1}><Menu size={19}/></button>
   </div>
 
-  {open?<button type="button" className={styles.backdrop} aria-label="Close navigation" onClick={()=>setOpen(false)}/>:null}
-  <div id="manglo-mobile-nav" className={`${styles.mobilePanel} ${open?styles.mobilePanelOpen:''}`} aria-hidden={!open}>
-   <div className={styles.mobileTop}>
-    <div><span>Navigation</span><b>Find what you need</b></div>
-    <span className={styles.mobileSecure}><LockKeyhole size={13}/> Protected ordering</span>
+  {mobileOpen?<button type="button" className={styles.backdrop} aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>:null}
+  <aside id="manglo-mobile-nav" className={`${styles.mobilePanel} ${mobileOpen?styles.mobilePanelOpen:''}`} aria-hidden={!mobileOpen}>
+   <div className={styles.mobileHeader}>
+    <div className={styles.mobileBrand}><Image src={BRAND_ICON} alt="" width={28} height={28}/><span>MANGLO</span></div>
+    <button type="button" onClick={()=>setMobileOpen(false)} aria-label="Close navigation"><X size={18}/></button>
    </div>
    <nav className={styles.mobileLinks} aria-label="Mobile navigation">
-    {primaryLinks.map(link=><Link key={link.href} href={link.href} className={isActive(pathname,link.href)?styles.mobileActive:undefined}><span>{link.label}<small>{link.href==='/services'?'Browse the live marketplace':link.href==='/about'?'Meet MANGLO and its founder':link.href==='/trust'?'How MANGLO protects orders':'Guides, payments, orders and support'}</small></span><ChevronRight size={16}/></Link>)}
-    <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.mobileActive:undefined}><span>Invite & earn<small>Share MANGLO and view referral rewards</small></span><Gift size={16}/></Link>
+    {primaryLinks.map(link=><Link key={link.href} href={link.href} className={isActive(pathname,link.href)?styles.mobileActive:undefined}><span>{link.label}</span><ChevronRight size={15}/></Link>)}
+    <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.mobileActive:undefined}><span>Invite & earn</span><Gift size={15}/></Link>
    </nav>
-   <div className={styles.mobileSupportLinks}><Link href="/faq"><BookOpen size={14}/> FAQ & support</Link><Link href="/contact">Contact MANGLO</Link></div>
-   <div className={styles.mobileTrust}><ShieldCheck size={18}/><div><b>Clear checks before an order leaves MANGLO.</b><p>Live service details, quantity, price and wallet balance are validated again by the transaction engine before submission.</p></div></div>
+   <div className={styles.mobileMeta}>
+    <Link href="/faq">FAQ & Support</Link>
+    <Link href="/contact">Contact</Link>
+    <Link href="/privacy">Privacy</Link>
+   </div>
    <div className={styles.mobileActions}>
-    <Link className={styles.mobileAccount} href={accountHref}>{signedIn?<LayoutDashboard size={16}/>:<UserRound size={16}/>} {accountLabel}</Link>
-    {!signedIn?<Link className={styles.mobilePrimary} href="/services">Browse services <ArrowRight size={14}/></Link>:null}
+    <Link className={styles.mobileAccount} href={accountHref}>{signedIn?<LayoutDashboard size={15}/>:<UserRound size={15}/>} {signedIn?'Dashboard':'Log in'}</Link>
+    {!signedIn?<Link className={styles.mobilePrimary} href="/services">Explore services <ArrowRight size={13}/></Link>:null}
     {admin?<Link className={styles.mobileAdmin} href="/admin"><Gauge size={15}/> Operations</Link>:null}
    </div>
-  </div>
+  </aside>
  </header>;
 }
