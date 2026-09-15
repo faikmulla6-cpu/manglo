@@ -12,8 +12,8 @@ export const dynamic='force-dynamic';
 async function getService(id:string){return db.service.findFirst({where:{active:true,operatorDisabled:false,lastSyncedAt:{gte:catalogFreshAfter()},OR:[{providerServiceId:id},{id}]}}).catch(()=>null)}
 export async function generateMetadata({params}:{params:Promise<{id:string}>}){
  const {id}=await params;const service=await getService(id);if(!service)return{title:'Service unavailable',robots:{index:false,follow:true}};
- const name=trustworthyServiceName(service.name);const canonical=`/services/${service.providerServiceId}`;
- return{title:name,description:`Review MANGLO service ${service.providerServiceId}: current customer rate, quantity limits and provider-reported timing before ordering.`,alternates:{canonical},openGraph:{title:`${name} | MANGLO`,description:`Service ID ${service.providerServiceId}. Review the current customer rate, limits and provider-reported timing before ordering.`,url:canonical,type:'website'},robots:{index:true,follow:true}};
+ const name=trustworthyServiceName(service.name);
+ return{title:name,description:`Review MANGLO service ${service.providerServiceId}: current customer rate, quantity limits and provider-reported timing before ordering.`,alternates:{canonical:'/services'},openGraph:{title:`${name} | MANGLO`,description:`Service ID ${service.providerServiceId}. Review the current customer rate, limits and provider-reported timing before ordering.`,url:'/services',type:'website'},robots:{index:false,follow:true}};
 }
 
 export default async function ServiceDetail({params}:{params:Promise<{id:string}>}){
