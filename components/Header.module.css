@@ -1,59 +1,54 @@
-.header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border-bottom:1px solid rgba(224,227,231,.92);box-shadow:0 8px 30px rgba(18,22,28,.035)}
-.accent{height:2px;background:linear-gradient(90deg,transparent 0%,#ff9c63 28%,#ff690d 50%,#ff9c63 72%,transparent 100%);opacity:.78}
-.inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:26px}
-.brand{display:flex;align-items:center;gap:10px;min-width:max-content;text-decoration:none;color:#111319}
-.brandIcon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#fff;border:1px solid #eceef1;box-shadow:0 8px 20px rgba(18,22,28,.06);overflow:hidden}
-.brandIcon img{width:34px;height:34px;object-fit:contain}
-.brandCopy{display:grid;line-height:1}
-.brandCopy b{font-size:16px;font-weight:950;letter-spacing:-.045em}
-.brandCopy small{margin-top:5px;color:#8a919a;font-size:8px;font-weight:720;letter-spacing:.025em}
-.links{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0}
-.links a{position:relative;padding:9px 10px;border-radius:9px;text-decoration:none;color:#565e68;font-size:10px;font-weight:780;white-space:nowrap;transition:color .16s ease,background .16s ease}
-.links a:hover{color:#171a1f;background:#f7f8f9}
-.links a:after{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:2px;border-radius:999px;background:#ff6a0a;transform:scaleX(0);transform-origin:center;transition:transform .18s ease}
-.links .activeLink{color:#181b20;background:#fff6f0}
+.headerShell{height:88px;position:relative;z-index:100}
+.navFrame{position:fixed;top:16px;left:50%;z-index:102;width:min(1160px,calc(100vw - 32px));height:58px;transform:translateX(-50%);overflow:hidden;border:1px solid rgba(214,218,223,.92);border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(20px) saturate(145%);-webkit-backdrop-filter:blur(20px) saturate(145%);box-shadow:0 14px 42px rgba(18,22,28,.09),0 2px 8px rgba(18,22,28,.04);transition:width .42s cubic-bezier(.2,.8,.2,1),height .42s cubic-bezier(.2,.8,.2,1),border-radius .42s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}
+.navFrame:hover{box-shadow:0 16px 48px rgba(18,22,28,.11),0 2px 8px rgba(18,22,28,.045)}
+.navCompact{width:52px;height:52px;border-radius:999px;box-shadow:0 12px 34px rgba(18,22,28,.12)}
+.navContent{height:100%;display:flex;align-items:center;gap:24px;padding:0 10px 0 12px;opacity:1;transform:translateY(0);transition:opacity .18s ease,transform .24s ease;white-space:nowrap}
+.navCompact .navContent{opacity:0;transform:translateY(-3px);pointer-events:none}
+.brand{display:flex;align-items:center;gap:9px;min-width:max-content;text-decoration:none;color:#111319}
+.brandIcon{width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;border-radius:10px;background:#fff;border:1px solid #eceef1;overflow:hidden}
+.brandIcon img{width:30px;height:30px;object-fit:contain}
+.brandName{font-size:15px;font-weight:900;letter-spacing:-.045em}
+.links{display:flex;align-items:center;justify-content:center;gap:2px;min-width:0;flex:1}
+.links a{position:relative;padding:10px 11px;text-decoration:none;color:#5c626b;font-size:11px;font-weight:710;letter-spacing:-.005em;white-space:nowrap;transition:color .16s ease}
+.links a:hover{color:#111319}
+.links a:after{content:"";position:absolute;left:11px;right:11px;bottom:5px;height:1.5px;border-radius:999px;background:#f26522;transform:scaleX(0);transform-origin:center;transition:transform .18s ease}
+.links .activeLink{color:#111319;font-weight:780}
 .links .activeLink:after{transform:scaleX(1)}
-.actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:max-content}
-.trustBadge{height:35px;display:flex;align-items:center;gap:6px;padding:0 10px;border-radius:999px;background:#f7faf8;border:1px solid #dfe9e2;color:#456050;font-size:8px;font-weight:820;white-space:nowrap}
-.trustBadge svg{color:#23714a}
-.iconButton{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;border:1px solid #e3e6e9;background:#fff;color:#545d67;text-decoration:none;transition:transform .15s ease,border-color .15s ease,background .15s ease,color .15s ease}
-.iconButton:hover{transform:translateY(-1px);border-color:#ccd1d6;background:#fafbfb;color:#111319}
-.login,.accountButton,.primary{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:8px 12px;text-decoration:none;font-size:10px;font-weight:840;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
-.login{color:#343a42;background:#fff;border:1px solid #e2e5e8}
-.login:hover{background:#f9fafb;border-color:#ced3d8}
-.accountButton{color:#fff;background:#17191d;border:1px solid #17191d;box-shadow:0 8px 20px rgba(23,25,29,.12)}
-.accountButton:hover{transform:translateY(-1px);background:#282b30;border-color:#282b30}
-.primary{color:#fff;background:linear-gradient(135deg,#ff690d,#f05c00);border:1px solid #f4660f;box-shadow:0 8px 22px rgba(240,92,0,.17)}
-.primary:hover{transform:translateY(-1px);box-shadow:0 11px 28px rgba(240,92,0,.22)}
-.mobileTrigger{display:none;width:39px;height:39px;border-radius:10px;border:1px solid #e2e5e8;background:#fff;color:#24282e;cursor:pointer;place-items:center;padding:0;transition:background .15s ease,border-color .15s ease}
-.mobileTrigger:hover{background:#f8f9fa;border-color:#cfd4d9}
-.backdrop{position:fixed;z-index:99;inset:70px 0 0;border:0;padding:0;background:rgba(13,16,20,.24);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);cursor:default}
-.mobilePanel{position:fixed;z-index:101;top:78px;right:max(14px,calc((100vw - 1240px)/2));width:min(390px,calc(100vw - 28px));max-height:calc(100dvh - 94px);overflow:auto;border:1px solid #dde1e5;border-radius:18px;background:rgba(255,255,255,.985);box-shadow:0 28px 80px rgba(17,21,26,.18);padding:12px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-9px) scale(.985);transform-origin:top right;transition:opacity .18s ease,transform .18s ease,visibility .18s ease}
+.actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:max-content}
+.utilityButton{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:1px solid transparent;color:#60666f;text-decoration:none;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.utilityButton:hover{background:#f7f8f9;border-color:#eceef0;color:#171a1f}
+.login,.accountButton,.primary{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:8px 12px;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+.login{color:#343940;background:#fff;border:1px solid #e1e4e7}
+.login:hover{background:#f7f8f9;border-color:#cfd3d7}
+.accountButton,.primary{background:#17191d;color:#fff;border:1px solid #17191d;box-shadow:0 6px 18px rgba(23,25,29,.12)}
+.accountButton:hover,.primary:hover{background:#25282d;border-color:#25282d;transform:translateY(-1px)}
+.compactTrigger{position:absolute;inset:0;margin:auto;width:52px;height:52px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;color:#20242a;cursor:pointer;opacity:0;pointer-events:none;transform:scale(.86) rotate(-8deg);transition:opacity .2s ease,transform .32s cubic-bezier(.2,.8,.2,1)}
+.navCompact .compactTrigger{opacity:1;pointer-events:auto;transform:scale(1) rotate(0)}
+.compactTrigger:hover{background:#f7f8f9}
+.mobileTrigger{display:none;width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:#20242a;cursor:pointer;place-items:center;padding:0}
+.mobileTrigger:hover{background:#f5f6f7}
+.backdrop{position:fixed;z-index:98;inset:0;border:0;padding:0;background:rgba(15,18,22,.22);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);cursor:default}
+.mobilePanel{position:fixed;z-index:101;top:78px;right:12px;width:min(400px,calc(100vw - 24px));max-height:calc(100dvh - 90px);overflow:auto;border:1px solid #dfe2e5;border-radius:16px;background:rgba(255,255,255,.985);box-shadow:0 26px 70px rgba(16,19,23,.18);padding:10px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px) scale(.99);transform-origin:top right;transition:opacity .18s ease,transform .2s ease,visibility .18s ease}
 .mobilePanelOpen{opacity:1;visibility:visible;pointer-events:auto;transform:none}
-.mobileTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 13px;border-bottom:1px solid #edf0f2}
-.mobileTop>div{display:grid;gap:3px}
-.mobileTop>div span{font-size:8px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:#9a4a19}
-.mobileTop>div b{font-size:15px;letter-spacing:-.025em}
-.mobileSecure{display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;background:#f0f8f3;color:#356047;font-size:8px;font-weight:820;white-space:nowrap}
-.mobileLinks{display:grid;padding:8px 0 4px}
-.mobileLinks>a{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border-radius:11px;color:#252a30;text-decoration:none;border:1px solid transparent;transition:background .14s ease,border-color .14s ease}
-.mobileLinks>a:hover,.mobileLinks .mobileActive{background:#fff7f1;border-color:#f2dfd3}
-.mobileLinks>a>span{display:grid;gap:4px;font-size:11px;font-weight:850}
-.mobileLinks>a small{color:#858c95;font-size:8.5px;font-weight:620;line-height:1.45}
-.mobileLinks>a>svg{flex:0 0 auto;color:#a14a19}
-.mobileSupportLinks{display:flex;gap:6px;padding:8px;border-top:1px solid #edf0f2;border-bottom:1px solid #edf0f2}
-.mobileSupportLinks a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:35px;padding:7px 8px;border-radius:9px;background:#f7f8f9;color:#555d66;text-decoration:none;font-size:8.5px;font-weight:800}
-.mobileTrust{display:flex;gap:10px;margin:10px 8px;padding:12px;border-radius:12px;background:#17191d;color:#fff}
-.mobileTrust>svg{flex:0 0 auto;color:#ff9559;margin-top:1px}
-.mobileTrust b{display:block;font-size:9.5px;line-height:1.4;margin-bottom:3px}
-.mobileTrust p{margin:0;color:#b8bec6;font-size:8px;line-height:1.55}
-.mobileActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:2px 8px 7px}
-.mobileAccount,.mobilePrimary,.mobileAdmin{min-height:39px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:9px;font-weight:850}
-.mobileAccount{background:#17191d;color:#fff}
-.mobilePrimary{background:linear-gradient(135deg,#ff690d,#ef5b00);color:#fff}
-.mobileAdmin{grid-column:1/-1;background:#f6f7f8;color:#3f464e;border:1px solid #e3e6e9}
-.header a:focus-visible,.header button:focus-visible{outline:3px solid rgba(255,106,0,.17);outline-offset:2px}
-@media(max-width:1160px){.trustBadge{display:none}.links{gap:2px}.links a{padding-inline:8px}}
-@media(max-width:920px){.links,.login,.accountButton,.primary,.actions>.iconButton,.trustBadge{display:none}.mobileTrigger{display:grid}.inner{height:64px}.brandCopy small{display:none}.mobilePanel{top:74px}.backdrop{inset:66px 0 0}}
-@media(max-width:520px){.inner{height:62px}.brandIcon{width:35px;height:35px;border-radius:10px}.brandIcon img{width:31px;height:31px}.brandCopy b{font-size:15px}.mobileTrigger{width:37px;height:37px}.mobilePanel{top:71px;right:14px;max-height:calc(100dvh - 84px);border-radius:16px}.backdrop{inset:64px 0 0}.mobileTop{align-items:flex-start}.mobileSecure{font-size:7px}.mobileActions{grid-template-columns:1fr}.mobileAdmin{grid-column:auto}}
-@media(prefers-reduced-motion:reduce){.links a:after,.iconButton,.login,.accountButton,.primary,.mobilePanel,.mobileLinks>a{transition:none}}
+.mobileHeader{display:flex;align-items:center;justify-content:space-between;padding:7px 7px 11px;border-bottom:1px solid #eceef0}
+.mobileBrand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;letter-spacing:-.035em}
+.mobileBrand img{border-radius:7px}
+.mobileHeader>button{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:8px;background:#f5f6f7;color:#292d33;cursor:pointer}
+.mobileLinks{display:grid;padding:7px 0}
+.mobileLinks>a{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 11px;border-radius:10px;color:#30353b;text-decoration:none;font-size:11px;font-weight:760;border:1px solid transparent;transition:background .14s ease,color .14s ease}
+.mobileLinks>a:hover,.mobileLinks .mobileActive{background:#f7f8f9;color:#111319}
+.mobileLinks .mobileActive{border-color:#ebedef}
+.mobileLinks>a>svg{color:#7b8189;flex:0 0 auto}
+.mobileMeta{display:flex;gap:4px;flex-wrap:wrap;padding:9px 7px;border-top:1px solid #eceef0;border-bottom:1px solid #eceef0}
+.mobileMeta a{padding:7px 8px;border-radius:8px;color:#676d75;text-decoration:none;font-size:8.5px;font-weight:720}
+.mobileMeta a:hover{background:#f6f7f8;color:#22262b}
+.mobileActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 7px 5px}
+.mobileAccount,.mobilePrimary,.mobileAdmin{min-height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:9.5px;font-weight:820}
+.mobileAccount{background:#fff;color:#22262b;border:1px solid #dfe2e5}
+.mobilePrimary{background:#17191d;color:#fff;border:1px solid #17191d}
+.mobileAdmin{grid-column:1/-1;background:#f6f7f8;color:#3d434a;border:1px solid #e2e5e8}
+.navFrame a:focus-visible,.navFrame button:focus-visible,.mobilePanel a:focus-visible,.mobilePanel button:focus-visible{outline:3px solid rgba(242,101,34,.18);outline-offset:2px}
+@media(max-width:1080px){.navContent{gap:14px}.links a{padding-inline:8px}.links a:after{left:8px;right:8px}.utilityButton:first-child{display:none}}
+@media(max-width:920px){.headerShell{height:78px}.navFrame,.navCompact{top:10px;width:calc(100vw - 24px);height:58px;border-radius:16px}.navFrame:hover{box-shadow:0 14px 42px rgba(18,22,28,.09),0 2px 8px rgba(18,22,28,.04)}.navContent,.navCompact .navContent{gap:10px;padding:0 9px 0 10px;opacity:1;transform:none;pointer-events:auto}.links,.utilityButton,.login,.accountButton,.primary,.compactTrigger{display:none}.brand{flex:1}.brandName{font-size:14px}.mobileTrigger{display:grid}.mobilePanel{top:76px}.backdrop{inset:0}}
+@media(max-width:520px){.headerShell{height:74px}.navFrame,.navCompact{top:8px;width:calc(100vw - 18px);height:56px;border-radius:15px}.brandIcon{width:32px;height:32px;border-radius:9px}.brandIcon img{width:28px;height:28px}.brandName{font-size:13.5px}.mobilePanel{top:70px;right:9px;width:calc(100vw - 18px);max-height:calc(100dvh - 80px);border-radius:14px}.mobileActions{grid-template-columns:1fr}.mobileAdmin{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){.navFrame,.navContent,.links a:after,.utilityButton,.login,.accountButton,.primary,.compactTrigger,.mobilePanel,.mobileLinks>a{transition:none}}
