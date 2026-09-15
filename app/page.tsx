@@ -185,7 +185,7 @@ export default async function Home(){
           </div>
 
           <div className={styles.orderStat}><span>{data.catalogFresh?'Live services':'Catalog services'}</span><strong>{hasCatalog?serviceCount.toLocaleString('en-IN'):'—'}</strong><small><BadgeCheck size={12}/>{data.catalogFresh?' Fresh catalog':' Latest synchronized snapshot'}</small><div><i/><i/><i/><i/></div></div>
-          <div className={styles.peopleCard}><span className={styles.people}><i>M</i><i>G</i><i>+</i></span><div><b>Real catalog.<br/>Real outcomes.</b><small>{data.completedOrders.toLocaleString('en-IN')} provider-confirmed completed order{data.completedOrders===1?'':'s'}</small></div></div>
+          <div className={styles.peopleCard}><span className={styles.people}><i>M</i><i>G</i><i>+</i></span><div><b>Real catalog.<br/>Real order tracking.</b><small>Server-validated checkout · order-linked support</small></div></div>
         </div>
       </div>
     </section>
