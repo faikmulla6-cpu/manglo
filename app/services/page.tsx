@@ -3,7 +3,13 @@ import {presentService} from '@/lib/catalog';
 import {catalogFreshAfter} from '@/lib/catalog-freshness';
 import ServicesBrowser from './ServicesBrowser';
 
-export const metadata={title:'Service Marketplace',description:'Search live MANGLO services by platform, category or service ID. Review current customer rates, limits and provider-reported timing before ordering.',alternates:{canonical:'/services'}};
+export const metadata={
+ title:'Social Media Growth Services Marketplace',
+ description:'Compare live Instagram, YouTube, TikTok, Telegram, Facebook and other social media growth services on MANGLO. Review current rates, quantity limits, provider-reported timing and reliability before ordering.',
+ alternates:{canonical:'/services'},
+ openGraph:{title:'Social Media Growth Services Marketplace | MANGLO',description:'Browse MANGLO’s fresh catalog of social media growth services with current customer pricing, limits, timing and reliability signals.',url:'/services',type:'website'},
+ robots:{index:true,follow:true},
+};
 
 export default async function Services({searchParams}:{searchParams:Promise<{platform?:string;q?:string;filter?:string;sort?:string;category?:string;refill?:string}>}){
  const params=await searchParams;
