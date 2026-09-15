@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import styles from './CommerceMarketplace.module.css';
 
-type Service={id:string;providerServiceId:string;platform:string;category:string;name:string;description:string|null;averageTime:string|null;retailRatePaisePerThousand:number;min:number;max:number;refill:boolean;score:number};
+type Service={id:string;providerServiceId:string;platform:string;category:string;name:string;description:string|null;averageTime:string|null;retailRatePaisePerThousand:number;min:number;max:number;refill:boolean;score:number;orderable:boolean};
 const preferred=['All','Instagram','YouTube','TikTok','Telegram','Facebook','X'];
 const marks:Record<string,string>={Instagram:'IG',YouTube:'YT',TikTok:'TT',Telegram:'TG',Facebook:'FB',X:'X'};
 const toneClass:Record<string,string>={Instagram:'instagram',YouTube:'youtube',TikTok:'tiktok',Telegram:'telegram',Facebook:'facebook',X:'x'};
@@ -23,10 +23,15 @@ function averageMinutes(value:string|null){
 }
 
 function money(paise:number){return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(paise/100)}
+function syncLabel(value:string|null){
+ if(!value)return 'Latest synchronized snapshot';
+ const date=new Date(value);if(Number.isNaN(date.getTime()))return 'Latest synchronized snapshot';
+ return `Synced ${new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(date)}`;
+}
 
 export default function ServicesBrowser({
- services,initialPlatform='All',initialQuery='',initialSort='Recommended',initialCategory='All',initialRefill=false,
-}:{services:Service[];initialPlatform?:string;initialQuery?:string;initialSort?:string;initialCategory?:string;initialRefill?:boolean}){
+ services,catalogFresh,catalogAsOf,orderableCount,initialPlatform='All',initialQuery='',initialSort='Recommended',initialCategory='All',initialRefill=false,
+}:{services:Service[];catalogFresh:boolean;catalogAsOf:string|null;orderableCount:number;initialPlatform?:string;initialQuery?:string;initialSort?:string;initialCategory?:string;initialRefill?:boolean}){
  const validInitial=initialPlatform==='All'||services.some(service=>service.platform.toLowerCase()===initialPlatform.toLowerCase())?initialPlatform:'All';
  const [platform,setPlatform]=useState(validInitial);
  const [query,setQuery]=useState(initialQuery);
@@ -99,19 +104,22 @@ export default function ServicesBrowser({
   <section className={styles.hero}>
    <div className={`container ${styles.heroGrid}`}>
     <div className={styles.heroCopy}>
-     <span className={styles.eyebrow}>LIVE SERVICE MARKETPLACE</span>
+     <span className={styles.eyebrow}>{catalogFresh?'LIVE SERVICE MARKETPLACE':'LATEST SYNCHRONIZED MARKETPLACE'}</span>
      <h1>Find the right service.<br/><em>Skip the panel maze.</em></h1>
-     <p>Search the fresh MANGLO catalog by platform, service type or exact ID. Compare customer pricing, quantity limits, provider-reported timing and reliability before you order.</p>
+     <p>{catalogFresh?'Search the fresh MANGLO catalog by platform, service type or exact ID. Compare customer pricing, quantity limits, provider-reported timing and reliability before you order.':'Browse MANGLO’s latest synchronized catalog by platform, service type or exact ID. Prices and availability are revalidated before any order can be submitted.'}</p>
      <div className={styles.heroFacts}>
-      <span><BadgeCheck size={14}/><b>{services.length.toLocaleString('en-IN')}</b> live services</span>
+      <span><BadgeCheck size={14}/><b>{services.length.toLocaleString('en-IN')}</b> catalog services</span>
       <span><ShieldCheck size={14}/><b>{platformCount}</b> platforms</span>
-      <span><Clock3 size={14}/> Fresh catalog only</span>
+      <span><Clock3 size={14}/>{catalogFresh?'Fresh catalog only':orderableCount>0?`${orderableCount.toLocaleString('en-IN')} ready to order`:syncLabel(catalogAsOf)}</span>
      </div>
     </div>
-    <aside className={styles.aiHelp}>
+    {catalogFresh?<aside className={styles.aiHelp}>
      <span><Bot size={17}/></span>
      <div><small>OPTIONAL ASSISTANT</small><b>Not sure what fits?</b><p>MANGLO AI can compare the same live catalog and prepare a quote without bypassing checkout checks.</p><Link href="/dashboard?view=ai">Ask MANGLO AI <ArrowRight size={12}/></Link></div>
-    </aside>
+    </aside>:<aside className={styles.aiHelp}>
+     <span><Clock3 size={17}/></span>
+     <div><small>CATALOG STATUS</small><b>Latest snapshot stays browsable</b><p>MANGLO keeps the last synchronized catalog visible while freshness is restored. Checkout remains protected by server-side freshness checks.</p><Link href="/trust">How MANGLO protects orders <ArrowRight size={12}/></Link></div>
+    </aside>}
    </div>
   </section>
 
@@ -138,11 +146,11 @@ export default function ServicesBrowser({
 
    {recent.length?<section className={styles.recent}>
     <div className={styles.sectionLabel}><div><span>YOUR HISTORY</span><h2>Recently viewed</h2></div><small>Stored on this device</small></div>
-    <div className={styles.recentGrid}>{recent.slice(0,4).map(service=><Link className={styles.recentCard} href={`/services/${service.providerServiceId}`} key={service.id} onClick={()=>remember(service)}><span className={`${styles.mark} ${styles[toneClass[service.platform]||'']||''}`}>{marks[service.platform]||service.platform.slice(0,2).toUpperCase()}</span><div><small>{service.platform} · ID {service.providerServiceId}</small><b>{service.name}</b></div><strong>{money(service.retailRatePaisePerThousand)} <small>/ 1K</small></strong></Link>)}</div>
+    <div className={styles.recentGrid}>{recent.slice(0,4).map(service=>service.orderable?<Link className={styles.recentCard} href={`/services/${service.providerServiceId}`} key={service.id} onClick={()=>remember(service)}><span className={`${styles.mark} ${styles[toneClass[service.platform]||'']||''}`}>{marks[service.platform]||service.platform.slice(0,2).toUpperCase()}</span><div><small>{service.platform} · ID {service.providerServiceId}</small><b>{service.name}</b></div><strong>{money(service.retailRatePaisePerThousand)} <small>/ 1K</small></strong></Link>:<div className={styles.recentCard} key={service.id}><span className={`${styles.mark} ${styles[toneClass[service.platform]||'']||''}`}>{marks[service.platform]||service.platform.slice(0,2).toUpperCase()}</span><div><small>{service.platform} · ID {service.providerServiceId}</small><b>{service.name}</b></div><strong>{money(service.retailRatePaisePerThousand)} <small>/ 1K</small></strong></div>)}</div>
    </section>:null}
 
    <div className={styles.catalogHead}>
-    <div><span className={styles.catalogEyebrow}>BROWSE THE CATALOG</span><h2>{platform==='All'?'All live services':platform}</h2><p>{shown.length.toLocaleString('en-IN')} matching services{category!=='All'?` in ${category}`:''}</p></div>
+    <div><span className={styles.catalogEyebrow}>BROWSE THE CATALOG</span><h2>{platform==='All'?'All catalog services':platform}</h2><p>{shown.length.toLocaleString('en-IN')} matching services{category!=='All'?` in ${category}`:''}</p></div>
     <div className={styles.catalogStatus}><SlidersHorizontal size={14}/><span>Showing <b>{Math.min(limit,shown.length).toLocaleString('en-IN')}</b> of {shown.length.toLocaleString('en-IN')}</span></div>
    </div>
 
@@ -159,7 +167,7 @@ export default function ServicesBrowser({
       {service.refill?<span className={styles.refill}><BadgeCheck size={11}/> Refill listed</span>:null}
      </div>
 
-     <p className={styles.description}>{service.description||'Review the live rate, limits and provider-reported service details before ordering.'}</p>
+     <p className={styles.description}>{service.description||(service.orderable?'Review the live rate, limits and provider-reported service details before ordering.':'Review the latest synchronized rate, limits and provider-reported service details.')}</p>
 
      <div className={styles.quickFacts}>
       <span><Clock3 size={12}/><div><small>Provider timing</small><b>{service.averageTime?`Avg. ${service.averageTime}`:'Not published'}</b></div></span>
@@ -169,15 +177,15 @@ export default function ServicesBrowser({
      <dl className={styles.specs}><div><dt>MINIMUM</dt><dd>{service.min.toLocaleString('en-IN')}</dd></div><div><dt>MAXIMUM</dt><dd>{service.max.toLocaleString('en-IN')}</dd></div><div><dt>CATEGORY</dt><dd title={service.category}>{service.category}</dd></div></dl>
 
      <div className={styles.cardBottom}>
-      <div className={styles.price}><small>Customer rate</small><strong>{money(service.retailRatePaisePerThousand)} <span>/ 1,000</span></strong></div>
-      <div className={styles.actions}><Link href={`/services/${service.providerServiceId}`} className={styles.details} onClick={()=>remember(service)}>Details</Link><Link href={`/order?service=${encodeURIComponent(service.id)}`} className={styles.order} onClick={()=>remember(service)}>Review & order <ArrowRight size={12}/></Link></div>
+      <div className={styles.price}><small>{service.orderable?'Customer rate':'Last synchronized rate'}</small><strong>{money(service.retailRatePaisePerThousand)} <span>/ 1,000</span></strong></div>
+      <div className={styles.actions}>{service.orderable?<><Link href={`/services/${service.providerServiceId}`} className={styles.details} onClick={()=>remember(service)}>Details</Link><Link href={`/order?service=${encodeURIComponent(service.id)}`} className={styles.order} onClick={()=>remember(service)}>Review & order <ArrowRight size={12}/></Link></>:<><span className={styles.details}>Catalog snapshot</span><span className={styles.details} aria-disabled="true">Refresh pending</span></>}</div>
      </div>
     </article>)}</div>
     {limit<shown.length?<div className={styles.load}><span>{(shown.length-limit).toLocaleString('en-IN')} more services available</span><button type="button" onClick={()=>setLimit(current=>current+36)}>Load 36 more</button></div>:null}
    </>}
 
    <div className={styles.trust}>
-    <article><span><BadgeCheck size={15}/></span><div><b>Fresh catalog details</b><small>Only currently active, synchronized services are shown here.</small></div></article>
+    <article><span><BadgeCheck size={15}/></span><div><b>{catalogFresh?'Fresh catalog details':'Latest synchronized catalog'}</b><small>{catalogFresh?'Only currently active, synchronized services are shown here.':'The marketplace remains browsable during refresh without weakening checkout freshness rules.'}</small></div></article>
     <article><span><CreditCard size={15}/></span><div><b>Server-checked checkout</b><small>Current price, quantity and wallet balance are checked again before submission.</small></div></article>
     <article><span><ShieldCheck size={15}/></span><div><b>Supplier health monitored</b><small>Recent supplier outcomes influence service reliability and repeated failures can be quarantined.</small></div></article>
    </div>
