@@ -10,6 +10,7 @@ import {
  ArrowRight,ChevronRight,Gift,Gauge,LayoutDashboard,Menu,Search,UserRound,X,
 } from 'lucide-react';
 import styles from './Header.module.css';
+import radix from './HeaderRadix.module.css';
 
 const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
 const COLLAPSE_AFTER=150;
@@ -32,8 +33,8 @@ function NavTooltip({label,children}:{label:string;children:React.ReactElement})
  return <Tooltip.Root>
   <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
   <Tooltip.Portal>
-   <Tooltip.Content className={styles.tooltip} sideOffset={8} collisionPadding={10}>
-    {label}<Tooltip.Arrow className={styles.tooltipArrow}/>
+   <Tooltip.Content className={radix.tooltip} sideOffset={8} collisionPadding={10}>
+    {label}<Tooltip.Arrow className={radix.tooltipArrow}/>
    </Tooltip.Content>
   </Tooltip.Portal>
  </Tooltip.Root>;
@@ -137,8 +138,8 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
     <Dialog.Overlay className={styles.backdrop}/>
     <Dialog.Content asChild onOpenAutoFocus={()=>updateCompact(false)}>
      <aside id="manglo-mobile-nav" className={`${styles.mobilePanel} ${styles.mobilePanelOpen}`}>
-      <Dialog.Title className={styles.srOnly}>MANGLO navigation</Dialog.Title>
-      <Dialog.Description className={styles.srOnly}>Navigate MANGLO services, information, support and account areas.</Dialog.Description>
+      <Dialog.Title className={radix.srOnly}>MANGLO navigation</Dialog.Title>
+      <Dialog.Description className={radix.srOnly}>Navigate MANGLO services, information, support and account areas.</Dialog.Description>
       <div className={styles.mobileHeader}>
        <div className={styles.mobileBrand}><Image src={BRAND_ICON} alt="" width={28} height={28}/><span>MANGLO</span></div>
        <Dialog.Close asChild><button type="button" aria-label="Close navigation"><X size={18}/></button></Dialog.Close>
