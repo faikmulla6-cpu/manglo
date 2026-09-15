@@ -23,6 +23,7 @@ import {
 import {db} from '@/lib/db';
 import {catalogFreshAfter} from '@/lib/catalog-freshness';
 import {presentService} from '@/lib/catalog';
+import {company} from '@/lib/company';
 import FeatureSection from '@/components/ui/feature-section';
 import styles from './CommerceHome.module.css';
 
@@ -118,6 +119,18 @@ export default async function Home(){
   const websiteSchema={
     '@context':'https://schema.org',
     '@graph':[
+      {
+        '@type':'Organization',
+        '@id':`${origin}/#organization`,
+        name:'MANGLO',
+        legalName:company.legalName,
+        url:origin,
+        logo:`${origin}/manglo-icon.png`,
+        email:company.supportEmail,
+        sameAs:['https://www.instagram.com/manglo.shop/'],
+        founder:{'@type':'Person',name:'Faik Hameed Mulla',sameAs:['https://x.com/faikmulla','https://www.instagram.com/myself.fm/']},
+        contactPoint:{'@type':'ContactPoint',contactType:'customer support',email:company.supportEmail,areaServed:'IN',availableLanguage:['English']},
+      },
       {'@type':'WebSite','@id':`${origin}/#website`,url:origin,name:'MANGLO',alternateName:'MANGLO Social Media Growth Marketplace',publisher:{'@id':`${origin}/#organization`}},
       {'@type':'WebPage','@id':`${origin}/#webpage`,url:origin,name:'MANGLO — Social Media Growth Services Marketplace',description:'Compare live social media growth services, current customer rates, limits and provider-reported timing before ordering.',isPartOf:{'@id':`${origin}/#website`},about:{'@id':`${origin}/#organization`}},
     ],
