@@ -62,7 +62,7 @@ export default function FeatureSection(){
     <div className={`container ${styles.grid}`}>
       <div className={styles.visualWrap} aria-label="MANGLO order workflow capabilities">
         <div className={styles.visualTop}>
-          <div><span>ORDER SYSTEM</span><b>What MANGLO handles around every order</b></div>
+          <div><span>MANGLO WORKFLOW</span><b>What sits between a service list and a real order</b></div>
           <span className={styles.live}><i/> Active workflow</span>
         </div>
 
@@ -83,9 +83,9 @@ export default function FeatureSection(){
       </div>
 
       <div className={styles.copy}>
-        <span className={styles.eyebrow}>ONE CONTROLLED FLOW</span>
-        <h2 id="manglo-system-heading">The complicated parts stay <em>behind the interface.</em></h2>
-        <p>Finding a service is only the visible first step. MANGLO connects fresh catalog data, wallet funding, destination checks, supplier monitoring, order tracking, eligible refund handling and support into one customer workflow.</p>
+        <span className={styles.eyebrow}>WHY MANGLO</span>
+        <h2 id="manglo-system-heading">A marketplace layer, not another <em>panel maze.</em></h2>
+        <p>Traditional SMM panels can expose huge service lists, supplier jargon and unclear choices. MANGLO keeps the live catalog but adds clearer discovery, destination checks, supplier-health signals, wallet safeguards, tracking and order-linked support around the purchase.</p>
 
         <div className={styles.points}>
           <span><ShieldCheck size={15}/> Server-side order validation</span>
@@ -94,8 +94,8 @@ export default function FeatureSection(){
         </div>
 
         <div className={styles.actions}>
-          <Link className={styles.primary} href="/services">Explore live services <ArrowRight size={14}/></Link>
-          <Link className={styles.secondary} href="/trust">How MANGLO protects orders</Link>
+          <Link className={styles.primary} href="/services">Compare live services <ArrowRight size={14}/></Link>
+          <Link className={styles.secondary} href="/trust">See Trust & Safety</Link>
         </div>
       </div>
     </div>
