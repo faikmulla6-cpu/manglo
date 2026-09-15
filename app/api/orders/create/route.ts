@@ -54,8 +54,8 @@ export async function POST(req:NextRequest){
 
   const input=orderInput.parse(await req.json());
   const service=await resolveService(input.serviceId);
-  if(!service)return json(requestId,{error:'This service is not currently available.'},404);
-  if(!serviceIsFresh(service.lastSyncedAt))return json(requestId,{error:'Live supplier data for this service is being refreshed. Please try again after the catalog sync completes.',code:'CATALOG_STALE'},503);
+  if(!service)return json(requestId,{error:'This service is no longer available. Your wallet has not been charged. Please choose another live service.',code:'SERVICE_UNAVAILABLE'},404);
+  if(!serviceIsFresh(service.lastSyncedAt))return json(requestId,{error:'This service just became unavailable before checkout. Your wallet has not been charged. Please choose another live service.',code:'CATALOG_STALE'},503);
   if(input.quantity<service.min||input.quantity>service.max)return json(requestId,{error:`Quantity must be between ${service.min.toLocaleString('en-IN')} and ${service.max.toLocaleString('en-IN')}.`},400);
   const destination=validateServiceDestination(service,input.link);
   if(!destination.ok)return json(requestId,{error:destination.error,code:'DESTINATION_MISMATCH'},400);
