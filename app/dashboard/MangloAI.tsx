@@ -1,8 +1,9 @@
 'use client';
 
 import {FormEvent,useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowUp,Clock3,CreditCard,History,MessageSquarePlus,ShieldCheck,Sparkles,Wallet} from 'lucide-react';
+import {ArrowDown,ArrowLeft,ArrowUp,Clock3,CreditCard,History,MessageSquarePlus,ShieldCheck,Sparkles,Wallet} from 'lucide-react';
 import styles from './MangloAI.module.css';
+import runtime from './MangloAIRuntime.module.css';
 
 type Service={id:string;serviceId:string;platform:string;category:string;name:string;description:string|null;averageTime:string|null;ratePaisePerThousand:number;min:number;max:number;refill:boolean;score:number};
 type Proposal={serviceDbId:string;serviceId:string;serviceName:string;platform:string;link:string;quantity:number;ratePaisePerThousand:number;chargePaise:number;walletBalancePaise:number;balanceAfterPaise:number;sufficient:boolean;min:number;max:number;averageTime:string|null;refill:boolean;quotedAt:string};
@@ -17,42 +18,150 @@ const PROMPTS=[
  'Which refill service gives me the best value?',
  'Track my latest order and explain its status…',
 ];
+const DRAFT_KEY='manglo-ai-composer-draft-v1';
+const FOLLOW_THRESHOLD=120;
 
 const money=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2}).format(paise/100);
 const when=(value:string)=>new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
 function cleanText(value:string){return value.split('\n').filter(line=>!/^\s*\|.*\|\s*$/.test(line)).join('\n').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/`([^`]+)`/g,'$1').replace(/^#{1,6}\s+/gm,'').replace(/\n{3,}/g,'\n\n').trim()}
 
 export default function MangloAI({userName,walletPaise,resetSignal,onNavigate}:Props){
- const [conversations,setConversations]=useState<Conversation[]>([]);const [conversationId,setConversationId]=useState<string|null>(null);const [messages,setMessages]=useState<Message[]>([]);const [input,setInput]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [historyOpen,setHistoryOpen]=useState(false);const [readyProposal,setReadyProposal]=useState<Proposal|null>(null);const [composerFocused,setComposerFocused]=useState(false);const [placeholderIndex,setPlaceholderIndex]=useState(0);
- const bottomRef=useRef<HTMLDivElement>(null);const initialized=useRef(false);const lastReset=useRef(resetSignal);
+ const [conversations,setConversations]=useState<Conversation[]>([]);
+ const [conversationId,setConversationId]=useState<string|null>(null);
+ const [messages,setMessages]=useState<Message[]>([]);
+ const [input,setInput]=useState('');
+ const [busy,setBusy]=useState(false);
+ const [error,setError]=useState('');
+ const [historyOpen,setHistoryOpen]=useState(false);
+ const [readyProposal,setReadyProposal]=useState<Proposal|null>(null);
+ const [composerFocused,setComposerFocused]=useState(false);
+ const [placeholderIndex,setPlaceholderIndex]=useState(0);
+ const [showJumpToLatest,setShowJumpToLatest]=useState(false);
+ const conversationRef=useRef<HTMLDivElement>(null);
+ const textareaRef=useRef<HTMLTextAreaElement>(null);
+ const initialized=useRef(false);
+ const lastReset=useRef(resetSignal);
+ const stickToBottom=useRef(true);
+ const forceNextScroll=useRef(false);
  const isEmpty=messages.length===0;
 
- useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:'smooth',block:'end'})},[messages,busy,readyProposal]);
+ function nearBottom(){
+  const el=conversationRef.current;
+  if(!el)return true;
+  return el.scrollHeight-el.scrollTop-el.clientHeight<FOLLOW_THRESHOLD;
+ }
+ function scrollConversation(behavior:ScrollBehavior='smooth'){
+  const el=conversationRef.current;
+  if(!el)return;
+  el.scrollTo({top:el.scrollHeight,behavior});
+  stickToBottom.current=true;
+  setShowJumpToLatest(false);
+ }
+ function handleConversationScroll(){
+  const closeToBottom=nearBottom();
+  stickToBottom.current=closeToBottom;
+  setShowJumpToLatest(!closeToBottom);
+ }
+
+ useEffect(()=>{
+  try{const draft=sessionStorage.getItem(DRAFT_KEY);if(draft)setInput(draft)}catch{}
+ },[]);
+ useEffect(()=>{
+  try{if(input)sessionStorage.setItem(DRAFT_KEY,input);else sessionStorage.removeItem(DRAFT_KEY)}catch{}
+ },[input]);
+ useEffect(()=>{
+  const textarea=textareaRef.current;
+  if(!textarea)return;
+  textarea.style.height='36px';
+  textarea.style.height=`${Math.min(Math.max(textarea.scrollHeight,36),116)}px`;
+ },[input,isEmpty]);
+ useEffect(()=>{
+  if(isEmpty)return;
+  if(forceNextScroll.current||stickToBottom.current){
+   const forced=forceNextScroll.current;
+   forceNextScroll.current=false;
+   const frame=requestAnimationFrame(()=>scrollConversation(forced?'auto':'smooth'));
+   return()=>cancelAnimationFrame(frame);
+  }
+  if(messages.length)setShowJumpToLatest(true);
+ },[messages,busy,readyProposal,isEmpty]);
  useEffect(()=>{void refreshConversations();const id=new URLSearchParams(window.location.search).get('chat');if(id)void loadConversation(id);else initialized.current=true},[]);
  useEffect(()=>{if(!initialized.current){lastReset.current=resetSignal;return}if(resetSignal!==lastReset.current){lastReset.current=resetSignal;newChat()}},[resetSignal]);
  useEffect(()=>{if(!isEmpty||composerFocused||input)return;const timer=window.setInterval(()=>setPlaceholderIndex(index=>(index+1)%PROMPTS.length),3200);return()=>window.clearInterval(timer)},[isEmpty,composerFocused,input]);
- async function refreshConversations(){const response=await fetch('/api/ai/conversations',{cache:'no-store'}).catch(()=>null);if(!response?.ok)return;const data=await response.json();setConversations(data.conversations||[])}
- async function loadConversation(id:string){setError('');setBusy(true);setHistoryOpen(false);setReadyProposal(null);try{const response=await fetch(`/api/ai/conversations?id=${encodeURIComponent(id)}`,{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not open this chat.');setConversationId(id);setMessages(data.messages||[]);setUrlChat(id)}catch(e){setError(e instanceof Error?e.message:'Could not open this chat.')}finally{setBusy(false);initialized.current=true}}
- function setUrlChat(id:string|null){const url=new URL(window.location.href);if(id)url.searchParams.set('chat',id);else url.searchParams.delete('chat');url.searchParams.delete('view');window.history.replaceState({},'',url.pathname+(url.search?url.search:''))}
- function newChat(){setConversationId(null);setMessages([]);setInput('');setError('');setHistoryOpen(false);setReadyProposal(null);setPlaceholderIndex(0);setUrlChat(null)}
- async function send(text?:string){const value=(text??input).trim();if(!value||busy)return;setReadyProposal(null);setMessages(old=>[...old,{id:`local-${Date.now()}`,role:'user',content:value,createdAt:new Date().toISOString()}]);setInput('');setError('');setBusy(true);try{const response=await fetch('/api/ai/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId:conversationId||undefined,message:value})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'MANGLO AI is temporarily unavailable.');const id=data.conversationId as string;setConversationId(id);setUrlChat(id);setMessages(old=>[...old,data.message]);await refreshConversations();if(data.action?.type==='place_order'&&data.action.proposal)setReadyProposal(data.action.proposal)}catch(e){setError(e instanceof Error?e.message:'MANGLO AI is temporarily unavailable.')}finally{setBusy(false)}}
+ useEffect(()=>{
+  if(!historyOpen)return;
+  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setHistoryOpen(false)};
+  window.addEventListener('keydown',onKey);
+  return()=>window.removeEventListener('keydown',onKey);
+ },[historyOpen]);
+
+ async function refreshConversations(){
+  const response=await fetch('/api/ai/conversations',{cache:'no-store'}).catch(()=>null);
+  if(!response?.ok)return;
+  const data=await response.json();
+  setConversations(data.conversations||[]);
+ }
+ async function loadConversation(id:string){
+  setError('');setBusy(true);setHistoryOpen(false);setReadyProposal(null);setShowJumpToLatest(false);
+  stickToBottom.current=true;forceNextScroll.current=true;
+  try{
+   const response=await fetch(`/api/ai/conversations?id=${encodeURIComponent(id)}`,{cache:'no-store'});
+   const data=await response.json();
+   if(!response.ok)throw new Error(data.error||'Could not open this chat.');
+   setConversationId(id);setMessages(data.messages||[]);setUrlChat(id);
+  }catch(e){setError(e instanceof Error?e.message:'Could not open this chat.')}
+  finally{setBusy(false);initialized.current=true}
+ }
+ function setUrlChat(id:string|null){
+  const url=new URL(window.location.href);
+  if(id)url.searchParams.set('chat',id);else url.searchParams.delete('chat');
+  url.searchParams.delete('view');
+  window.history.replaceState({},'',url.pathname+(url.search?url.search:''));
+ }
+ function newChat(){
+  setConversationId(null);setMessages([]);setInput('');setError('');setHistoryOpen(false);setReadyProposal(null);setPlaceholderIndex(0);setShowJumpToLatest(false);
+  stickToBottom.current=true;forceNextScroll.current=false;setUrlChat(null);
+ }
+ async function send(text?:string){
+  const value=(text??input).trim();
+  if(!value||busy)return;
+  stickToBottom.current=true;forceNextScroll.current=true;setShowJumpToLatest(false);setReadyProposal(null);
+  setMessages(old=>[...old,{id:`local-${Date.now()}`,role:'user',content:value,createdAt:new Date().toISOString()}]);
+  setInput('');setError('');setBusy(true);
+  try{
+   const response=await fetch('/api/ai/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId:conversationId||undefined,message:value})});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error||'MANGLO AI is temporarily unavailable.');
+   const id=data.conversationId as string;
+   setConversationId(id);setUrlChat(id);setMessages(old=>[...old,data.message]);
+   await refreshConversations();
+   if(data.action?.type==='place_order'&&data.action.proposal)setReadyProposal(data.action.proposal);
+  }catch(e){setError(e instanceof Error?e.message:'MANGLO AI is temporarily unavailable.')}
+  finally{setBusy(false)}
+ }
  function submit(event:FormEvent){event.preventDefault();void send()}
  function approveQuote(proposal:Proposal){void send(`Yes. I approve this exact quote of ${money(proposal.chargePaise)} for service ID ${proposal.serviceId}. Prepare the order for final review.`)}
  function useService(service:Service){void send(`Use service ID ${service.serviceId}.`)}
- function keyDown(event:React.KeyboardEvent<HTMLTextAreaElement>){if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();void send()}}
+ function keyDown(event:React.KeyboardEvent<HTMLTextAreaElement>){
+  if(event.nativeEvent.isComposing)return;
+  if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();void send()}
+ }
  function openPreparedOrder(proposal:Proposal){const params=new URLSearchParams({service:proposal.serviceDbId,quantity:String(proposal.quantity),link:proposal.link,quote:String(proposal.chargePaise)});location.assign(`/order?${params.toString()}`)}
  function composer(hero=false){return <form className={`${styles.composer} ${hero?styles.heroComposer:''} ${composerFocused||input?styles.composerFocused:''}`} onSubmit={submit}>
-  <div className={styles.composerRow}><span className={styles.composerIcon}><Sparkles size={17}/></span><textarea rows={1} value={input} onChange={event=>setInput(event.target.value)} onKeyDown={keyDown} onFocus={()=>setComposerFocused(true)} onBlur={()=>setComposerFocused(false)} placeholder={isEmpty&&!composerFocused&&!input?PROMPTS[placeholderIndex]:'Ask MANGLO AI anything about services or your orders…'} aria-label="Message MANGLO AI"/><button className={styles.send} disabled={!input.trim()||busy} aria-label="Send message"><ArrowUp size={17}/></button></div>
+  <div className={styles.composerRow}><span className={styles.composerIcon}><Sparkles size={17}/></span><textarea ref={textareaRef} rows={1} value={input} onChange={event=>setInput(event.target.value)} onKeyDown={keyDown} onFocus={()=>setComposerFocused(true)} onBlur={()=>setComposerFocused(false)} placeholder={isEmpty&&!composerFocused&&!input?PROMPTS[placeholderIndex]:'Ask MANGLO AI anything about services or your orders…'} aria-label="Message MANGLO AI"/><button className={styles.send} disabled={!input.trim()||busy} aria-label={busy?'MANGLO AI is responding':'Send message'}><ArrowUp size={17}/></button></div>
   <div className={styles.composerMeta}><span className={styles.liveBadge}><i/>Live catalog</span><span>Exact rates & limits</span><span>Wallet checked before checkout</span><kbd>Enter ↵</kbd></div>
  </form>}
 
- return <section className={styles.ai}>
+ return <section className={`${styles.ai} ${runtime.aiRuntime}`}>
   <header className={styles.top}><div className={styles.identity}><span className={styles.mark}>M</span><div><b>MANGLO AI</b><small><i className={styles.dot}/>Live catalog · secure order preparation</small></div></div><div className={styles.topActions}><button type="button" className={styles.manualButton} onClick={()=>onNavigate('new')}><ArrowLeft size={13}/><span>Manual order</span></button><button type="button" className={styles.wallet} onClick={()=>onNavigate('wallet')}><Wallet size={13}/><span>Wallet</span><strong>{money(walletPaise)}</strong></button><button type="button" className={styles.topButton} onClick={()=>setHistoryOpen(value=>!value)} aria-expanded={historyOpen}><History size={13}/><span>History</span></button><button type="button" className={`${styles.topButton} ${styles.newButton}`} onClick={newChat}><MessageSquarePlus size={13}/><span>New chat</span></button></div></header>
   {historyOpen&&<div className={styles.historyPanel}><div className={styles.historyHead}><span>Recent conversations</span><span>{conversations.length}</span></div>{conversations.length?conversations.map(item=><button type="button" className={styles.historyItem} onClick={()=>void loadConversation(item.id)} key={item.id}><b>{item.title}</b><small>{when(item.updatedAt)} · {item.messageCount} messages</small></button>):<div className={styles.historyEmpty}>No conversations yet.</div>}</div>}
-  <div className={styles.body}>{isEmpty&&!busy?<div className={styles.welcome}><span className={styles.heroMark}><Sparkles size={20}/></span><span className={styles.heroKicker}>MANGLO AI · SERVICE CONCIERGE</span><h2>What do you want to grow?</h2><p>Tell me the result you want. I’ll search MANGLO’s live catalog, compare exact service IDs, check current rates and prepare the safest matching order for your review.</p>{composer(true)}<div className={styles.examples}><button className={styles.example} onClick={()=>void send('Find me the cheapest Instagram views service and compare the best options.')}><b>Cheapest Instagram views</b><small>Compare live rates</small></button><button className={styles.example} onClick={()=>void send('Find strong YouTube subscriber options with refill, and compare them.')}><b>YouTube subscribers + refill</b><small>Compare exact service IDs</small></button><button className={styles.example} onClick={()=>void send('I want Instagram followers with a provider-listed no-drop claim. Show the best matching options.')}><b>Followers with no-drop listing</b><small>Find provider-listed matches</small></button><button className={styles.example} onClick={()=>void send('Track my latest order and tell me its current status.')}><b>Track my latest order</b><small>Read current order state</small></button></div><div className={styles.safetyLine}><ShieldCheck size={14}/><span>MANGLO AI can recommend and prepare. The final service, quantity and wallet charge are revalidated before money moves.</span></div></div>:<div className={styles.conversation}>{messages.map(message=><MessageView key={message.id} message={message} userName={userName} onUseService={useService} onApprove={approveQuote} onNavigate={onNavigate}/>)}{busy&&<div className={`${styles.message} ${styles.assistant}`}><span className={`${styles.avatar} ${styles.assistantAvatar}`}>M</span><div className={styles.content}><div className={styles.typing}><i/><i/><i/><span>Checking live MANGLO data…</span></div></div></div>}<div ref={bottomRef}/></div>}</div>
+  <div className={`${styles.body} ${runtime.bodyRuntime}`}>
+   {isEmpty&&!busy?<div className={styles.welcome}><span className={styles.heroMark}><Sparkles size={20}/></span><span className={styles.heroKicker}>MANGLO AI · SERVICE CONCIERGE</span><h2>What do you want to grow?</h2><p>Tell me the result you want. I’ll search MANGLO’s live catalog, compare exact service IDs, check current rates and prepare the safest matching order for your review.</p>{composer(true)}<div className={styles.examples}><button className={styles.example} onClick={()=>void send('Find me the cheapest Instagram views service and compare the best options.')}><b>Cheapest Instagram views</b><small>Compare live rates</small></button><button className={styles.example} onClick={()=>void send('Find strong YouTube subscriber options with refill, and compare them.')}><b>YouTube subscribers + refill</b><small>Compare exact service IDs</small></button><button className={styles.example} onClick={()=>void send('I want Instagram followers with a provider-listed no-drop claim. Show the best matching options.')}><b>Followers with no-drop listing</b><small>Find provider-listed matches</small></button><button className={styles.example} onClick={()=>void send('Track my latest order and tell me its current status.')}><b>Track my latest order</b><small>Read current order state</small></button></div><div className={styles.safetyLine}><ShieldCheck size={14}/><span>MANGLO AI can recommend and prepare. The final service, quantity and wallet charge are revalidated before money moves.</span></div></div>:<div ref={conversationRef} onScroll={handleConversationScroll} className={`${styles.conversation} ${runtime.conversationRuntime}`}>{messages.map(message=><MessageView key={message.id} message={message} userName={userName} onUseService={useService} onApprove={approveQuote} onNavigate={onNavigate}/>)}{busy&&<div className={`${styles.message} ${styles.assistant}`} aria-live="polite"><span className={`${styles.avatar} ${styles.assistantAvatar}`}>M</span><div className={styles.content}><div className={styles.typing} role="status"><i/><i/><i/><span>Checking live MANGLO data…</span></div></div></div>}</div>}
+   {showJumpToLatest&&!isEmpty?<button type="button" className={runtime.jumpLatest} onClick={()=>scrollConversation('smooth')}><ArrowDown size={14}/><span>Latest</span></button>:null}
+  </div>
   {readyProposal?<div className={styles.orderResult}><div><small>QUOTE REVALIDATED</small><span>ID {readyProposal.serviceId} · {money(readyProposal.chargePaise)} · wallet after {money(readyProposal.balanceAfterPaise)}</span></div><button type="button" onClick={()=>openPreparedOrder(readyProposal)}>Final review</button></div>:null}
   {error?<div className={styles.error} role="alert">{error}</div>:null}
-  {!isEmpty||busy?<div className={styles.composerWrap}>{composer(false)}<div className={styles.composerFoot}><span>Live supplier terms and wallet charges are verified by MANGLO before checkout.</span><div className={styles.shortcuts}><button type="button" className={styles.shortcut} onClick={()=>location.assign('/services')}>Services</button><button type="button" className={styles.shortcut} onClick={()=>onNavigate('wallet')}>Add funds</button><button type="button" className={styles.shortcut} onClick={()=>onNavigate('orders')}>Orders</button></div></div></div>:null}
+  {!isEmpty||busy?<div className={`${styles.composerWrap} ${runtime.composerWrapRuntime}`}>{composer(false)}<div className={styles.composerFoot}><span>Live supplier terms and wallet charges are verified by MANGLO before checkout.</span><div className={styles.shortcuts}><button type="button" className={styles.shortcut} onClick={()=>location.assign('/services')}>Services</button><button type="button" className={styles.shortcut} onClick={()=>onNavigate('wallet')}>Add funds</button><button type="button" className={styles.shortcut} onClick={()=>onNavigate('orders')}>Orders</button></div></div></div>:null}
  </section>;
 }
 
