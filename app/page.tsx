@@ -75,8 +75,8 @@ export default function Home(){
    <div className={['container',styles.heroGrid].join(' ')}>
     <div className={styles.heroCopy}>
      <span className={styles.eyebrow}><Sparkles size={14}/> WEBSITE DESIGN & DEVELOPMENT</span>
-     <h1>We build websites that look serious <em>and work seriously.</em></h1>
-     <p>Need the complete product or only the frontend? MANGLO designs and develops professional web experiences for founders and businesses—from first brief to production-ready handoff.</p>
+     <h1>Premium websites for businesses that want to <em>look world-class.</em></h1>
+     <p>From refined frontend experiences to complete frontend + backend products, MANGLO turns your idea into a polished, responsive website built for real customers.</p>
      <div className={styles.heroActions}>
       <a className={styles.primaryButton} href="#project">Start your project <ArrowRight size={16}/></a>
       <a className={styles.secondaryButton} href="https://clipkaroai.pro" target="_blank" rel="noreferrer">See live work <Globe2 size={15}/></a>
@@ -117,7 +117,7 @@ export default function Home(){
   </section>
   <section className={styles.section} id="services">
    <div className="container">
-    <div className={styles.sectionHead}><div><span>CHOOSE WHAT YOU NEED</span><h2>Two clear ways to work with MANGLO.</h2></div><p>No confusing package maze. Bring the complete product, or bring your backend and let us own the frontend experience.</p></div>
+    <div className={styles.sectionHead}><div><span>WHAT DO YOU WANT TO MAKE?</span><h2>Choose the build that fits your business.</h2></div><p>Two focused engagement paths, both designed with the same premium UI/UX standard and production mindset.</p></div>
     <div className={styles.serviceGrid}>
      {services.map(({icon:Icon,eyebrow,title,copy,points})=><article className={styles.serviceCard} key={title}>
       <div className={styles.serviceIcon}><Icon/></div><span>{eyebrow}</span><h3>{title}</h3><p>{copy}</p>
@@ -131,8 +131,8 @@ export default function Home(){
   <section className={styles.standard} id="work">
    <div className={['container',styles.standardGrid].join(' ')}>
     <div className={styles.standardIntro}>
-     <span>WHAT “PROFESSIONAL” MEANS HERE</span>
-     <h2>Not just a beautiful first screen.</h2>
+     <span>WHY MANGLO FEELS DIFFERENT</span>
+     <h2>Beautiful outside. Engineered properly underneath.</h2>
      <p>A serious website also needs the invisible parts: useful states, mobile behavior, validation, secure boundaries, search foundations and a structure that can keep growing.</p>
      <a href="#project" className={styles.darkButton}>Tell us your idea <ArrowRight size={15}/></a>
     </div>
@@ -158,7 +158,7 @@ export default function Home(){
 
   <section className={styles.section} id="process">
    <div className="container">
-    <div className={styles.sectionHead}><div><span>HOW WE WORK</span><h2>A clear route from brief to launch.</h2></div><p>The goal is not to add ceremony. It is to reduce surprises by making the important product and engineering decisions before they become expensive fixes.</p></div>
+    <div className={styles.sectionHead}><div><span>OUR PROCESS</span><h2>From your idea to a polished live experience.</h2></div><p>A focused workflow keeps design, development and launch quality moving together instead of becoming separate disconnected steps.</p></div>
     <div className={styles.processGrid}>{processSteps.map(([n,title,copy])=><article key={n}><span>{n}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
    </div>
   </section>
