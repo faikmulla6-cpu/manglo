@@ -13,6 +13,7 @@ alter table public."Favorite" enable row level security;
 alter table public."SupportTicket" enable row level security;
 alter table public."Order" enable row level security;
 alter table public."WalletLedger" enable row level security;
+alter table public."AgencyInquiry" enable row level security;
 
 revoke all on table public."User" from anon, authenticated;
 revoke all on table public."Payment" from anon, authenticated;
@@ -21,6 +22,7 @@ revoke all on table public."Favorite" from anon, authenticated;
 revoke all on table public."SupportTicket" from anon, authenticated;
 revoke all on table public."Order" from anon, authenticated;
 revoke all on table public."WalletLedger" from anon, authenticated;
+revoke all on table public."AgencyInquiry" from anon, authenticated;
 
 commit;
 

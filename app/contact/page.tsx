@@ -9,7 +9,7 @@ import styles from '../PublicInfo.module.css';
 
 export const metadata={
  title:'Contact MANGLO',
- description:'Contact MANGLO for order, payment, account, privacy and general support, with signed-in order-linked support for customer issues.',
+ description:'Contact MANGLO to start a website development project or get order-linked support for the MANGLO Growth Marketplace.',
 };
 
 const INSTAGRAM='https://www.instagram.com/manglo.shop/';
@@ -22,15 +22,15 @@ export default function ContactPage(){
     <div data-public-reveal>
      <span className={styles.kicker}><span className={styles.kickerDot}/>Contact MANGLO</span>
      <h1>Get help with the <span>right context.</span></h1>
-     <p className={styles.lead}>Order problems are easiest to solve when support can see the exact MANGLO order. General questions can come by email, while signed-in customers can open an order-linked request directly from the dashboard.</p>
+     <p className={styles.lead}>Starting a website or web-product project? Send a project brief so we can review the scope. Existing Growth Marketplace customers should keep using signed-in, order-linked support for account and fulfilment issues.</p>
      <div className={styles.metaRow}>
       <span className={styles.metaPill}><Headphones/>Order-linked support</span>
       <span className={styles.metaPill}><Mail/>{company.supportEmail}</span>
       <span className={styles.metaPill}><Clock3/>{company.supportHours}</span>
      </div>
      <div className={styles.heroActions}>
-      <Link className={styles.primary} href="/dashboard?view=support">Open account support <ArrowRight size={15}/></Link>
-      <Link className={styles.secondary} href="/help">Visit Help Center</Link>
+      <Link className={styles.primary} href="/#project">Start a website project <ArrowRight size={15}/></Link>
+      <Link className={styles.secondary} href="/dashboard?view=support">Marketplace support</Link>
      </div>
     </div>
     <div className={styles.heroVisual} data-public-reveal>

@@ -40,6 +40,14 @@ enum SupportStatus {
   CLOSED
 }
 
+enum AgencyLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  CLOSED
+}
+
 model User {
   id String @id @db.Uuid
   email String @unique
@@ -306,4 +314,27 @@ model MetaAdsWindsorDaily {
   @@index([date])
   @@index([campaignId, date])
   @@map("MetaAdsWindsorDaily")
+}
+
+
+model AgencyInquiry {
+  id String @id @default(cuid())
+  reference String @unique
+  name String
+  email String
+  phone String?
+  company String?
+  website String?
+  service String
+  budget String?
+  timeline String?
+  projectType String?
+  message String @db.Text
+  status AgencyLeadStatus @default(NEW)
+  source String @default("website")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
 }

@@ -17,13 +17,14 @@ const COLLAPSE_AFTER=150;
 const EXPAND_DISTANCE=80;
 
 const primaryLinks=[
- {href:'/services',label:'Services'},
+ {href:'/',label:'Agency'},
+ {href:'/services',label:'Growth marketplace'},
  {href:'/about',label:'About'},
- {href:'/trust',label:'Trust & Safety'},
  {href:'/help',label:'Help'},
 ] as const;
 
 function isActive(pathname:string,href:string){
+ if(href==='/')return pathname==='/';
  if(href==='/services')return pathname==='/services'||pathname.startsWith('/services/');
  if(href==='/help')return pathname==='/help'||pathname==='/faq'||pathname==='/contact';
  return pathname===href||pathname.startsWith(`${href}/`);
@@ -122,8 +123,8 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
        <NavTooltip label="Search services"><Link className={styles.utilityButton} href="/services" aria-label="Search services" tabIndex={compact?-1:undefined}><Search size={15}/></Link></NavTooltip>
        {admin?<NavTooltip label="Operations"><Link className={styles.utilityButton} href="/admin" aria-label="Open operations" tabIndex={compact?-1:undefined}><Gauge size={15}/></Link></NavTooltip>:null}
        {signedIn?
-        <Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Dashboard</Link>:
-        <><Link className={styles.login} href="/auth" tabIndex={compact?-1:undefined}>Log in</Link><Link className={styles.primary} href="/services" tabIndex={compact?-1:undefined}>Explore services <ArrowRight size={13}/></Link></>}
+        <><Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Dashboard</Link><Link className={styles.primary} href="/#project" tabIndex={compact?-1:undefined}>Start a project <ArrowRight size={13}/></Link></>:
+        <><Link className={styles.login} href="/auth" tabIndex={compact?-1:undefined}>Log in</Link><Link className={styles.primary} href="/#project" tabIndex={compact?-1:undefined}>Start a project <ArrowRight size={13}/></Link></>}
        <Dialog.Trigger asChild>
         <button type="button" className={styles.mobileTrigger} onClick={()=>updateCompact(false)} aria-label="Open navigation" tabIndex={compact?-1:undefined}><Menu size={19}/></button>
        </Dialog.Trigger>
@@ -139,7 +140,7 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
     <Dialog.Content asChild onOpenAutoFocus={()=>updateCompact(false)}>
      <aside id="manglo-mobile-nav" className={`${styles.mobilePanel} ${styles.mobilePanelOpen}`}>
       <Dialog.Title className={radix.srOnly}>MANGLO navigation</Dialog.Title>
-      <Dialog.Description className={radix.srOnly}>Navigate MANGLO services, information, support and account areas.</Dialog.Description>
+      <Dialog.Description className={radix.srOnly}>Navigate MANGLO agency services, growth marketplace, support and account areas.</Dialog.Description>
       <div className={styles.mobileHeader}>
        <div className={styles.mobileBrand}><Image src={BRAND_ICON} alt="" width={28} height={28}/><span>MANGLO</span></div>
        <Dialog.Close asChild><button type="button" aria-label="Close navigation"><X size={18}/></button></Dialog.Close>
@@ -155,7 +156,7 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
       </div>
       <div className={styles.mobileActions}>
        <Link className={styles.mobileAccount} href={accountHref}>{signedIn?<LayoutDashboard size={15}/>:<UserRound size={15}/>} {signedIn?'Dashboard':'Log in'}</Link>
-       {!signedIn?<Link className={styles.mobilePrimary} href="/services">Explore services <ArrowRight size={13}/></Link>:null}
+       <Link className={styles.mobilePrimary} href="/#project">Start a project <ArrowRight size={13}/></Link>
        {admin?<Link className={styles.mobileAdmin} href="/admin"><Gauge size={15}/> Operations</Link>:null}
       </div>
      </aside>

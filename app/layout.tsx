@@ -9,8 +9,8 @@ import Footer from '@/components/Footer';
 import AnalyticsProvider from '@/components/AnalyticsProvider';
 
 const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
-const DEFAULT_TITLE='MANGLO — Social Media Growth Services Marketplace';
-const DEFAULT_DESCRIPTION='Compare live Instagram, YouTube, TikTok and other social media growth services on MANGLO. Review current customer rates, limits, provider-reported timing and order protections before you buy.';
+const DEFAULT_TITLE='MANGLO — Website Design & Development Agency';
+const DEFAULT_DESCRIPTION='MANGLO builds professional websites and web products for businesses and founders, from premium frontend development to complete frontend + backend builds.';
 
 export const metadata:Metadata={
  metadataBase:new URL(process.env.NEXT_PUBLIC_APP_URL||'https://manglo.shop'),
@@ -19,7 +19,7 @@ export const metadata:Metadata={
  description:DEFAULT_DESCRIPTION,
  icons:{icon:[{url:BRAND_ICON,type:'image/png'}]},
  openGraph:{siteName:'MANGLO',title:DEFAULT_TITLE,description:DEFAULT_DESCRIPTION,type:'website'},
- twitter:{card:'summary',title:DEFAULT_TITLE,description:'Jo chahiye, Manglo. Compare live social growth services, review current pricing and order with clear checks.'},
+ twitter:{card:'summary',title:DEFAULT_TITLE,description:'Professional frontend and full-stack website development from MANGLO.'},
  robots:{index:true,follow:true,googleBot:{index:true,follow:true,'max-snippet':-1,'max-image-preview':'large','max-video-preview':-1}}
 };
 
