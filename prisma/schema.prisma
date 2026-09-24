@@ -170,3 +170,21 @@ model WalletLedger {
   order Order? @relation(fields:[orderId], references:[id])
   @@index([userId, createdAt])
 }
+
+
+model AgencyInquiry {
+  id String @id @default(cuid())
+  name String
+  email String
+  phone String?
+  company String?
+  currentWebsite String?
+  service String
+  budget String?
+  timeline String?
+  message String @db.Text
+  source String @default("website")
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@index([email, createdAt])
+}
