@@ -17,16 +17,15 @@ const COLLAPSE_AFTER=150;
 const EXPAND_DISTANCE=80;
 
 const primaryLinks=[
- {href:'/',label:'Agency'},
- {href:'/services',label:'Growth marketplace'},
- {href:'/about',label:'About'},
- {href:'/help',label:'Help'},
+ {href:'/#work',label:'Work'},
+ {href:'/#services',label:'Services'},
+ {href:'/#process',label:'Process'},
+ {href:'/services',label:'Growth'},
 ] as const;
 
 function isActive(pathname:string,href:string){
- if(href==='/')return pathname==='/';
+ if(href.includes('#'))return false;
  if(href==='/services')return pathname==='/services'||pathname.startsWith('/services/');
- if(href==='/help')return pathname==='/help'||pathname==='/faq'||pathname==='/contact';
  return pathname===href||pathname.startsWith(`${href}/`);
 }
 
@@ -119,8 +118,8 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
       </nav>
 
       <div className={styles.actions}>
-       <NavTooltip label="Invite & earn"><Link className={styles.utilityButton} href={inviteHref} aria-label="Invite and earn" tabIndex={compact?-1:undefined}><Gift size={15}/></Link></NavTooltip>
-       <NavTooltip label="Search services"><Link className={styles.utilityButton} href="/services" aria-label="Search services" tabIndex={compact?-1:undefined}><Search size={15}/></Link></NavTooltip>
+       {signedIn?<NavTooltip label="Invite & earn"><Link className={styles.utilityButton} href={inviteHref} aria-label="Invite and earn" tabIndex={compact?-1:undefined}><Gift size={15}/></Link></NavTooltip>:null}
+       {signedIn?<NavTooltip label="Search marketplace"><Link className={styles.utilityButton} href="/services" aria-label="Search marketplace" tabIndex={compact?-1:undefined}><Search size={15}/></Link></NavTooltip>:null}
        {admin?<NavTooltip label="Operations"><Link className={styles.utilityButton} href="/admin" aria-label="Open operations" tabIndex={compact?-1:undefined}><Gauge size={15}/></Link></NavTooltip>:null}
        {signedIn?
         <><Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Dashboard</Link><Link className={styles.primary} href="/#project" tabIndex={compact?-1:undefined}>Start a project <ArrowRight size={13}/></Link></>:

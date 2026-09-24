@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import {
- ArrowRight,BadgeCheck,Blocks,Check,Code2,Gauge,Globe2,Layers3,
+ ArrowRight,BadgeCheck,Blocks,Check,Code2,Gauge,Layers3,
  MonitorSmartphone,Rocket,Search,ShieldCheck,Sparkles,Workflow,Zap,
 } from 'lucide-react';
 import AgencyInquiryForm from '@/components/AgencyInquiryForm';
+import AgencyMotion from '@/components/AgencyMotion';
+import SelectedWork from '@/components/SelectedWork';
 import styles from './AgencyHome.module.css';
 
 export const metadata={
@@ -69,17 +71,18 @@ export default function Home(){
    {'@type':'FAQPage',mainEntity:faqs.map(([question,answer])=>({'@type':'Question',name:question,acceptedAnswer:{'@type':'Answer',text:answer}}))},
   ],
  };
- return <main className={styles.page}>
+ return <main className={styles.page} data-agency-home>
+  <AgencyMotion/>
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/>
-  <section className={styles.hero}>
+  <section className={styles.hero} data-hero-interactive>
    <div className={['container',styles.heroGrid].join(' ')}>
-    <div className={styles.heroCopy}>
+    <div className={styles.heroCopy} data-reveal>
      <span className={styles.eyebrow}><Sparkles size={14}/> WEBSITE DESIGN & DEVELOPMENT</span>
      <h1>Premium websites for businesses that want to <em>look world-class.</em></h1>
      <p>From refined frontend experiences to complete frontend + backend products, MANGLO turns your idea into a polished, responsive website built for real customers.</p>
      <div className={styles.heroActions}>
-      <a className={styles.primaryButton} href="#project">Start your project <ArrowRight size={16}/></a>
-      <a className={styles.secondaryButton} href="https://clipkaroai.pro" target="_blank" rel="noreferrer">See live work <Globe2 size={15}/></a>
+      <a className={styles.primaryButton} href="#project" data-magnetic>Start your project <ArrowRight size={16}/></a>
+      <a className={styles.secondaryButton} href="#work" data-magnetic>Explore selected work <ArrowRight size={15}/></a>
      </div>
      <div className={styles.trustRow}>
       <span><ShieldCheck/>Production-minded</span>
@@ -87,7 +90,7 @@ export default function Home(){
       <span><MonitorSmartphone/>Responsive by default</span>
      </div>
     </div>
-    <div className={styles.consoleCard}>
+    <div className={styles.consoleCard} data-tilt data-reveal>
      <div className={styles.consoleTop}><div><small>PROJECT DELIVERY</small><b>From idea to working product</b></div><span>Accepting briefs</span></div>
      <div className={styles.window}>
       <div className={styles.windowBar}><i/><i/><i/><span>manglo.shop / your-project</span></div>
@@ -108,33 +111,36 @@ export default function Home(){
    </div>
   </section>
 
-  <section className={styles.proofBar}>
+  <section className={styles.proofBar} data-reveal>
    <div className="container">
     <span>LIVE PRODUCT PROOF</span>
     <div><b>ClipKaro AI</b><p>A product from our own business portfolio—not only a concept mockup.</p></div>
     <a href="https://clipkaroai.pro" target="_blank" rel="noreferrer">Open ClipKaroAI.pro <ArrowRight size={14}/></a>
    </div>
   </section>
-  <section className={styles.section} id="services">
+
+  <SelectedWork/>
+
+  <section className={styles.section} id="services" data-reveal>
    <div className="container">
     <div className={styles.sectionHead}><div><span>WHAT DO YOU WANT TO MAKE?</span><h2>Choose the build that fits your business.</h2></div><p>Two focused engagement paths, both designed with the same premium UI/UX standard and production mindset.</p></div>
     <div className={styles.serviceGrid}>
-     {services.map(({icon:Icon,eyebrow,title,copy,points})=><article className={styles.serviceCard} key={title}>
+     {services.map(({icon:Icon,eyebrow,title,copy,points},index)=><article className={styles.serviceCard} key={title} data-reveal data-delay={index*60}>
       <div className={styles.serviceIcon}><Icon/></div><span>{eyebrow}</span><h3>{title}</h3><p>{copy}</p>
       <ul>{points.map(point=><li key={point}><Check/>{point}</li>)}</ul>
-      <a href="#project">Discuss this build <ArrowRight size={15}/></a>
+      <a href="#project" data-magnetic>Discuss this build <ArrowRight size={15}/></a>
      </article>)}
     </div>
    </div>
   </section>
 
-  <section className={styles.standard} id="work">
+  <section className={styles.standard} id="standard" data-reveal>
    <div className={['container',styles.standardGrid].join(' ')}>
     <div className={styles.standardIntro}>
      <span>WHY MANGLO FEELS DIFFERENT</span>
      <h2>Beautiful outside. Engineered properly underneath.</h2>
      <p>A serious website also needs the invisible parts: useful states, mobile behavior, validation, secure boundaries, search foundations and a structure that can keep growing.</p>
-     <a href="#project" className={styles.darkButton}>Tell us your idea <ArrowRight size={15}/></a>
+     <a href="#project" className={styles.darkButton} data-magnetic>Tell us your idea <ArrowRight size={15}/></a>
     </div>
     <div className={styles.capabilityGrid}>
      {capabilities.map(({icon:Icon,title,copy})=><article key={title}><Icon/><div><h3>{title}</h3><p>{copy}</p></div></article>)}
@@ -142,32 +148,18 @@ export default function Home(){
    </div>
   </section>
 
-  <section className={styles.caseSection}>
-   <div className={['container',styles.caseCard].join(' ')}>
-    <div className={styles.caseCopy}>
-     <span>LIVE BUSINESS PROOF</span><h2>ClipKaro AI</h2>
-     <p>We use a live product from our own portfolio as proof because production work is different from a static portfolio shot. You can inspect the product directly and judge the standard for yourself.</p>
-     <div className={styles.caseTags}><span>Live product</span><span>Product UX</span><span>Frontend + backend</span><span>Production workflow</span></div>
-     <a href="https://clipkaroai.pro" target="_blank" rel="noreferrer">Visit live product <ArrowRight size={15}/></a>
-    </div>
-    <div className={styles.caseVisual}>
-     <div className={styles.caseWindow}><div><i/><i/><i/><span>clipkaroai.pro</span></div><section><span>CLIPKARO AI</span><strong>Live work is stronger proof than a mockup.</strong><small>Open the product and inspect it yourself.</small></section></div>
-    </div>
-   </div>
-  </section>
-
-  <section className={styles.section} id="process">
+  <section className={styles.section} id="process" data-reveal>
    <div className="container">
     <div className={styles.sectionHead}><div><span>OUR PROCESS</span><h2>From your idea to a polished live experience.</h2></div><p>A focused workflow keeps design, development and launch quality moving together instead of becoming separate disconnected steps.</p></div>
-    <div className={styles.processGrid}>{processSteps.map(([n,title,copy])=><article key={n}><span>{n}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
+    <div className={styles.processGrid}>{processSteps.map(([n,title,copy],index)=><article key={n} data-reveal data-delay={index*50}><span>{n}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
    </div>
   </section>
 
-  <section className={styles.marketplace}>
-   <div className="container"><div><span>MANGLO GROWTH MARKETPLACE</span><h2>Our social growth marketplace is still here.</h2><p>The marketplace, wallet, order tracking, MANGLO AI, referrals and account support remain available as a separate MANGLO product.</p></div><Link href="/services">Open growth marketplace <ArrowRight size={15}/></Link></div>
+  <section className={styles.marketplace} data-reveal>
+   <div className="container"><div><span>MANGLO GROWTH MARKETPLACE</span><h2>Our social growth marketplace is still here.</h2><p>The marketplace, wallet, order tracking, MANGLO AI, referrals and account support remain available as a separate MANGLO product.</p></div><Link href="/services" data-magnetic>Open growth marketplace <ArrowRight size={15}/></Link></div>
   </section>
 
-  <section className={styles.inquiry} id="project">
+  <section className={styles.inquiry} id="project" data-reveal>
    <div className={['container',styles.inquiryGrid].join(' ')}>
     <div className={styles.inquiryCopy}>
      <span>START A PROJECT</span><h2>Tell us what you want to build.</h2>
@@ -178,7 +170,7 @@ export default function Home(){
    </div>
   </section>
 
-  <section className={styles.faq}>
+  <section className={styles.faq} data-reveal>
    <div className="container"><div className={styles.sectionHead}><div><span>COMMON QUESTIONS</span><h2>Know what you are hiring us for.</h2></div></div>
     <div className={styles.faqList}>{faqs.map(([question,answer])=><details key={question}><summary>{question}<Zap size={15}/></summary><p>{answer}</p></details>)}</div>
    </div>

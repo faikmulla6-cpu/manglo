@@ -4,9 +4,13 @@ import './trust.css';
 import './founder.css';
 import './dashboard/commerce-compat.css';
 import type { Metadata } from 'next';
+import {Manrope,Space_Grotesk} from 'next/font/google';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnalyticsProvider from '@/components/AnalyticsProvider';
+
+const manrope=Manrope({subsets:['latin'],variable:'--font-manglo-body',display:'swap'});
+const spaceGrotesk=Space_Grotesk({subsets:['latin'],variable:'--font-manglo-display',display:'swap'});
 
 const BRAND_ICON='/manglo-icon.png?v=b7aa1a27';
 const DEFAULT_TITLE='MANGLO — Website Design & Development Agency';
@@ -24,5 +28,5 @@ export const metadata:Metadata={
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="en-IN"><body className="site-body"><AnalyticsProvider/><Header/>{children}<Footer/></body></html>;
+ return <html lang="en-IN" className={`${manrope.variable} ${spaceGrotesk.variable}`}><body className="site-body"><AnalyticsProvider/><Header/>{children}<Footer/></body></html>;
 }

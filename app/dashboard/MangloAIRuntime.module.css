@@ -4,7 +4,7 @@
 .composerWrapRuntime{flex:0 0 auto!important;position:relative!important;z-index:3}
 .jumpLatest{position:absolute;left:50%;bottom:14px;z-index:8;transform:translateX(-50%);height:32px;padding:0 11px;border:1px solid #dce1e5;border-radius:999px;background:rgba(255,255,255,.96);color:#4d5863;display:inline-flex;align-items:center;gap:5px;font-size:7px;font-weight:850;box-shadow:0 10px 28px rgba(34,41,49,.13);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,color .16s ease}
 .jumpLatest:hover{transform:translateX(-50%) translateY(-1px);border-color:#efc8af;color:#d95808;box-shadow:0 13px 31px rgba(34,41,49,.17)}
-.jumpLatest:focus-visible{outline:3px solid rgba(255,106,0,.16);outline-offset:2px}
+.jumpLatest:focus-visible{outline:3px solid rgba(112,71,255,.16);outline-offset:2px}
 @media(max-width:900px){.aiRuntime{height:calc(100dvh - 138px)!important;max-height:calc(100dvh - 138px)!important}}
 @media(max-width:760px){.aiRuntime{height:calc(100dvh - 132px - env(safe-area-inset-bottom))!important;max-height:calc(100dvh - 132px - env(safe-area-inset-bottom))!important;border-radius:13px!important}.jumpLatest{bottom:10px;height:30px;padding-inline:10px}}
 @media(max-height:680px) and (min-width:761px){.aiRuntime{height:calc(100dvh - 126px)!important;max-height:calc(100dvh - 126px)!important}}

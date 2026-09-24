@@ -52,3 +52,14 @@
 @media(max-width:920px){.headerShell{height:78px}.navFrame,.navCompact{top:10px;width:calc(100vw - 24px);height:58px;border-radius:16px}.navFrame:hover{box-shadow:0 14px 42px rgba(18,22,28,.09),0 2px 8px rgba(18,22,28,.04)}.navContent,.navCompact .navContent{gap:10px;padding:0 9px 0 10px;opacity:1;transform:none;pointer-events:auto}.links,.utilityButton,.login,.accountButton,.primary,.compactTrigger{display:none}.brand{flex:1}.brandName{font-size:14px}.mobileTrigger{display:grid}.mobilePanel{top:76px}.backdrop{inset:0}}
 @media(max-width:520px){.headerShell{height:74px}.navFrame,.navCompact{top:8px;width:calc(100vw - 18px);height:56px;border-radius:15px}.brandIcon{width:32px;height:32px;border-radius:9px}.brandIcon img{width:28px;height:28px}.brandName{font-size:13.5px}.mobilePanel{top:70px;right:9px;width:calc(100vw - 18px);max-height:calc(100dvh - 80px);border-radius:14px}.mobileActions{grid-template-columns:1fr}.mobileAdmin{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.navFrame,.navContent,.links a:after,.utilityButton,.login,.accountButton,.primary,.compactTrigger,.mobilePanel,.mobileLinks>a{transition:none}}
+
+@media(max-width:920px){
+  .navFrame,.navCompact{max-width:calc(100vw - 24px)}
+  .navContent{min-width:0}
+  .brand{min-width:0}
+  .actions{flex:0 0 auto}
+  .mobileTrigger{position:relative;z-index:2;flex:0 0 36px}
+}
+@media(max-width:520px){
+  .navFrame,.navCompact{max-width:calc(100vw - 18px)}
+}

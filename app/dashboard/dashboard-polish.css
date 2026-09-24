@@ -27,7 +27,7 @@
   flex:0 0 36px;
   border-radius:8px;
   background:url('/manglo-icon.png?v=b7aa1a27') center/contain no-repeat;
-  filter:drop-shadow(0 6px 12px rgba(255,106,0,.15));
+  filter:drop-shadow(0 6px 12px rgba(112,71,255,.15));
 }
 
 /* The dashboard hero uses the approved public/manglo-logo.png artwork only.
@@ -94,7 +94,7 @@
 .manglo-dashboard [class*="heroPrimary"]:focus-visible,
 .manglo-dashboard [class*="heroSecondary"]:focus-visible,
 .manglo-dashboard [class*="navButton"]:focus-visible{
-  outline:3px solid rgba(255,106,0,.22)!important;
+  outline:3px solid rgba(112,71,255,.22)!important;
   outline-offset:2px
 }
 
