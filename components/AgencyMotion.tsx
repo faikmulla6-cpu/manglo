@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useRef} from 'react';
-import styles from '@/app/AgencyHome.module.css';
+import styles from '@/app/AgencyEditorial.module.css';
 
 export default function AgencyMotion(){
  const progressRef=useRef<HTMLDivElement>(null);
