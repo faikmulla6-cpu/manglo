@@ -1,66 +1,136 @@
 # MANGLO Design System
 
-Derived with UI/UX Pro Max for a premium creative web-development agency.
+## Core direction
+MANGLO should feel like a serious digital product studio, not a generic agency template.
 
-## Direction
-- Product type: creative web-development agency + live product portfolio.
-- Core style: exaggerated minimalism + Aurora UI + restrained liquid-glass accents.
-- Pattern: portfolio-first landing page. Show real work before deep service explanation.
-- Density: spacious (3/10). Motion: expressive but purposeful (8/10). Variance: bold/asymmetric (8/10).
-- Avoid: generic SaaS cards everywhere, decorative motion without meaning, low-contrast glass, fake metrics, stock-template composition.
+The visual system combines:
+- Suno: confidence and simplicity
+- Mantality: storytelling and section rhythm
+- SalesHookAI: technical/product proof
+- Qronos: restraint and enterprise maturity
+- Folio: editorial luxury and oversized product presentation
+- shadcn/ui + shadcn-studio: component discipline and semantic token architecture
+
+## Visual modes
+1. Editorial white
+   - business story
+   - services
+   - process
+   - project brief
+   - calm, spacious, typographic
+
+2. Engineering black
+   - product proof
+   - architecture
+   - admin/backend/operations
+   - large UI screenshots and system diagrams
+
+3. Signature violet
+   - CTAs
+   - focus/ring
+   - motion accents
+   - section highlights
+   - never used everywhere at once
 
 ## Brand tokens
-- Ink: #151522
-- Muted ink: #6F7282
+- Ink: #111218
+- Ink elevated: #171820
 - Canvas: #FFFFFF
-- Soft canvas: #F7F7FF
+- Soft canvas: #F7F7FB
 - Violet: #7047FF
-- Violet strong: #5632D5
+- Violet strong: #5933DA
 - Violet soft: #F0EDFF
 - Lilac: #A85AE8
-- Border: #E6E2F3
+- Border: #E7E5EE
+- Body text: #6F7382
 - Success: #16775A
 - Danger: #B53B45
 - Focus ring: rgba(112,71,255,.22)
 
 ## Typography
-- Display: Space Grotesk, 600-700, tight tracking for headlines.
-- Body/UI: Manrope, 400-800.
-- Body text must remain >= 16px on long-form/public content; micro-labels may be smaller when non-essential.
-- Headline scale: clamp() with dramatic but readable line-height.
+- Display: Space Grotesk
+- Body/UI: Manrope
+- Large headlines should carry the art direction.
+- Body copy must stay readable; premium does not mean tiny text.
+- Use an editorial serif only in rare future storytelling moments, never in product UI.
 
 ## Layout
-- Max content width: 1240px.
-- Hero and portfolio areas use asymmetric 2-column composition on desktop.
-- Section vertical rhythm: 88-120px desktop, 64-76px mobile.
-- Use visual grouping rather than excessive borders.
+- Max content width: 1240px
+- Section rhythm: 96–122px desktop, 68–82px mobile
+- One dominant idea per section
+- Large product proof should occupy 50–80% of the visual field
+- Prefer thin borders, type, whitespace and screenshot scale over generic card grids
+- Use asymmetric layouts deliberately
 
-## Components
-- Primary CTA: violet gradient, 44px+ hit area, subtle lift only.
-- Secondary CTA: white/translucent surface with visible border.
-- Cards: 16-24px radius; use shadows selectively on hero/featured work, not every card.
-- Forms: visible labels, inline fit/help text, violet focus ring, clear loading/success/error feedback.
-- Icons: Lucide only; no emoji icons.
+## Component architecture
+Base primitives should be semantic and reusable:
+- Button
+- Badge
+- Input / Textarea / Select
+- Field
+- Tabs
+- Dialog / Sheet
+- Tooltip
+- Accordion
+- Table
+- Skeleton
+- Separator
+
+MANGLO compositions sit above primitives:
+- Section
+- Container
+- Eyebrow
+- DisplayHeading
+- ProductBrowser
+- CaseStudy
+- ArchitectureMap
+- ServiceRow
+- Metric
+- Pricing/EngagementCard
+- ProjectBrief
 
 ## Motion
-- Reveal content only when it enters the viewport.
-- Use 150-300ms micro-interactions and 500-800ms hero/portfolio transitions.
-- Parallax only on decorative/background layers; never body text.
-- Pointer tilt is desktop/fine-pointer only and limited to a few featured surfaces.
-- Respect prefers-reduced-motion everywhere.
-- Never animate width/height when transform/opacity can do the job.
+- Native browser primitives first
+- IntersectionObserver for reveal
+- requestAnimationFrame for scroll/pointer work
+- transform/opacity only for major motion
+- 150–300ms micro-interactions
+- 500–800ms section/product transitions
+- Pointer tilt only on fine pointers
+- Magnetic CTAs only where they add delight
+- Reduced-motion users get the complete experience without animation
+- Motion must never be required to reveal critical content
 
-## Accessibility / UX
-- Minimum 44x44px touch targets.
-- 4.5:1 text contrast for body copy.
-- Visible keyboard focus.
-- No hover-only critical actions.
-- No content hidden when JavaScript is unavailable.
-- Test at 375, 768, 1024, and 1440 widths.
+## UX rules
+- Minimum 44px touch target
+- Visible keyboard focus
+- Body text 16px-ish on public content
+- No hover-only critical behavior
+- No fake metrics or fake client logos
+- No stock-template composition
+- No “card for every sentence”
+- No dark cyberpunk overload
+- No violet gradient on every section
+
+## Product proof rules
+- Show real products before deep service explanation
+- ClipKaro AI is public proof and should link directly
+- MANGLO Growth Marketplace and Operations can demonstrate system depth
+- Technical sections should visibly show frontend, APIs, auth, data, admin and launch layers
+- A visitor should understand MANGLO’s design and engineering level before reading a long claim
 
 ## Performance
-- Keep homepage primarily server-rendered.
-- Motion controller is client-only and must not own page content.
-- Use existing Framer Motion dependency instead of adding another animation runtime.
-- Avoid large image payloads until real case-study screenshots are available.
-- Reserve geometry for dynamic/animated UI to prevent CLS.
+- Homepage remains primarily server-rendered
+- Client code should be limited to interaction/motion/form logic
+- Avoid adding animation libraries when native browser APIs can do the job
+- Reserve layout geometry to prevent CLS
+- Prefer real screenshots only when optimized and worth their payload
+
+## Responsive QA
+Test at:
+- 375 / 390
+- 768
+- 1024
+- 1440
+
+No document-level horizontal overflow. Horizontal scrolling is allowed only for intentionally designed rails/tabs.
