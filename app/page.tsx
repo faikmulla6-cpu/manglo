@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Image from 'next/image';
 import {
  ArrowRight,BadgeCheck,Braces,Cable,Check,Code2,Database,Gauge,
  LayoutDashboard,Layers3,LockKeyhole,MonitorSmartphone,Palette,Rocket,
@@ -130,7 +130,7 @@ export default function Home(){
    <div className="container">
     <span>LIVE PRODUCT PROOF</span>
     <div><strong>ClipKaro AI</strong><p>A functioning product from our own portfolio—not a concept made only for a case-study image.</p></div>
-    <a href="https://clipkaroai.pro" target="_blank" rel="noreferrer">Open live product <ArrowRight size={14}/></a>
+    <a href="https://clipkaro.pro" target="_blank" rel="noreferrer">Open live product <ArrowRight size={14}/></a>
    </div>
   </section>
 
@@ -151,18 +151,14 @@ export default function Home(){
       <h3>An AI-first creator workflow built as a real business product.</h3>
       <p>Product UX, customer flows, frontend implementation and backend systems working together in production. Inspect it directly and judge the standard yourself.</p>
       <div className={styles.caseMeta}><span>Product UX</span><span>Frontend</span><span>Backend</span><span>Production</span></div>
-      <a className={styles.lightCta} href="https://clipkaroai.pro" target="_blank" rel="noreferrer">Visit ClipKaro AI <ArrowRight size={14}/></a>
+      <a className={styles.lightCta} href="https://clipkaro.pro" target="_blank" rel="noreferrer">Visit ClipKaro AI <ArrowRight size={14}/></a>
      </div>
 
      <div className={styles.caseVisual} aria-hidden="true">
-      <div className={styles.caseVisualTop}><i/><i/><i/><span>clipkaroai.pro</span></div>
+      <div className={styles.caseVisualTop}><i/><i/><i/><span>clipkaro.pro</span></div>
       <div className={styles.caseVisualBody}>
-       <div className={styles.caseVisualTitle}><b>Creator workspace</b><span className={styles.livePill}>LIVE PRODUCT</span></div>
-       <div className={styles.caseGrid}>
-        <div className={styles.caseLarge}><span>WORKFLOW</span><b>From source to publish-ready output</b><div className={styles.waveBars}>{[35,52,42,72,58,87,68,95,78,62,84,70,90,56].map((height,index)=><i key={index} style={{height:`${height}%`}}/>)}</div></div>
-        <div className={styles.caseSmall}><span>EXPERIENCE</span><b>Focused creator UI</b></div>
-        <div className={styles.caseSmall}><span>SYSTEM</span><b>Production workflows</b></div>
-       </div>
+       <Image className={styles.caseScreenshot} src="/work-clipkaro-live.png" alt="Live ClipKaro AI product interface" width={1440} height={1000} sizes="(max-width: 1050px) 100vw, 58vw" priority={false}/>
+       <span className={styles.liveOverlay}>LIVE PRODUCT · CLIPKARO.PRO</span>
       </div>
      </div>
     </article>
