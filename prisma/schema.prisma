@@ -48,6 +48,23 @@ enum AgencyLeadStatus {
   CLOSED
 }
 
+enum WebsiteProjectStatus {
+  DRAFT
+  INFORMATION_RECEIVED
+  DESIGN_DEVELOPMENT
+  CLIENT_REVIEW
+  FINAL_CHANGES
+  READY_TO_LAUNCH
+  LIVE
+}
+
+enum WebsiteProjectAssetKind {
+  LOGO
+  BUSINESS_PHOTO
+  WORK_PHOTO
+  DOCUMENT
+}
+
 model User {
   id String @id @db.Uuid
   email String @unique
@@ -68,6 +85,8 @@ model User {
   analyticsEvents AnalyticsEvent[]
   referralsSent Referral[] @relation("ReferralReferrer")
   referralReceived Referral? @relation("ReferralReferred")
+  websiteProjects WebsiteProject[]
+  websiteProjectTeamAccess WebsiteProjectTeamAccess?
 }
 
 model Payment {
@@ -337,4 +356,80 @@ model AgencyInquiry {
 
   @@index([status, createdAt])
   @@index([email, createdAt])
+}
+
+
+model WebsiteProject {
+  id String @id @default(cuid())
+  publicId String @unique
+  userId String @db.Uuid
+  businessName String?
+  contactPerson String?
+  category String?
+  description String? @db.Text
+  phone String?
+  whatsapp String?
+  businessEmail String?
+  existingWebsite String?
+  instagram String?
+  facebook String?
+  socialLinks Json?
+  address String? @db.Text
+  city String?
+  region String?
+  country String?
+  mapsUrl String?
+  noCustomerFacingLocation Boolean @default(false)
+  openingDays Json?
+  openingTime String?
+  closingTime String?
+  services Json?
+  pricingNotes String? @db.Text
+  primaryCta String?
+  about String? @db.Text
+  mustInclude String? @db.Text
+  mustAvoid String? @db.Text
+  preferredColors String?
+  preferredStyle String?
+  inspirationSites Json?
+  testimonials Json?
+  googleBusinessProfile String?
+  existingDomain String?
+  domainProvider String?
+  additionalInstructions String? @db.Text
+  currentStep Int @default(1)
+  status WebsiteProjectStatus @default(DRAFT)
+  submittedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assets WebsiteProjectAsset[]
+
+  @@index([userId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model WebsiteProjectAsset {
+  id String @id @default(cuid())
+  projectId String
+  kind WebsiteProjectAssetKind
+  bucket String @default("website-project-assets")
+  path String @unique
+  originalName String
+  mimeType String
+  sizeBytes Int
+  createdAt DateTime @default(now())
+
+  project WebsiteProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, kind, createdAt])
+}
+
+model WebsiteProjectTeamAccess {
+  id String @id @default(cuid())
+  userId String @unique @db.Uuid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

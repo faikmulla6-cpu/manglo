@@ -50,7 +50,8 @@ const requiredPages=[
   'app/page.tsx','app/services/page.tsx','app/auth/page.tsx','app/auth/forgot/page.tsx',
   'app/auth/update-password/page.tsx','app/dashboard/page.tsx','app/order/page.tsx','app/invite/page.tsx',
   'app/about/page.tsx','app/trust/page.tsx','app/help/page.tsx','app/faq/page.tsx','app/contact/page.tsx','app/privacy/page.tsx',
-  'app/terms/page.tsx','app/refund/page.tsx','app/admin/leads/page.tsx'
+  'app/terms/page.tsx','app/refund/page.tsx','app/admin/leads/page.tsx','app/admin/projects/page.tsx','app/admin/projects/[id]/page.tsx',
+  'app/projects/page.tsx','app/projects/new/page.tsx','app/projects/[id]/page.tsx','app/projects/[id]/onboarding/page.tsx','app/onboarding/page.tsx'
 ];
 const requiredApis=[
   'app/api/health/route.ts','app/api/auth/login/route.ts','app/api/auth/register/route.ts',
@@ -59,7 +60,8 @@ const requiredApis=[
   'app/api/payments/webhook/route.ts','app/api/orders/create/route.ts','app/api/orders/status/route.ts',
   'app/api/orders/reconcile/route.ts','app/api/services/route.ts','app/api/services/sync/route.ts',
   'app/api/support/route.ts','app/api/profile/route.ts','app/api/order-draft/route.ts',
-  'app/api/agency/inquiries/route.ts','app/api/admin/agency-leads/status/route.ts'
+  'app/api/agency/inquiries/route.ts','app/api/admin/agency-leads/status/route.ts',
+  'app/api/projects/[id]/route.ts','app/api/projects/[id]/submit/route.ts','app/api/projects/[id]/assets/route.ts','app/api/admin/website-projects/status/route.ts'
 ];
 for(const rel of [...requiredPages,...requiredApis])if(!exists(rel))fail.push(`Missing required route file: ${rel}`);
 

@@ -13,6 +13,7 @@ const RegisterSchema = z.object({
   email: z.string().email().max(200),
   phone: z.string().regex(/^\d{10}$/),
   password: z.string().min(12).max(128),
+  next: z.string().max(500).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest) {
     const email = input.email.trim().toLowerCase();
     const name = cleanText(input.name, 80);
     const appUrl = getPublicAppOrigin(req);
+    const requestedNext=input.next||'/dashboard';
+    const nextPath=requestedNext.startsWith('/')&&!requestedNext.startsWith('//')?requestedNext:'/dashboard';
     const referralCode=req.cookies.get('manglo_referral')?.value;
 
     const existingProfile = await db.user.findFirst({
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
       email,
       password: input.password,
       options: {
-        data: { name, phone: input.phone },
+        data: { name, phone: input.phone, after_confirm: nextPath },
         emailRedirectTo: `${appUrl}/auth/confirm`,
       },
     });

@@ -19,6 +19,7 @@ export default function AuthForm({liveServices}:{liveServices:number|null}){
  const [showPassword,setShowPassword]=useState(false);
  const requested=params.get('next')||'/dashboard';
  const destination=requested.startsWith('/')&&!requested.startsWith('//')?requested:'/dashboard';
+ const projectIntent=destination.startsWith('/projects');
 
  async function submit(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();setBusy(true);setMessage('');setMessageKind('error');
@@ -43,51 +44,49 @@ export default function AuthForm({liveServices}:{liveServices:number|null}){
   <div className={styles.glowOne}/><div className={styles.glowTwo}/>
   <section className={`container ${styles.layout}`}>
    <div className={styles.story}>
-    <span className={styles.eyebrow}>MANGLO ACCOUNT</span>
-    <h1>{signup?'Start your':'Welcome back to'} <span>{signup?'smarter growth.':'smarter growth.'}</span></h1>
-    <p>{signup?'Create one secure account for live services, wallet funding, order tracking and support.':'Manage your orders, wallet, and service tracking all in one place — clear, secure and easy to use.'}</p>
+    <span className={styles.eyebrow}>{projectIntent?'MANGLO CLIENT PORTAL':'MANGLO ACCOUNT'}</span>
+    <h1>{projectIntent?(signup?'Start your website':'Welcome back to your'):(signup?'Start your':'Welcome back to')} <span>{projectIntent?'project.':'smarter growth.'}</span></h1>
+    <p>{projectIntent?(signup?'Create your secure MANGLO account to complete website onboarding, upload business assets and track the project from one place.':'Continue to your website project, business information, private files and delivery progress.'):(signup?'Create one secure account for live services, wallet funding, order tracking and support.':'Manage your orders, wallet, and service tracking all in one place — clear, secure and easy to use.')}</p>
 
     <div className={styles.benefits}>
      <article><span><ShieldCheck/></span><div><b>Secure sign-in</b><small>Supabase-backed authentication and protected sessions.</small></div></article>
-     <article><span><PackageCheck/></span><div><b>Real order tracking</b><small>Follow supplier-linked status from your account.</small></div></article>
-     <article><span><WalletCards/></span><div><b>Wallet-based checkout</b><small>Fund securely through Cashfree hosted checkout.</small></div></article>
-     <article><span><Headphones/></span><div><b>Human support</b><small>Open support with the right order context attached.</small></div></article>
+     <article><span><PackageCheck/></span><div><b>{projectIntent?'Save & continue later':'Real order tracking'}</b><small>{projectIntent?'Your website onboarding autosaves so you can finish it in your own time.':'Follow supplier-linked status from your account.'}</small></div></article>
+     <article><span><WalletCards/></span><div><b>{projectIntent?'Private project files':'Wallet-based checkout'}</b><small>{projectIntent?'Logos, photos and documents stay attached to the correct project.':'Fund securely through Cashfree hosted checkout.'}</small></div></article>
+     <article><span><Headphones/></span><div><b>{projectIntent?'Tracked delivery':'Human support'}</b><small>{projectIntent?'Follow Information Received → Build → Review → Launch from your portal.':'Open support with the right order context attached.'}</small></div></article>
     </div>
 
     <div className={styles.productPreview}>
      <div className={styles.previewRail}>
       <div className={styles.previewBrand}><Image src={BRAND_ICON} alt="" width={24} height={24}/><b>MANGLO</b></div>
-      <span className={styles.previewActive}><LayoutDashboard size={13}/> Dashboard</span>
-      <span><PackageCheck size={13}/> My orders</span>
-      <span><WalletCards size={13}/> Wallet</span>
-      <span><Headphones size={13}/> Support</span>
+      <span className={styles.previewActive}><LayoutDashboard size={13}/> {projectIntent?'My projects':'Dashboard'}</span>
+      <span><PackageCheck size={13}/> {projectIntent?'Business info':'My orders'}</span>
+      <span><WalletCards size={13}/> {projectIntent?'Project files':'Wallet'}</span>
+      <span><Headphones size={13}/> {projectIntent?'Progress':'Support'}</span>
      </div>
      <div className={styles.previewMain}>
-      <div className={styles.previewTop}><div><small>YOUR MARKETPLACE</small><strong>Everything in one account.</strong></div><span><CheckCircle2 size={13}/> Live</span></div>
-      <Link href="/services" className={styles.previewSearch}><Search size={14}/> Search live services…</Link>
+      <div className={styles.previewTop}><div><small>{projectIntent?'YOUR CLIENT PORTAL':'YOUR MARKETPLACE'}</small><strong>{projectIntent?'One project. Everything organised.':'Everything in one account.'}</strong></div><span><CheckCircle2 size={13}/> {projectIntent?'Private':'Live'}</span></div>
+      {projectIntent?<Link href="/onboarding" className={styles.previewSearch}><PackageCheck size={14}/> Website onboarding → project dashboard</Link>:<Link href="/services" className={styles.previewSearch}><Search size={14}/> Search live services…</Link>}
       <div className={styles.previewCards}>
-       <Link href="/services?platform=Instagram"><b>Instagram</b><small>Browse services</small></Link>
-       <Link href="/services?platform=YouTube"><b>YouTube</b><small>Browse services</small></Link>
-       <Link href="/services?platform=TikTok"><b>TikTok</b><small>Browse services</small></Link>
-       <Link href="/services?platform=Telegram"><b>Telegram</b><small>Browse services</small></Link>
+       {projectIntent?<><Link href="/onboarding"><b>Business</b><small>Core details</small></Link><Link href="/onboarding"><b>Services</b><small>What you offer</small></Link><Link href="/onboarding"><b>Brand</b><small>Photos & style</small></Link><Link href="/onboarding"><b>Review</b><small>Submit once</small></Link></>:<><Link href="/services?platform=Instagram"><b>Instagram</b><small>Browse services</small></Link><Link href="/services?platform=YouTube"><b>YouTube</b><small>Browse services</small></Link><Link href="/services?platform=TikTok"><b>TikTok</b><small>Browse services</small></Link><Link href="/services?platform=Telegram"><b>Telegram</b><small>Browse services</small></Link></>}
       </div>
-      <div className={styles.previewStats}><div><small>LIVE CATALOG</small><strong>{liveServices===null?'Available now':liveServices.toLocaleString('en-IN')}</strong></div><div><small>CHECKOUT</small><strong>Cashfree hosted</strong></div></div>
+      <div className={styles.previewStats}>{projectIntent?<><div><small>AUTOSAVE</small><strong>Continue later</strong></div><div><small>PROJECT STATUS</small><strong>Tracked</strong></div></>:<><div><small>LIVE CATALOG</small><strong>{liveServices===null?'Available now':liveServices.toLocaleString('en-IN')}</strong></div><div><small>CHECKOUT</small><strong>Cashfree hosted</strong></div></>}</div>
      </div>
-     <div className={styles.successChip}><CheckCircle2 size={18}/><div><b>Built for clarity</b><small>Review before you order.</small></div></div>
+     <div className={styles.successChip}><CheckCircle2 size={18}/><div><b>{projectIntent?'Ready for your website':'Built for clarity'}</b><small>{projectIntent?'No giant WhatsApp questionnaire.':'Review before you order.'}</small></div></div>
     </div>
    </div>
 
    <div className={styles.authSide}>
-    <div className={styles.note}>Same marketplace.<br/>Smarter account.</div>
-    <div className={styles.liveBadge}><span>↗</span><div><b>{liveLabel}</b><small>Fresh catalog available now</small></div></div>
+    <div className={styles.note}>{projectIntent?<>Your website.<br/>One organised portal.</>:<>Same marketplace.<br/>Smarter account.</>}</div>
+    <div className={styles.liveBadge}><span>↗</span><div><b>{projectIntent?'Save & continue later':liveLabel}</b><small>{projectIntent?'Private onboarding + project tracking':'Fresh catalog available now'}</small></div></div>
 
     <section className={styles.card}>
      <div className={styles.cardTop}><span className={styles.mark}>M</span><button type="button" onClick={()=>switchMode(!signup)}>{signup?'Already a member?':'New here?'} <b>{signup?'Log in':'Create account'}</b></button></div>
      <h2>{signup?'Create your account':'Welcome back'}</h2>
-     <p>{signup?'Set up your MANGLO account and verify your email to continue.':'Continue to your marketplace account, wallet and live order activity.'}</p>
+     <p>{projectIntent?(signup?'Create your MANGLO account, verify your email, then continue directly into website onboarding.':'Sign in to continue your website project and client portal.'):(signup?'Set up your MANGLO account and verify your email to continue.':'Continue to your marketplace account, wallet and live order activity.')}</p>
      {message?<div className={`${styles.notice} ${messageKind==='success'?styles.success:styles.error}`}>{message}</div>:null}
 
      <form onSubmit={submit} className={styles.form}>
+      <input type="hidden" name="next" value={destination}/>
       {signup?<div className={styles.twoCol}>
        <label><span>Full name</span><div className={styles.inputWrap}><input name="name" minLength={2} maxLength={80} autoComplete="name" placeholder="Your name" required/></div></label>
        <label><span>Mobile number</span><div className={styles.inputWrap}><input name="phone" inputMode="tel" pattern="[0-9]{10}" placeholder="10-digit mobile" autoComplete="tel" required/></div></label>

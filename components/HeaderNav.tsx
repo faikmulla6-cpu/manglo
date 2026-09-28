@@ -7,7 +7,7 @@ import {usePathname} from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import {
- ArrowRight,ChevronRight,Gift,Gauge,LayoutDashboard,Menu,Search,UserRound,X,
+ ArrowRight,BriefcaseBusiness,ChevronRight,Gift,Gauge,LayoutDashboard,Menu,Search,UserRound,X,
 } from 'lucide-react';
 import styles from './Header.module.css';
 import radix from './HeaderRadix.module.css';
@@ -122,7 +122,7 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
        {signedIn?<NavTooltip label="Search marketplace"><Link className={styles.utilityButton} href="/services" aria-label="Search marketplace" tabIndex={compact?-1:undefined}><Search size={15}/></Link></NavTooltip>:null}
        {admin?<NavTooltip label="Operations"><Link className={styles.utilityButton} href="/admin" aria-label="Open operations" tabIndex={compact?-1:undefined}><Gauge size={15}/></Link></NavTooltip>:null}
        {signedIn?
-        <><Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Dashboard</Link><Link className={styles.primary} href="/#project" tabIndex={compact?-1:undefined}>Start a project <ArrowRight size={13}/></Link></>:
+        <><Link className={styles.accountButton} href="/dashboard" tabIndex={compact?-1:undefined}><LayoutDashboard size={14}/> Growth dashboard</Link><Link className={styles.primary} href="/projects" tabIndex={compact?-1:undefined}><BriefcaseBusiness size={14}/> My projects</Link></>:
         <><Link className={styles.login} href="/auth" tabIndex={compact?-1:undefined}>Log in</Link><Link className={styles.primary} href="/#project" tabIndex={compact?-1:undefined}>Start a project <ArrowRight size={13}/></Link></>}
        <Dialog.Trigger asChild>
         <button type="button" className={styles.mobileTrigger} onClick={()=>updateCompact(false)} aria-label="Open navigation" tabIndex={compact?-1:undefined}><Menu size={19}/></button>
@@ -146,6 +146,7 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
       </div>
       <nav className={styles.mobileLinks} aria-label="Mobile navigation">
        {primaryLinks.map(link=><Link key={link.href} href={link.href} className={isActive(pathname,link.href)?styles.mobileActive:undefined}><span>{link.label}</span><ChevronRight size={15}/></Link>)}
+       {signedIn?<Link href="/projects" className={isActive(pathname,'/projects')?styles.mobileActive:undefined}><span>Website projects</span><BriefcaseBusiness size={15}/></Link>:null}
        <Link href={inviteHref} className={isActive(pathname,'/invite')?styles.mobileActive:undefined}><span>Invite & earn</span><Gift size={15}/></Link>
       </nav>
       <div className={styles.mobileMeta}>
@@ -155,7 +156,7 @@ export default function HeaderNav({signedIn,admin}:{signedIn:boolean;admin:boole
       </div>
       <div className={styles.mobileActions}>
        <Link className={styles.mobileAccount} href={accountHref}>{signedIn?<LayoutDashboard size={15}/>:<UserRound size={15}/>} {signedIn?'Dashboard':'Log in'}</Link>
-       <Link className={styles.mobilePrimary} href="/#project">Start a project <ArrowRight size={13}/></Link>
+       <Link className={styles.mobilePrimary} href={signedIn?'/projects':'/#project'}>{signedIn?'My website projects':'Start a project'} <ArrowRight size={13}/></Link>
        {admin?<Link className={styles.mobileAdmin} href="/admin"><Gauge size={15}/> Operations</Link>:null}
       </div>
      </aside>

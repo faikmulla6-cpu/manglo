@@ -3,6 +3,7 @@ import {ArrowLeft,ExternalLink,Mail,Phone} from 'lucide-react';
 import {requireAdmin} from '@/lib/admin';
 import {db} from '@/lib/db';
 import AgencyLeadStatusControl from './AgencyLeadStatusControl';
+import OnboardingHandoff from './OnboardingHandoff';
 import styles from './AgencyLeads.module.css';
 
 export const dynamic='force-dynamic';
@@ -57,6 +58,7 @@ export default async function AgencyLeads(){
       {lead.phone?<a href={'tel:'+lead.phone}><Phone size={13}/>{lead.phone}</a>:null}
       {website?<a href={website} target="_blank" rel="noreferrer"><ExternalLink size={13}/>Current website</a>:null}
      </div>
+     <OnboardingHandoff/>
      <time>{dateTime(lead.createdAt)}</time>
     </article>;
    })}</div>:<div className={styles.empty}><b>No agency leads yet.</b><p>New website briefs will appear here after submission.</p></div>}

@@ -8,8 +8,11 @@ export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get('token_hash');
   const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null;
   const code = request.nextUrl.searchParams.get('code');
-  const requestedNext = request.nextUrl.searchParams.get('next') || '/dashboard';
-  const nextPath = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
+  const requestedNext = request.nextUrl.searchParams.get('next');
+
+  function safeNext(value: unknown) {
+    return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : null;
+  }
 
   let appOrigin: string;
   try {
@@ -21,9 +24,13 @@ export async function GET(request: NextRequest) {
 
   // Never build external redirects from Host/X-Forwarded-Host or Hostinger's internal
   // Node listener (for example 0.0.0.0:3000). Always use MANGLO's configured public origin.
-  const redirectTo = new URL(nextPath, `${appOrigin}/`);
-
   const supabase = await createClient();
+
+  function redirectFor(user: { user_metadata?: Record<string, unknown> | null }) {
+    const metadataNext = safeNext(user.user_metadata?.after_confirm);
+    const queryNext = safeNext(requestedNext);
+    return new URL(metadataNext || queryNext || '/dashboard', `${appOrigin}/`);
+  }
 
   // Custom SSR email-template flow using token_hash.
   if (tokenHash && type) {
@@ -32,6 +39,7 @@ export async function GET(request: NextRequest) {
     if (!error && data.user) {
       try {
         await provisionUser(data.user);
+        const redirectTo=redirectFor(data.user);
         if (type !== 'recovery') redirectTo.searchParams.set('verified', '1');
         return NextResponse.redirect(redirectTo);
       } catch {
@@ -47,6 +55,7 @@ export async function GET(request: NextRequest) {
     if (!error && data.user) {
       try {
         await provisionUser(data.user);
+        const redirectTo=redirectFor(data.user);
         redirectTo.searchParams.set('verified', '1');
         return NextResponse.redirect(redirectTo);
       } catch {
