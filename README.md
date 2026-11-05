@@ -25,6 +25,7 @@ Supported images: JPG, PNG, WebP, up to 20 MB and 40 megapixels each. Requires a
 
 ## Before public launch
 
-Configure an accessible public support email or feedback channel; the current Contact page clearly identifies the GitHub access limitation. No advertising or analytics tags are installed. Before enabling AdSense, obtain Google approval, update privacy disclosures and add any required consent management. Do not invent publisher IDs or add a fake ads.txt. AdSense approval is not guaranteed.
+Public support contact: faikxbillion@gmail.com. No advertising or analytics tags are installed. Before enabling AdSense, obtain Google approval, update privacy disclosures and add any required consent management. Do not invent publisher IDs or add a fake ads.txt. AdSense approval is not guaranteed.
 
 The old source is recoverable from Git history; this replacement does not delete remote databases or cancel third-party services.
+
