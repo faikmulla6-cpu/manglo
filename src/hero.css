@@ -1,0 +1,56 @@
+/* Keep Manglo's existing global styles and interactive tools untouched. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(mg);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(mg) source("../");
+
+.premium-hero.manglo-hero-upgraded {
+  position: relative;
+  isolation: isolate;
+}
+
+.premium-hero.manglo-hero-upgraded::before {
+  content: "";
+  position: absolute;
+  inset: 0 -4vw;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 25% 20%, #fb794f28, transparent 55%),
+    radial-gradient(ellipse at 88% 8%, #7643b62b, transparent 48%),
+    radial-gradient(ellipse at 75% 68%, #2c8fba22, transparent 52%);
+  filter: blur(28px);
+}
+
+#manglo-hero-root {
+  position: relative;
+  min-width: 0;
+}
+
+#manglo-hero-root h1 {
+  margin: 0 0 24px;
+  font-family: Manrope, Arial, sans-serif;
+  font-size: clamp(43px, 5.4vw, 76px);
+  line-height: 1.09;
+  letter-spacing: -0.055em;
+  color: #f7f7f7;
+}
+
+#manglo-hero-root p { margin: 0 0 30px; }
+#manglo-hero-root a { text-decoration: none; }
+#manglo-hero-root .manglo-hero-badge { color: #ffdecf; }
+#manglo-hero-root .manglo-hero-primary { color: #161514; }
+#manglo-hero-root .manglo-hero-secondary { color: #fff; }
+#manglo-hero-root button { cursor: pointer; }
+#manglo-hero-root ol { list-style: none; }
+#manglo-studio { scroll-margin-top: 32px; }
+
+@media (max-width: 550px) {
+  #manglo-hero-root h1 { font-size: clamp(41px, 11vw, 54px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #manglo-hero-root *, #manglo-hero-root *::before, #manglo-hero-root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
