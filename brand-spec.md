@@ -10,4 +10,4 @@ Design read: independent seller toolkit; light frosted glass; overhaul. Variance
 
 Narrative: homepage introduces tools, tool workspaces prioritize file selection and results, guides prioritize reading. Phone and laptop viewing; calm, professional temperature. Responsive cards become single-column on phones to preserve readable text and touch targets.
 
-v0: apply the approved material system to existing composition for direction review. Final pass after review will refine hero imagery, component details and remaining visual inconsistencies.
+Current revision: Manglo Studio. Graphite #101112, warm white #F2F0EB, orange #FF784F. Product-first hero with a working browser-local sample image exporter, fine-border panels, restrained elevation and a warm light section for visual rhythm. Manrope headings retain the brand while tighter composition prioritizes tools. Desktop and mobile reviewed; reduced-motion users receive static presentation. Existing tools, URLs and legal content remain unchanged.
