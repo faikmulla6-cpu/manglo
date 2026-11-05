@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://manglo.shop/sitemap.xml

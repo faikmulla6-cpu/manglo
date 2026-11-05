@@ -1,80 +1,30 @@
-# MANGLO v1
+# Manglo.shop — seller toolkit
 
-Production-oriented Next.js marketplace starter for MANGLO.
+A complete replacement for the previous SMM marketplace. No database, login, payment provider or secret environment variables are required.
 
-## What is included
-- Orange/white MANGLO consumer UI
-- SEO metadata, sitemap, robots and Organization schema
-- Registration/login with bcrypt password hashing
-- Database-backed hashed session tokens in HttpOnly cookies
-- Wallet ledger using integer paise (never floating-point money in DB)
-- Cashfree hosted Checkout order creation
-- Cashfree webhook HMAC verification + server-side order verification
-- Idempotent wallet crediting
-- Server-only SMM provider adapter
-- Provider service synchronization and retail markup
-- Atomic wallet debit before provider submission
-- Automatic wallet restoration when provider submission fails
-- Order status endpoint
-- Terms, Privacy, Refund, Contact and About pages
-- Security headers / CSP / HSTS
+## Run
 
-## Stack
-Next.js 15, React 19, TypeScript, Prisma, Supabase Postgres, Cashfree hosted checkout.
+Node.js 20+; no npm dependencies.
 
-## Hostinger deployment
-1. Create a Supabase project and copy both its pooled and direct Postgres connection strings.
-2. Copy `.env.example` values into Hostinger's environment variable area. **Never commit `.env`**.
-3. Set `NEXT_PUBLIC_APP_URL` to the final HTTPS origin, e.g. `https://manglo.in`.
-4. Put Cashfree sandbox credentials in `CASHFREE_CLIENT_ID` and `CASHFREE_CLIENT_SECRET`; keep `CASHFREE_MODE=sandbox` until verification is complete.
-5. Put the upstream provider secret only in `SMM_API_KEY`.
-6. Generate long secrets for `SESSION_PEPPER` and `CRON_SECRET` (at least 32 random bytes each).
-7. `npm install`
-8. `npx prisma generate`
-9. `npx prisma db push` for initial setup; after launch prefer `npx prisma migrate deploy`.
-10. `npm run build`
-11. `npm start`
-
-## Sync provider catalog
-Call from a secure server/admin shell only:
-
-```bash
-curl -X POST https://YOURDOMAIN/api/services/sync \
-  -H "Authorization: Bearer $CRON_SECRET"
+```sh
+npm run build
+npm start
 ```
 
-Never expose this bearer token in client code.
+Open http://127.0.0.1:4173. For static hosting, upload the contents of `dist/` to your web root (Hostinger: `public_html`). Keep route directories intact. Domain and DNS configuration remain with your hosting provider.
 
-## Cashfree setup
-- Use Cashfree hosted checkout.
-- Register `https://YOURDOMAIN/api/payments/webhook` as the notify/webhook endpoint.
-- Test success, failure, user-drop, duplicate webhook and delayed webhook scenarios in sandbox.
-- Move to production only after Cashfree approves the real MANGLO business model and domain.
+## Included
 
-## Required business details before launch
-The supplied legal/contact copy contains placeholders because company/legal details were not provided. Before production onboarding, add:
-- Legal business/entity name
-- Registered/business address
-- Support email
-- Customer-care phone
-- Actual support hours
-- GSTIN/CIN if applicable
-- Effective dates for policies
-- Accurate refund/cancellation terms consistent with your upstream supplier and Indian law
+- Browser-local image compression, resizing, format conversion, positioned aspect-ratio cropping and target-size compression.
+- Multi-file processing (up to 10 images), previews, downloads, validation and explicit errors.
+- Live profit and discount calculators with currency selection and copy results.
+- Original seller guides, About, Privacy, Terms and Contact pages.
+- Responsive interface, keyboard focus states, sitemap, robots and canonical URLs.
 
-## Security launch checklist
-- HTTPS only
-- Production Cashfree credentials only in Hostinger env
-- Rotate keys if ever exposed
-- Restrict Hostinger/admin access with 2FA
-- Daily DB backups
-- Cloudflare or equivalent WAF/rate limiting recommended
-- Add email verification and password reset before broad public launch
-- Add Redis/distributed rate limiting when scaling beyond one Node instance
-- Add admin RBAC; do not expose catalog sync to ordinary users
-- Log security events without logging passwords/API keys/payment secrets
-- Monitor provider balance and payment webhook failures
-- Add automated dependency/security scanning in CI
+Supported images: JPG, PNG, WebP, up to 20 MB and 40 megapixels each. Requires a modern browser with createImageBitmap and canvas encoding. Animation is flattened. Metadata is not preserved. Inspect exported results.
 
-## Important
-Third-party social platforms have their own rules. Do not market MANGLO with promises such as guaranteed virality, guaranteed account safety, or “ban proof” claims unless you can substantiate them and they comply with the relevant platform rules.
+## Before public launch
+
+Configure an accessible public support email or feedback channel; the current Contact page clearly identifies the GitHub access limitation. No advertising or analytics tags are installed. Before enabling AdSense, obtain Google approval, update privacy disclosures and add any required consent management. Do not invent publisher IDs or add a fake ads.txt. AdSense approval is not guaranteed.
+
+The old source is recoverable from Git history; this replacement does not delete remote databases or cancel third-party services.
