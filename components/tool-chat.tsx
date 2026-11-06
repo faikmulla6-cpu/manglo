@@ -73,20 +73,21 @@ export function ToolChat() {
   const operation = useRef(0);
   const pendingFile = useRef<File | null>(null);
   const urls = useRef<string[]>([]);
-  const threadEnd = useRef<HTMLDivElement>(null);
   const inputDock = useRef<HTMLDivElement>(null);
+  const hasRepositioned = useRef(false);
   const inConversation = messages.length > 0 || stage !== null;
 
   useEffect(() => {
-    if (!inConversation) return;
-    // Let the conversation unfold before bringing the open composer into view.
-    // The document remains the sole scroll surface; the Playbook is still below.
+    if (!inConversation) { hasRepositioned.current = false; return; }
+    if (hasRepositioned.current) return;
+    hasRepositioned.current = true;
+    // Only scroll once when the studio opens. Repeated scroll commands during
+    // thinking/result updates made the entire page jump up and down.
     const timer = window.setTimeout(() => {
-      const target = messages.length < 2 ? inputDock.current : threadEnd.current;
-      target?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
-    }, reduceMotion ? 0 : 420);
+      inputDock.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }, reduceMotion ? 0 : 650);
     return () => window.clearTimeout(timer);
-  }, [messages, stage, inConversation, reduceMotion]);
+  }, [inConversation, reduceMotion]);
   useEffect(() => () => { urls.current.forEach(URL.revokeObjectURL); }, []);
 
   const chooseTool = (id: ToolId) => {
@@ -170,8 +171,7 @@ export function ToolChat() {
     catch { setNotice("Clipboard is unavailable. Select the result text to copy it."); }
   };
 
-  return <motion.section layout="position" transition={{ layout: { type: "spring", stiffness: 105, damping: 27 } }}
-    className={`mchat-shell ${inConversation ? "is-conversing" : "is-idle"}`} aria-label="Manglo Studio">
+  return <section className={`mchat-shell ${inConversation ? "is-conversing" : "is-idle"}`} aria-label="Manglo Studio">
     <AnimatePresence initial={false}>
       {inConversation && <motion.header className="mchat-topbar"
         initial={reduceMotion ? false : { opacity: 0, y: -22 }} animate={{ opacity: 1, y: 0 }}
@@ -210,13 +210,11 @@ export function ToolChat() {
           </motion.article>)}
         </AnimatePresence>
         {stage && <div className="mchat-processing" role="status"><span className="mchat-processing-avatar"><Sparkles size={17} /></span><div><span className="mchat-processing-label"><LoaderCircle size={17} className="mchat-spin" /> {stage === "thinking" ? "Thinking through your request" : "Working on your result"}<span className="mchat-dots">···</span></span><small>{stage === "thinking" ? "Finding the best tool for the job" : "Processing privately in your browser"}</small></div></div>}
-        <div ref={threadEnd} />
       </div>
     </motion.div>}
     </AnimatePresence>
 
-    <motion.div layout="position" ref={inputDock} className="mchat-input-dock"
-      transition={{ layout: { type: "spring", stiffness: 94, damping: 26, mass: 1.15 } }}>
+    <div ref={inputDock} className="mchat-input-dock">
     <div className="mchat-compose-area">
       {selected && <div className="mchat-selected"><span>SELECTED ACTION</span><strong>{toolOptions.find(item => item.id === selected)?.title}</strong><button type="button" onClick={() => { setSelected(null); setDraft(""); }} aria-label="Clear selected tool">×</button></div>}
       <PromptInputBox key={session} value={draft} onValueChange={setDraft} onSend={send} isLoading={busy} onCancel={cancel}
@@ -230,6 +228,6 @@ export function ToolChat() {
       </div>
     </nav>
     <p className="mchat-assurance"><ShieldCheck size={13} /> Seven free tools · Images stay on your device · No account required</p>
-    </motion.div>
-  </motion.section>;
+    </div>
+  </section>;
 }

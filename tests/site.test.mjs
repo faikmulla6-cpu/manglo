@@ -6,9 +6,9 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106m"/);
-  assert.match(home,/src="\/hero-2-1\.js\?v=20261106m"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106m"/);
+  assert.match(home,/href="\/hero-2-1\.css\?v=20261106n"/);
+  assert.match(home,/src="\/hero-2-1\.js\?v=20261106n"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261106n"/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -27,12 +27,16 @@ test('browser hero bundle does not depend on Node process environment variables'
 });
 test('open conversation aligns both roles and never overlays the result with the prompt',async()=>{
   const css=await readFile(new URL('hero-2-1.css',root),'utf8');
+  const chat=await readFile(new URL('../components/tool-chat.tsx',root),'utf8');
   assert.match(css,/\.mchat-shell\.is-conversing\{[^}]*overflow:visible/);
   assert.match(css,/\.mchat-thread\{[^}]*overflow:visible/);
   assert.match(css,/\.mchat-shell\.is-conversing \.mchat-input-dock\{[^}]*position:relative/);
+  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-dock\{[^}]*width:min\(745px,100%\)/);
+  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-tool-list\{justify-content:flex-start/);
   assert.match(css,/\.mchat-message-user\{align-items:flex-start/);
   assert.match(css,/\.mchat-message-user \.mchat-bubble\{[^}]*text-align:left/);
   assert.doesNotMatch(css,/\.mchat-shell\.is-conversing\{[^}]*height:min\(/);
+  assert.doesNotMatch(chat,/layout="position"/);
 });
 test('Playbook hub and articles are crawlable, descriptive and linked to real tools',async()=>{
   const hub=await readFile(new URL('playbook/index.html',root),'utf8');
@@ -71,8 +75,8 @@ test('all seven interactive tools load their client logic; editorial routes do n
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
   for(const id of ids){
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
-    assert.match(html,/src="\/app\.js\?v=20261106m" defer/);
-    assert.match(html,/src="\/experience\.js\?v=20261106m" defer/);
+    assert.match(html,/src="\/app\.js\?v=20261106n" defer/);
+    assert.match(html,/src="\/experience\.js\?v=20261106n" defer/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
@@ -96,7 +100,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106m"/);
+    assert.match(html,/href="\/experience\.css\?v=20261106n"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });
