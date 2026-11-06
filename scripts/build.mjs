@@ -116,7 +116,7 @@ function renderPage(route, title, description, main, options = {}) {
     <meta property="og:image" content="${image}">
     <meta property="og:image:alt" content="${escapeHTML(options.imageAlt || 'Manglo seller tools and practical guides')}">
     <meta name="twitter:card" content="summary_large_image">
-    ${options.article ? `<meta property="article:published_time" content="${published}"><meta property="article:modified_time" content="${published}">` : ''}
+    ${options.article ? `<meta property="article:published_time" content="${options.published || published}"><meta property="article:modified_time" content="${options.modified || options.published || published}">` : ''}
     ${options.schema || ''}<!-- PB_META_END -->`;
 
   return template
@@ -172,7 +172,7 @@ const homeTeaser = `<div class="mg-editorial-wrap">
   </section>
   <section class="mg-topic-section" aria-labelledby="mg-photos-title">
     <div class="mg-reading-heading"><div><span class="mg-reading-overline">MAKE THE PRODUCT LOOK ITS BEST</span><h2 id="mg-photos-title">Image & product stories</h2></div><a href="/playbook/">Explore guides <span aria-hidden="true">→</span></a></div>
-    <div class="mg-topic-grid">${[playbookArticles[4],playbookArticles[2],playbookArticles[0]].map(a=>story(a)).join('')}</div>
+    <div class="mg-topic-grid">${[playbookArticles[6],playbookArticles[7],playbookArticles[8]].map(a=>story(a)).join('')}</div>
   </section>
   <section class="mg-topic-section" aria-labelledby="mg-business-title">
     <div class="mg-reading-heading"><div><span class="mg-reading-overline">FOR INDEPENDENT SELLERS EVERYWHERE</span><h2 id="mg-business-title">Pricing & selling smarter</h2></div><a href="/playbook/">Explore guides <span aria-hidden="true">→</span></a></div>
@@ -246,8 +246,8 @@ for (const [route, title] of Object.entries(existingRoutes)) {
 
 const featured = playbookArticles[0];
 const hub = `<div class="pb-page">
-  <section class="pb-hero"><div class="pb-hero-copy"><span class="pb-kicker">MANGLO / PRACTICAL KNOW-HOW</span><h1>Better decisions.<br><em>One small lesson at a time.</em></h1><p>Not more noise. Just honest, useful guides for people selling things on the internet—whether you're starting in India or serving customers worldwide.</p><div class="pb-hero-actions"><a class="pb-primary" href="#latest">Explore all guides <span aria-hidden="true">↘</span></a><span>Original, practical, free to read.</span></div></div><div class="pb-hero-art"><img src="${featured.image}" alt="${escapeHTML(featured.imageAlt)}" width="1536" height="1024"><div class="pb-hero-art-caption"><small>START HERE / PRODUCT PHOTOS</small><strong>${escapeHTML(featured.title)}</strong><a href="${articleHref(featured)}">Open the field guide →</a></div></div></section>
-  <section class="pb-topic-strip" aria-label="Playbook topics"><span>THE PLAYBOOK COVERS</span><strong>Product photography</strong><strong>Pricing that makes sense</strong><strong>Better listings</strong></section>
+  <section class="pb-hero"><div class="pb-hero-copy"><span class="pb-kicker">MANGLO / PRACTICAL KNOW-HOW</span><h1>Better decisions.<br><em>One small lesson at a time.</em></h1><p>Clear answers to everyday image, upload and calculation questions—plus thoughtful guidance for people selling online. Original examples you can actually use.</p><div class="pb-hero-actions"><a class="pb-primary" href="#latest">Explore all guides <span aria-hidden="true">↘</span></a><span>Original, practical, free to read.</span></div></div><div class="pb-hero-art"><img src="${featured.image}" alt="${escapeHTML(featured.imageAlt)}" width="1536" height="1024"><div class="pb-hero-art-caption"><small>START HERE / PRODUCT PHOTOS</small><strong>${escapeHTML(featured.title)}</strong><a href="${articleHref(featured)}">Open the field guide →</a></div></div></section>
+  <section class="pb-topic-strip" aria-label="Playbook topics"><span>THE PLAYBOOK COVERS</span><strong>Image sizes & uploads</strong><strong>Everyday calculations</strong><strong>Better listings</strong></section>
   <section class="pb-library" id="latest"><div class="pb-section-heading"><div><span class="pb-kicker">A LITTLE KNOW-HOW</span><h2>Explore the field guides.</h2><p>Start with a problem. Leave with an action.</p></div><span class="pb-volume">VOL. 01 / ${String(playbookArticles.length).padStart(2, '0')} GUIDES</span></div>
     <div class="pb-library-controls"><div class="pb-filters" role="group" aria-label="Filter Playbook guides">${categories.map((category, i) => `<button type="button" data-pb-filter="${escapeHTML(category)}" aria-pressed="${i === 0 ? 'true' : 'false'}" class="${i === 0 ? 'active' : ''}">${escapeHTML(category)}</button>`).join('')}</div><label class="pb-search"><span aria-hidden="true">⌕</span><input type="search" id="pb-search" placeholder="Search a question or topic" aria-label="Search Playbook articles"></label></div>
     <p class="pb-results-count" id="pb-results-count" role="status">${playbookArticles.length} useful guides</p>
@@ -257,8 +257,8 @@ const hub = `<div class="pb-page">
   <section class="pb-tool-banner"><div><span class="pb-kicker">READ IT. TRY IT.</span><h2>Ideas are better when you can use them.</h2><p>Our free browser-based tools turn a tip into a useful next step. Your product photos stay on your device.</p></div><div class="pb-tool-links"><a href="/tools/image-compressor/">Prepare a product photo →</a><a href="/tools/profit-calculator/">Check your profit →</a><a href="/tools/discount-calculator/">Plan a promotion →</a></div></section>
   <p class="pb-editorial-note">Guides are written for independent sellers using original explanations and illustrative examples. <a href="/editorial-standards/">See our editorial standards</a>.</p>
 </div>`;
-await saveRoute('playbook', staticEditorial(renderPage('playbook', 'Manglo Playbook | Seller field guides',
-  'Original, practical guides for product photography, listing preparation, pricing and profit. Written for a global audience with examples for Indian sellers.',
+await saveRoute('playbook', staticEditorial(renderPage('playbook', 'Manglo Playbook | Image, upload and calculation guides',
+  'Original, practical guides for resizing and compressing photos, fixing form uploads, calculating discounts, and preparing product listings.',
   hub, { image: featured.image, imageAlt: featured.imageAlt, schema: jsonLD({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Manglo Playbook', url: absolute('/playbook/'), inLanguage: 'en', mainEntity: { '@type': 'ItemList', itemListElement: playbookArticles.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.title, url: absolute(articleHref(a)) })) } }) })
   .replace('</body>', '<script src="/playbook.js" defer></script></body>')));
 
@@ -268,7 +268,7 @@ for (const article of playbookArticles) {
   const toc = [...article.body.matchAll(/<h2 id="([^"]+)">([^<]+)<\/h2>/g)].map(m => ({ id: m[1], label: m[2] }));
   const main = `<div class="pb-article-page"><div class="pb-reading-progress" aria-hidden="true"><span id="pb-progress-bar"></span></div>
     <nav class="pb-breadcrumb" aria-label="Breadcrumb"><a href="/">Manglo</a><span>/</span><a href="/playbook/">Playbook</a><span>/</span><span>${escapeHTML(article.category)}</span></nav>
-    <header class="pb-article-header"><span class="pb-kicker">${escapeHTML(article.category)} / FIELD GUIDE</span><h1>${escapeHTML(article.title)}</h1><p class="pb-article-dek">${escapeHTML(article.dek)}</p><div class="pb-article-meta"><span>By <a href="/editorial-standards/">Manglo Editorial</a></span><span>6 November 2026</span><span>${article.readTime} min read</span><button type="button" class="pb-copy-link" id="pb-copy-link">Copy link →</button></div></header>
+    <header class="pb-article-header"><span class="pb-kicker">${escapeHTML(article.category)} / FIELD GUIDE</span><h1>${escapeHTML(article.title)}</h1><p class="pb-article-dek">${escapeHTML(article.dek)}</p><div class="pb-article-meta"><span>By <a href="/editorial-standards/">Manglo Editorial</a></span><span>${new Date((article.published || published) + 'T00:00:00Z').toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric', timeZone:'UTC' })}</span><span>${article.readTime} min read</span><button type="button" class="pb-copy-link" id="pb-copy-link">Copy link →</button></div></header>
     <div class="pb-article-cover"><img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" width="1536" height="1024"><span>THE MANGLO PLAYBOOK / ORIGINAL GUIDE</span></div>
     <div class="pb-article-layout"><article class="pb-article-body" id="pb-article-body">${article.body}
       <section class="pb-article-cta"><span class="pb-kicker">PUT THIS TO WORK</span><h2>One small next step.</h2><p>Use Manglo's free toolkit to put the ideas in this guide into practice. No sign-up required.</p><a href="${article.tool.href}" class="pb-primary">${escapeHTML(article.tool.label)} →</a></section>
@@ -280,13 +280,13 @@ for (const article of playbookArticles) {
     '@context': 'https://schema.org', '@type': 'BlogPosting',
     headline: article.title, description: article.description,
     mainEntityOfPage: absolute(articleHref(article)),
-    image: [absolute(article.image)], datePublished: published,
-    dateModified: published, inLanguage: 'en',
+    image: [absolute(article.image)], datePublished: article.published || published,
+    dateModified: article.modified || article.published || published, inLanguage: 'en',
     author: { '@type': 'Organization', name: 'Manglo Editorial', url: absolute('/editorial-standards/') },
     publisher: { '@type': 'Organization', name: 'Manglo', url: absolute('/') }
   }) + breadcrumb([{ label: 'Home', href: '/' }, { label: 'Playbook', href: '/playbook/' }, { label: article.title, href: articleHref(article) }]);
   await saveRoute(`playbook/${article.slug}`, staticEditorial(renderPage(`playbook/${article.slug}`, article.title,
-    article.description, main, { article: true, image: article.image, imageAlt: article.imageAlt, schema })
+    article.description, main, { article: true, published: article.published || published, modified: article.modified || article.published || published, image: article.image, imageAlt: article.imageAlt, schema })
     .replace('</body>', '<script src="/playbook.js" defer></script></body>')));
 }
 
@@ -302,7 +302,7 @@ await writeFile(new URL('robots.txt', root), `User-agent: *\nAllow: /\nSitemap: 
 await writeFile(new URL('sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map(route => `<url><loc>${absolute(route ? `/${route}/` : '/')}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 const xml = value => escapeHTML(value).replace(/'/g, '&apos;');
-const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Manglo Playbook</title><link>${absolute('/playbook/')}</link><description>Practical field guides for independent sellers</description><language>en</language>${playbookArticles.map(a => `<item><title>${xml(a.title)}</title><link>${absolute(articleHref(a))}</link><guid isPermaLink="true">${absolute(articleHref(a))}</guid><description>${xml(a.description)}</description><pubDate>Fri, 06 Nov 2026 00:00:00 GMT</pubDate></item>`).join('')}</channel></rss>`;
+const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Manglo Playbook</title><link>${absolute('/playbook/')}</link><description>Practical field guides for images, uploads, calculations and independent selling</description><language>en</language>${playbookArticles.map(a => `<item><title>${xml(a.title)}</title><link>${absolute(articleHref(a))}</link><guid isPermaLink="true">${absolute(articleHref(a))}</guid><description>${xml(a.description)}</description><pubDate>${new Date((a.published || published) + 'T00:00:00Z').toUTCString()}</pubDate></item>`).join('')}</channel></rss>`;
 await writeFile(new URL('feed.xml', root), rss);
 
 console.log(`Built ${sitemapPaths.length} crawlable routes, 404, RSS feed, robots.txt and sitemap.xml.`);

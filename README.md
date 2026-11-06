@@ -22,9 +22,13 @@ Open http://127.0.0.1:4173. For static hosting, upload the contents of `dist/` t
 - Multi-file processing (up to 10 images), previews, downloads, validation and explicit errors.
 - Live profit and discount calculators with currency selection and copy results.
 - Original seller guides, About, Privacy, Terms and Contact pages.
-- Manglo Playbook: six original, crawlable field guides, searchable topic library,
+- Manglo Playbook: twelve original, crawlable field guides, searchable topic library,
   contextual links to tools, a private in-browser listing checklist, editorial
   standards, and RSS feed at `/feed.xml`.
+- Six additional practical search-intent guides for common image uploads,
+  conversion, cropping, resizing and everyday discount calculations. These are
+  selected for relevance, not claimed as verified top Google searches or
+  gender-specific rankings.
 - Cinematic dark design with bronze/glass accents, original hero photography,
   responsive card gallery, animated navigation, editorial layouts and reduced-motion support.
 - Searchable/category-filtered tools, dedicated working workspaces, expanded About
@@ -39,7 +43,8 @@ Public support contact: faikxbillion@gmail.com. No advertising or analytics tags
 ## Playbook and future AdSense launch
 
 The Playbook is served as **static HTML** at `/playbook/` and
-`/playbook/<article-slug>/`. `content/playbook.mjs` stores the editorial content;
+`/playbook/<article-slug>/`. `content/playbook.mjs` and
+`content/search-guides.mjs` store the editorial content;
 `scripts/build.mjs` generates the article routes, article and breadcrumb
 structured data, canonical/meta tags, `sitemap.xml`, and `feed.xml`. Running
 `npm run build` updates these routes, including the homepage's Playbook teaser.

@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFile,stat}from'node:fs/promises';import vm from'node:vm';
+import {playbookArticles} from '../content/playbook.mjs';
 const root=new URL('../dist/',import.meta.url);
-test('every sitemap route exists and contains a visible heading without JavaScript',async()=>{const xml=await readFile(new URL('sitemap.xml',root),'utf8');const urls=[...xml.matchAll(/<loc>https:\/\/manglo.shop\/(.*?)<\/loc>/g)].map(m=>m[1]);assert.equal(urls.length,23);for(const route of urls){const html=await readFile(new URL(route+'index.html',root),'utf8');assert.match(html,/<h1\b[^>]*>/);assert.ok(html.includes(`href="https://manglo.shop/${route}"`));assert.ok(!html.includes('Cashfree'));}});
+test('every sitemap route exists and contains a visible heading without JavaScript',async()=>{const xml=await readFile(new URL('sitemap.xml',root),'utf8');const urls=[...xml.matchAll(/<loc>https:\/\/manglo.shop\/(.*?)<\/loc>/g)].map(m=>m[1]);assert.equal(urls.length,17+playbookArticles.length);for(const route of urls){const html=await readFile(new URL(route+'index.html',root),'utf8');assert.match(html,/<h1\b[^>]*>/);assert.ok(html.includes(`href="https://manglo.shop/${route}"`));assert.ok(!html.includes('Cashfree'));}});
 test('local links resolve to built files even when cache-busted',async()=>{const html=await readFile(new URL('index.html',root),'utf8');for(const m of html.matchAll(/(?:href|src)="(\/[^"#?]*)(?:\?[^"#]*)?(?:#[^"]*)?"/g)){const target=m[1];await stat(new URL(target.slice(1)+(target.endsWith('/')?'index.html':''),root));}});
 test('image geometry preserves proportions, crops correctly and rejects excessive output',async()=>{const source=await readFile(new URL('app.js',root),'utf8');const start=source.indexOf('function draw('),end=source.indexOf('\nfunction encode',start);const operations=[];const sandbox={document:{createElement:()=>({width:0,height:0,getContext:()=>({drawImage:(...args)=>operations.push(args),fillRect(){}})})}};vm.createContext(sandbox);vm.runInContext(source.slice(start,end),sandbox);const bitmap={width:1600,height:1200};let result=sandbox.draw(bitmap,{resize:true,width:1000,height:1000,keep:true});assert.equal(result.width,1000);assert.equal(result.height,750);result=sandbox.draw(bitmap,{crop:true,ratio:1,x:.5,y:.5});assert.equal(result.width,1200);assert.equal(result.height,1200);assert.equal(operations.at(-1)[1],200);assert.throws(()=>sandbox.draw(bitmap,{resize:true,width:10000,height:10000}),/40 megapixels/);});
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
@@ -61,8 +62,8 @@ test('Playbook hub and articles are crawlable, descriptive and linked to real to
   assert.match(hub,/Explore the field guides/);
   assert.match(hub,/id="pb-grid"/);
   const entries=[...hub.matchAll(/href="(\/playbook\/[^"#]+\/)"/g)].map(x=>x[1]);
-  assert.equal(new Set(entries).size,6);
-  const pages=['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist'];
+  assert.equal(new Set(entries).size,playbookArticles.length);
+  const pages=playbookArticles.map(a=>a.slug);
   for(const slug of pages){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<h1>/);
@@ -88,6 +89,28 @@ test('Playbook additions remain independent from the existing seven tools',async
   const editorial=await readFile(new URL('editorial-standards/index.html',root),'utf8');
   assert.match(editorial,/Ads and editorial independence/);
   assert.doesNotMatch(home,/adsbygoogle|ca-pub-/);
+});
+test('new search-intent guides have unique metadata, real task links and dated indexable pages',async()=>{
+  const additions=playbookArticles.filter(a=>a.published==='2026-11-07');
+  assert.equal(additions.length,6);
+  assert.equal(new Set(playbookArticles.map(a=>a.slug)).size,playbookArticles.length);
+  const sitemap=await readFile(new URL('sitemap.xml',root),'utf8');
+  const feed=await readFile(new URL('feed.xml',root),'utf8');
+  for(const article of additions){
+    const path=`playbook/${article.slug}/`;
+    const html=await readFile(new URL(path+'index.html',root),'utf8');
+    assert.ok(article.body.replace(/<[^>]*>/g,' ').trim().split(/\s+/).length>=300);
+    assert.match(article.tool.href,/^\/tools\//);
+    assert.match(html,/property="article:published_time" content="2026-11-07"/);
+    assert.match(html,/"datePublished":"2026-11-07"/);
+    assert.ok(html.includes(article.tool.href));
+    assert.ok(sitemap.includes('https://manglo.shop/'+path));
+    assert.ok(feed.includes('https://manglo.shop/'+path));
+    for(const m of html.matchAll(/href="(\/playbook\/[^"#?]+\/?)"/g)){
+      const relative=m[1].slice(1);
+      assert.ok((await stat(new URL(relative+(relative.endsWith('/')?'index.html':'/index.html'),root))).isFile());
+    }
+  }
 });
 test('all seven interactive tools load their client logic; editorial routes do not',async()=>{
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
@@ -115,7 +138,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   assert.match(css,/\.pb-article-body \.pb-checklist\{background:#151e22!important/);
   assert.match(css,/@media\(max-width:800px\)\{[\s\S]*?\.pb-article-sidebar\{display:block!important/);
   assert.match(js,/setAttribute\('aria-current', 'location'\)/);
-  for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
+  for(const slug of playbookArticles.map(a=>a.slug)){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
     assert.match(html,/href="\/experience\.css\?v=20261106r"/);

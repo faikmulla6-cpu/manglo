@@ -1,3 +1,5 @@
+import { searchGuides } from './search-guides.mjs';
+
 // Original, evergreen seller education. Publish only material we can explain and
 // substantiate; illustrative examples are explicitly labelled as examples.
 export const playbookArticles = [
@@ -178,7 +180,8 @@ export const playbookArticles = [
       <h2 id="tools">Useful tools for the final pass</h2>
       <p>Use the <a href="/tools/image-resizer/">image resizer</a> and <a href="/tools/image-compressor/">compressor</a> to prepare photos, then check the numbers in the <a href="/tools/profit-calculator/">profit calculator</a>. Every listed tool currently runs without an account.</p>
     `
-  }
+  },
+  ...searchGuides
 ];
 
-export const categories = ['All topics', 'Product photos', 'Pricing & profit', 'Seller workflow'];
+export const categories = ['All topics', 'Product photos', 'Image size & uploads', 'Pricing & profit', 'Everyday calculations', 'Seller workflow'];
