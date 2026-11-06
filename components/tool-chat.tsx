@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowDownToLine, ArrowRight, ArrowUpRight, Check, CheckCircle2, Crop,
@@ -74,19 +74,26 @@ export function ToolChat() {
   const pendingFile = useRef<File | null>(null);
   const urls = useRef<string[]>([]);
   const inputDock = useRef<HTMLDivElement>(null);
-  const hasRepositioned = useRef(false);
+  const launchDockTop = useRef<number | null>(null);
   const inConversation = messages.length > 0 || stage !== null;
 
-  useEffect(() => {
-    if (!inConversation) { hasRepositioned.current = false; return; }
-    if (hasRepositioned.current) return;
-    hasRepositioned.current = true;
-    // Only scroll once when the studio opens. Repeated scroll commands during
-    // thinking/result updates made the entire page jump up and down.
-    const timer = window.setTimeout(() => {
-      inputDock.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
-    }, reduceMotion ? 0 : 650);
-    return () => window.clearTimeout(timer);
+  useLayoutEffect(() => {
+    if (!inConversation) { launchDockTop.current = null; return; }
+    const previousTop = launchDockTop.current;
+    launchDockTop.current = null;
+    const dock = inputDock.current;
+    if (previousTop === null || !dock || reduceMotion) return;
+    // Animate only the vertical displacement of the *whole* input group.
+    // Measuring before Send and after the new layout keeps the prompt, tool
+    // buttons and privacy line travelling as one, without layout springs.
+    const distance = previousTop - dock.getBoundingClientRect().top;
+    if (Math.abs(distance) < 2) return;
+    const animation = dock.animate([
+      { transform: `translate3d(0, ${distance}px, 0)` },
+      { transform: "translate3d(0, 0, 0)" },
+    ], { duration: 1250, easing: "cubic-bezier(.42, 0, .18, 1)", fill: "both" });
+    animation.onfinish = () => animation.cancel();
+    return () => animation.cancel();
   }, [inConversation, reduceMotion]);
   useEffect(() => () => { urls.current.forEach(URL.revokeObjectURL); }, []);
 
@@ -110,6 +117,8 @@ export function ToolChat() {
 
   const send = async (input: string, newFile?: File) => {
     if (busy) return;
+    const firstTurn = messages.length === 0;
+    if (firstTurn) launchDockTop.current = inputDock.current?.getBoundingClientRect().top ?? null;
     const file = newFile ?? pendingFile.current ?? undefined;
     if (newFile) pendingFile.current = newFile;
     const text = input.trim() || (file ? "Compress this image" : "");
@@ -120,8 +129,9 @@ export function ToolChat() {
     setDraft(""); setNotice("");
     const run = ++operation.current;
     setBusy(true); setStage("thinking");
-    // Let the browser paint the short, visible progress state before processing.
-    await new Promise<void>(resolve => window.setTimeout(resolve, 250));
+    // Let the first workspace transition finish before the response replaces
+    // the thinking state; otherwise a growing result moves the dock mid-flight.
+    await new Promise<void>(resolve => window.setTimeout(resolve, firstTurn && !reduceMotion ? 1300 : 250));
     if (operation.current !== run) return;
     setStage("processing");
     try {

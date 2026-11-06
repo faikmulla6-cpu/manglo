@@ -9,12 +9,12 @@ body:has(.mg-home) .mg-header-action{padding:9px 15px;font-size:11px;border-colo
 
 .mg-home .mg-chat-section{width:min(1440px,calc(100% - 56px));margin:0 auto;padding:127px 0 132px;min-height:545px;background:transparent}
 .mg-home .mg-chat-section:before{display:none}
-.mg-chat-heading{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:17px;margin:0 0 33px!important;max-height:210px;opacity:1;transform:translateY(0);overflow:hidden;transition:max-height .7s cubic-bezier(.16,1,.3,1),opacity .35s ease,transform .7s cubic-bezier(.16,1,.3,1),margin .7s cubic-bezier(.16,1,.3,1)}
+.mg-chat-heading{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:17px;margin:0 0 33px!important;max-height:210px;opacity:1;transform:translateY(0);overflow:hidden;transition:opacity .5s ease,transform .8s cubic-bezier(.42,0,.18,1)}
 .mg-home .mg-chat-heading .mg-kicker{margin:0!important;font-size:9px;letter-spacing:.21em;color:#717171}
 .mg-chat-heading h1{font:600 clamp(35px,3.65vw,55px)/1.14 var(--mg-display)!important;letter-spacing:-.06em!important;color:#f5f5f5!important;margin:0!important}
 .mg-home .mg-chat-heading h1 em{font-style:normal;color:#f5f5f5}
-.mg-home .mg-chat-section{overflow-x:clip;transition:padding .75s cubic-bezier(.16,1,.3,1)}
-.mg-home .mg-chat-section:has(.mchat-shell.is-conversing){padding-top:34px;padding-bottom:62px;min-height:calc(100svh - 69px)}
+.mg-home .mg-chat-section{overflow-x:clip}
+.mg-home .mg-chat-section:has(.mchat-shell.is-conversing){padding-top:34px;padding-bottom:62px;min-height:calc(100svh - 69px);overflow-anchor:none}
 .mg-chat-section:has(.mchat-shell.is-conversing) .mg-chat-heading{max-height:0;opacity:0;transform:translateY(-24px);margin-bottom:0!important;pointer-events:none}
 
 .mg-home-reading{border:0!important;background:#050505!important}
