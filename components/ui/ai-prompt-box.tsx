@@ -30,8 +30,10 @@ export function PromptInputBox({ value, onValueChange, onSend, isLoading = false
   useEffect(() => {
     const element = textarea.current;
     if (!element) return;
-    element.style.height = "0px";
-    element.style.height = `${Math.min(element.scrollHeight, 180)}px`;
+    element.style.height = "auto";
+    const naturalHeight = element.scrollHeight;
+    element.style.height = `${Math.min(naturalHeight, 180)}px`;
+    element.style.overflowY = naturalHeight > 180 ? "auto" : "hidden";
   }, [value]);
 
   useEffect(() => {
