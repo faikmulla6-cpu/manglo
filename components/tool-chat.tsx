@@ -74,11 +74,19 @@ export function ToolChat() {
   const pendingFile = useRef<File | null>(null);
   const urls = useRef<string[]>([]);
   const threadEnd = useRef<HTMLDivElement>(null);
+  const inputDock = useRef<HTMLDivElement>(null);
   const inConversation = messages.length > 0 || stage !== null;
 
   useEffect(() => {
-    if (messages.length || stage) threadEnd.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "end" });
-  }, [messages, stage, reduceMotion]);
+    if (!inConversation) return;
+    // Let the conversation unfold before bringing the open composer into view.
+    // The document remains the sole scroll surface; the Playbook is still below.
+    const timer = window.setTimeout(() => {
+      const target = messages.length < 2 ? inputDock.current : threadEnd.current;
+      target?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }, reduceMotion ? 0 : 420);
+    return () => window.clearTimeout(timer);
+  }, [messages, stage, inConversation, reduceMotion]);
   useEffect(() => () => { urls.current.forEach(URL.revokeObjectURL); }, []);
 
   const chooseTool = (id: ToolId) => {
@@ -162,14 +170,25 @@ export function ToolChat() {
     catch { setNotice("Clipboard is unavailable. Select the result text to copy it."); }
   };
 
-  return <section className={`mchat-shell ${inConversation ? "is-conversing" : "is-idle"}`} aria-label="Manglo Studio">
-    {inConversation && <header className="mchat-topbar"><div className="mchat-identity"><span className="mchat-avatar"><Sparkles size={17} /></span><div><strong>Manglo Studio</strong><small>YOUR PRIVATE WORKSPACE</small></div></div><button type="button" onClick={reset} className="mchat-new" title="Clear this conversation and its files"><RotateCcw size={15} /> <span>New chat</span></button></header>}
+  return <motion.section layout="position" transition={{ layout: { type: "spring", stiffness: 105, damping: 27 } }}
+    className={`mchat-shell ${inConversation ? "is-conversing" : "is-idle"}`} aria-label="Manglo Studio">
+    <AnimatePresence initial={false}>
+      {inConversation && <motion.header className="mchat-topbar"
+        initial={reduceMotion ? false : { opacity: 0, y: -22 }} animate={{ opacity: 1, y: 0 }}
+        exit={reduceMotion ? undefined : { opacity: 0, y: -12 }} transition={{ duration: .65, ease: [.16, 1, .3, 1] }}>
+        <div className="mchat-identity"><span className="mchat-identity-glow"><Sparkles size={15} /></span><div><strong>Manglo Studio</strong><small>YOUR PRIVATE WORKSPACE · ON YOUR DEVICE</small></div></div>
+        <button type="button" onClick={reset} className="mchat-new" title="Clear this conversation and its files"><RotateCcw size={15} /> <span>New chat</span></button>
+      </motion.header>}
+    </AnimatePresence>
 
-    {inConversation && <div className="mchat-thread" aria-label="Tool assistant conversation" aria-live="polite" aria-relevant="additions text">
+    <AnimatePresence initial={false}>
+    {inConversation && <motion.div className="mchat-thread" aria-label="Tool assistant conversation" aria-live="polite" aria-relevant="additions text"
+      initial={reduceMotion ? false : { opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }}
+      exit={reduceMotion ? undefined : { opacity: 0, y: -12 }} transition={{ duration: .7, ease: [.16, 1, .3, 1] }}>
       <div className="mchat-messages">
         <AnimatePresence initial={false}>
           {messages.map(message => <motion.article key={message.id} className={`mchat-message mchat-message-${message.role}${message.error ? " is-error" : ""}`}
-            initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .32, ease: "easeOut" }}>
+            initial={reduceMotion ? false : { opacity: 0, y: 25, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: .64, ease: [.16, 1, .3, 1] }}>
             <span className="mchat-message-avatar">{message.role === "user" ? "YOU" : <Sparkles size={16} />}</span>
             <div className="mchat-bubble">
               {message.role === "assistant" && <span className="mchat-message-role">MANGLO STUDIO <span>/ {message.error ? "NEEDS A DETAIL" : "RESULT"}</span></span>}
@@ -193,8 +212,11 @@ export function ToolChat() {
         {stage && <div className="mchat-processing" role="status"><span className="mchat-processing-avatar"><Sparkles size={17} /></span><div><span className="mchat-processing-label"><LoaderCircle size={17} className="mchat-spin" /> {stage === "thinking" ? "Thinking through your request" : "Working on your result"}<span className="mchat-dots">···</span></span><small>{stage === "thinking" ? "Finding the best tool for the job" : "Processing privately in your browser"}</small></div></div>}
         <div ref={threadEnd} />
       </div>
-    </div>}
+    </motion.div>}
+    </AnimatePresence>
 
+    <motion.div layout="position" ref={inputDock} className="mchat-input-dock"
+      transition={{ layout: { type: "spring", stiffness: 94, damping: 26, mass: 1.15 } }}>
     <div className="mchat-compose-area">
       {selected && <div className="mchat-selected"><span>SELECTED ACTION</span><strong>{toolOptions.find(item => item.id === selected)?.title}</strong><button type="button" onClick={() => { setSelected(null); setDraft(""); }} aria-label="Clear selected tool">×</button></div>}
       <PromptInputBox key={session} value={draft} onValueChange={setDraft} onSend={send} isLoading={busy} onCancel={cancel}
@@ -208,5 +230,6 @@ export function ToolChat() {
       </div>
     </nav>
     <p className="mchat-assurance"><ShieldCheck size={13} /> Seven free tools · Images stay on your device · No account required</p>
-  </section>;
+    </motion.div>
+  </motion.section>;
 }

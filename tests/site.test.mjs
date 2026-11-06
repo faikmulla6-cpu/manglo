@@ -6,9 +6,9 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106j"/);
-  assert.match(home,/src="\/hero-2-1\.js\?v=20261106j"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106j"/);
+  assert.match(home,/href="\/hero-2-1\.css\?v=20261106k"/);
+  assert.match(home,/src="\/hero-2-1\.js\?v=20261106k"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261106k"/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -24,6 +24,13 @@ test('React hero assets are homepage-only while static routes stay independent',
 test('browser hero bundle does not depend on Node process environment variables',async()=>{
   const hero=await readFile(new URL('hero-2-1.js',root),'utf8');
   assert.doesNotMatch(hero,/process\.env\./);
+});
+test('open conversation uses the page scroll and keeps the prompt tools together',async()=>{
+  const css=await readFile(new URL('hero-2-1.css',root),'utf8');
+  assert.match(css,/\.mchat-shell\.is-conversing\{[^}]*overflow:visible/);
+  assert.match(css,/\.mchat-thread\{[^}]*overflow:visible/);
+  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-input-dock\{[^}]*position:sticky/);
+  assert.doesNotMatch(css,/\.mchat-shell\.is-conversing\{[^}]*height:min\(/);
 });
 test('Playbook hub and articles are crawlable, descriptive and linked to real tools',async()=>{
   const hub=await readFile(new URL('playbook/index.html',root),'utf8');
@@ -62,8 +69,8 @@ test('all seven interactive tools load their client logic; editorial routes do n
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
   for(const id of ids){
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
-    assert.match(html,/src="\/app\.js\?v=20261106j" defer/);
-    assert.match(html,/src="\/experience\.js\?v=20261106j" defer/);
+    assert.match(html,/src="\/app\.js\?v=20261106k" defer/);
+    assert.match(html,/src="\/experience\.js\?v=20261106k" defer/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
@@ -87,7 +94,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106j"/);
+    assert.match(html,/href="\/experience\.css\?v=20261106k"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });

@@ -8,6 +8,7 @@
 .mchat-shell *{box-sizing:border-box}.mchat-shell button,.mchat-shell textarea{font:inherit}.mchat-shell button{cursor:pointer}
 .mchat-shell button:focus-visible,.mchat-shell a:focus-visible{outline:2px solid #dadada!important;outline-offset:3px}
 .mchat-shell.is-idle{width:min(750px,100%);margin:0 auto}
+.mchat-input-dock{position:relative;width:100%;z-index:3}
 .mchat-compose-area{position:relative;z-index:5;max-width:750px;margin:auto}
 .mchat-composer{position:relative;width:100%;border:1px solid #33353a;border-radius:19px;background:#252527;box-shadow:0 14px 44px #0004,inset 0 1px #ffffff0a;padding:9px 12px 10px;transition:background .2s,border-color .25s,box-shadow .25s}
 .mchat-composer:focus-within,.mchat-composer.is-dragging{border-color:#666970;background:#29292b;box-shadow:0 15px 52px #0006,0 0 0 4px #ffffff0b}.mchat-composer.is-working{opacity:.85}
@@ -41,33 +42,36 @@
 .mchat-preview-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:30px;background:#030305ed;backdrop-filter:blur(18px)}
 .mchat-preview-modal img{max-height:83vh;max-width:90vw;object-fit:contain;border-radius:12px}.mchat-preview-close{position:absolute;top:22px;right:22px;width:43px;height:43px;display:grid;place-items:center;border:1px solid #ffffff50;border-radius:50%;background:#ffffff22;color:#fff}
 
-/* The matte photographic conversation surface appears after the first send. */
-.mchat-shell.is-conversing{width:min(880px,100%);min-height:480px;height:min(710px,80vh);margin:0 auto;display:flex;flex-direction:column;border:1px solid #353535;border-radius:22px;background:#111214;overflow:hidden;box-shadow:0 24px 95px #000a}
-.mchat-shell.is-conversing:before{content:"";position:absolute;inset:-80px;z-index:0;pointer-events:none;background:linear-gradient(#101112d9,#121417e9),url('/assets/obsidian-hero.webp') center/cover;filter:blur(32px);opacity:.55}
+/* An open conversation, integrated into the page rather than a scrollable widget. */
+.mchat-shell.is-conversing{width:min(1020px,100%);min-height:max(620px,calc(100svh - 128px));margin:0 auto;display:flex;flex-direction:column;border:0;border-radius:0;background:transparent;overflow:visible;box-shadow:none;isolation:isolate;transition:width .7s cubic-bezier(.16,1,.3,1)}
+.mchat-shell.is-conversing:before{content:"";position:absolute;inset:-80px -12%;z-index:0;pointer-events:none;background:radial-gradient(ellipse 65% 38% at 50% 44%,#26262980,transparent 78%),radial-gradient(ellipse 58% 42% at 55% 74%,#181a20a1,transparent 82%);filter:blur(50px);opacity:.9}
 .mchat-shell.is-conversing>*{position:relative;z-index:1}
-.mchat-topbar{min-height:66px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 24px;border-bottom:1px solid #ffffff16;background:#101113aa;backdrop-filter:blur(12px)}
-.mchat-identity{display:flex;align-items:center;gap:10px}.mchat-avatar,.mchat-message-avatar,.mchat-processing-avatar{display:grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid #ffffff21;border-radius:10px;background:#f1f0ec;color:#111}
-.mchat-identity strong{display:block;font-size:13px;font-weight:650;color:#fff}.mchat-identity small{display:block;margin-top:1px;font-size:9px;letter-spacing:.14em;color:#90969d}
-.mchat-new{display:flex;align-items:center;gap:8px;border:1px solid #ffffff34!important;border-radius:100px!important;background:#ffffff0a!important;color:#e2e2e2!important;padding:9px 13px!important;font-size:11px!important}.mchat-new:hover{background:#ffffff20!important}
-.mchat-thread{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px 26px;scrollbar-color:#545456 transparent;scrollbar-width:thin}
-.mchat-messages{width:min(690px,100%);margin:0 auto;padding:12px 0 8px}
-.mchat-message{display:flex;align-items:flex-start;gap:12px;margin:0 0 24px}.mchat-message-avatar{background:#f0efeb;color:#131313;font-size:8px;font-weight:800}.mchat-message-user{flex-direction:row-reverse}.mchat-message-user .mchat-message-avatar{background:#2a2c30;color:#eee}
-.mchat-bubble{max-width:calc(100% - 50px);min-width:0;position:relative;padding:17px 20px;border:1px solid #ffffff19;border-radius:15px;background:#171b1ec9;backdrop-filter:blur(14px);color:#e2e3e3}
-.mchat-message-user .mchat-bubble{background:#333437d9;border-color:#56565a}
-.mchat-message-role{display:block;color:#aebac0;font-size:9px;letter-spacing:.16em;margin-bottom:9px;font-weight:800}.mchat-message-role span{color:#7d8489}
-.mchat-bubble h4{margin:0 0 9px;color:#fff;font-size:18px;letter-spacing:-.035em;font-weight:650}
-.mchat-response-copy,.mchat-user-copy{white-space:pre-line;overflow-wrap:anywhere;font-size:13px;line-height:1.9;color:#c8d0d0;margin:0}.mchat-user-copy{color:#f1f1f1}
+.mchat-topbar{min-height:40px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 8px;border:0;background:transparent}
+.mchat-identity{display:flex;align-items:center;gap:11px}.mchat-identity-glow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;color:#e9e5df;background:radial-gradient(circle,#5b524c66,transparent 72%)}
+.mchat-identity strong{display:block;font-size:12px;font-weight:650;color:#f6f5f4;letter-spacing:-.01em}.mchat-identity small{display:block;margin-top:2px;font-size:9px;letter-spacing:.14em;color:#82848b}
+.mchat-new{display:flex;align-items:center;gap:8px;border:0!important;border-radius:100px!important;background:transparent!important;color:#a9abb0!important;padding:10px 5px!important;font-size:11px!important;transition:color .2s}.mchat-new:hover{color:#fff!important;background:transparent!important}
+.mchat-thread{flex:1;min-height:290px;overflow:visible;padding:clamp(42px,8vh,95px) 16px 34px;display:flex;flex-direction:column;justify-content:flex-end}
+.mchat-messages{width:min(745px,100%);margin:auto auto 0;padding:0 0 20px}
+.mchat-message{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin:0 0 36px}.mchat-message-avatar{display:none}.mchat-message-user{align-items:flex-end}
+.mchat-bubble{max-width:100%;min-width:0;position:relative;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;color:#e2e3e3}
+.mchat-message-user .mchat-bubble{max-width:min(610px,92%);text-align:right;background:transparent;border:0}
+.mchat-message-user .mchat-bubble:before{content:"YOU";display:block;margin:0 0 8px;color:#898c93;font-size:9px;font-weight:700;letter-spacing:.2em}
+.mchat-message-role{display:block;color:#b5b8ba;font-size:9px;letter-spacing:.2em;margin-bottom:12px;font-weight:750}.mchat-message-role span{color:#676b72}
+.mchat-bubble h4{margin:0 0 11px;color:#f8f8f8;font-size:clamp(18px,1.6vw,23px);line-height:1.35;letter-spacing:-.045em;font-weight:630}
+.mchat-response-copy,.mchat-user-copy{white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(13px,1.12vw,15px);line-height:1.9;color:#bfc3c7;margin:0}.mchat-user-copy{color:#e9e9ea;font-size:clamp(14px,1.2vw,16px)}
 .mchat-caret{display:inline-block;width:5px;height:14px;margin-left:2px;vertical-align:middle;background:#ddd;animation:mchat-caret .65s step-end infinite}@keyframes mchat-caret{50%{opacity:0}}
 .mchat-user-file{display:flex;align-items:center;gap:8px;margin-top:13px;padding:8px 10px;border:1px solid #ffffff23;border-radius:9px;font-size:11px;color:#d0d0d0}
-.mchat-processing{display:flex;align-items:start;gap:12px;margin:0 0 20px}.mchat-processing>div{display:flex;flex-direction:column;gap:5px;padding:11px 15px;border-radius:12px;border:1px solid #ffffff24;background:#24272bcc}
+.mchat-processing{display:flex;align-items:start;gap:12px;margin:4px 0 30px}.mchat-processing-avatar{display:none}.mchat-processing>div{display:flex;flex-direction:column;gap:5px;padding:0;border:0;border-radius:0;background:transparent}
 .mchat-processing-label{display:flex;align-items:center;gap:8px;color:#eee;font-size:12px}.mchat-processing small{color:#919ca1;font-size:10px}
 .mchat-spin{animation:mchat-spin 1s linear infinite}.mchat-dots{letter-spacing:.2em}@keyframes mchat-spin{to{transform:rotate(360deg)}}
-.mchat-shell.is-conversing .mchat-compose-area{flex:none;width:100%;max-width:none;padding:18px clamp(20px,7%,65px) 5px;background:linear-gradient(transparent,#111112df)}
-.mchat-shell.is-conversing .mchat-composer{max-width:700px;margin:auto}
-.mchat-shell.is-conversing .mchat-dock{flex:none;padding:9px 18px 0;margin:0}
-.mchat-shell.is-conversing .mchat-tool-button{font-size:10px!important;padding:5px 10px!important;min-height:28px}
-.mchat-shell.is-conversing .mchat-assurance{margin:10px 0 14px!important;flex:none}
-.mchat-result{margin-top:18px;padding:12px;border-radius:13px;background:#22262a;border:1px solid #ffffff2d}
+.mchat-shell.is-conversing .mchat-input-dock{position:sticky;bottom:0;flex:none;width:100%;padding:21px 12px 9px;background:linear-gradient(to bottom,#07070800,#080809e8 28%,#080809f7 76%,#080809fa);backdrop-filter:blur(19px);-webkit-backdrop-filter:blur(19px)}
+.mchat-shell.is-conversing .mchat-compose-area{width:100%;max-width:745px;padding:0;background:transparent}
+.mchat-shell.is-conversing .mchat-composer{max-width:745px;margin:auto;background:#232326ed;border-color:#39393c;box-shadow:0 20px 65px #0006,inset 0 1px #ffffff07}
+.mchat-shell.is-conversing .mchat-dock{flex:none;padding:12px 0 0;margin:0}
+.mchat-shell.is-conversing .mchat-tool-button{font-size:11px!important;padding:7px 13px!important;min-height:31px}
+.mchat-shell.is-conversing .mchat-assurance{margin:12px 0 3px!important;flex:none}
+.mchat-shell.is-conversing .mchat-selected{margin-bottom:9px}
+.mchat-result{margin-top:23px;padding:0;border-radius:0;background:transparent;border:0}
 .mchat-result-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:1px 3px 10px;font-size:9px;letter-spacing:.11em;color:#b7c0c6;font-weight:700}.mchat-result-top span:first-child{display:flex;align-items:center;gap:6px;color:#b5dcb9}
 .mchat-comparison{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mchat-comparison>div{position:relative;height:clamp(115px,16vw,195px);overflow:hidden;border-radius:9px;background:#171a1b}
 .mchat-comparison img{width:100%;height:100%;object-fit:contain}.mchat-comparison>div>span{position:absolute;bottom:8px;left:8px;background:#090909c8;backdrop-filter:blur(5px);color:white;font-size:9px;padding:5px 7px;border-radius:6px}
@@ -77,9 +81,9 @@
 .mchat-copy{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 11px!important;border:1px solid #ffffff44!important;border-radius:100px!important;background:#ffffff12!important;color:#fff!important;font-size:11px!important}
 @media(max-width:750px){
  .mchat-shell.is-idle{width:100%}.mchat-composer{border-radius:16px}.mchat-composer textarea{font-size:13px!important}.mchat-tool-list{gap:6px}.mchat-tool-button{font-size:10px!important;padding:8px 10px!important}
- .mchat-shell.is-conversing{height:620px;min-height:500px;border-radius:16px}.mchat-topbar{padding:12px 15px}.mchat-thread{padding:15px}.mchat-shell.is-conversing .mchat-compose-area{padding:12px 12px 5px}
- .mchat-bubble{padding:13px 14px}.mchat-bubble h4{font-size:16px}.mchat-response-copy,.mchat-user-copy{font-size:12px}.mchat-shell.is-conversing .mchat-dock{padding:8px 9px 0}
- .mchat-shell.is-conversing .mchat-tool-button{min-height:26px;font-size:9px!important;padding:5px 8px!important}
+ .mchat-shell.is-conversing{height:auto;min-height:max(550px,calc(100svh - 92px));border:0;border-radius:0}.mchat-topbar{padding:0 5px}.mchat-thread{min-height:270px;padding:55px 4px 22px}
+ .mchat-bubble{padding:0}.mchat-bubble h4{font-size:18px}.mchat-response-copy,.mchat-user-copy{font-size:13px}.mchat-shell.is-conversing .mchat-input-dock{padding:15px 0 8px}
+ .mchat-shell.is-conversing .mchat-dock{padding:11px 0 0}.mchat-shell.is-conversing .mchat-tool-button{min-height:29px;font-size:10px!important;padding:7px 10px!important}
  .mchat-comparison>div{height:130px}
 }
 @media(max-width:420px){

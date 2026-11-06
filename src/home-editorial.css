@@ -9,14 +9,13 @@ body:has(.mg-home) .mg-header-action{padding:9px 15px;font-size:11px;border-colo
 
 .mg-home .mg-chat-section{width:min(1440px,calc(100% - 56px));margin:0 auto;padding:127px 0 132px;min-height:545px;background:transparent}
 .mg-home .mg-chat-section:before{display:none}
-.mg-chat-heading{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:17px;margin:0 0 33px!important}
+.mg-chat-heading{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:17px;margin:0 0 33px!important;max-height:210px;opacity:1;transform:translateY(0);overflow:hidden;transition:max-height .7s cubic-bezier(.16,1,.3,1),opacity .35s ease,transform .7s cubic-bezier(.16,1,.3,1),margin .7s cubic-bezier(.16,1,.3,1)}
 .mg-home .mg-chat-heading .mg-kicker{margin:0!important;font-size:9px;letter-spacing:.21em;color:#717171}
 .mg-chat-heading h1{font:600 clamp(35px,3.65vw,55px)/1.14 var(--mg-display)!important;letter-spacing:-.06em!important;color:#f5f5f5!important;margin:0!important}
 .mg-home .mg-chat-heading h1 em{font-style:normal;color:#f5f5f5}
-.mg-chat-section:has(.mchat-shell.is-conversing){padding-top:55px;padding-bottom:78px}
-.mg-chat-section:has(.mchat-shell.is-conversing) .mg-chat-heading{display:none!important}
-.mg-chat-section:has(.mchat-shell.is-conversing) .mchat-root{animation:mg-conversation-in .45s ease-out both}
-@keyframes mg-conversation-in{from{opacity:.4;transform:translateY(16px)}to{opacity:1;transform:none}}
+.mg-home .mg-chat-section{overflow-x:clip;transition:padding .75s cubic-bezier(.16,1,.3,1)}
+.mg-home .mg-chat-section:has(.mchat-shell.is-conversing){padding-top:34px;padding-bottom:62px;min-height:calc(100svh - 69px)}
+.mg-chat-section:has(.mchat-shell.is-conversing) .mg-chat-heading{max-height:0;opacity:0;transform:translateY(-24px);margin-bottom:0!important;pointer-events:none}
 
 .mg-home-reading{border:0!important;background:#050505!important}
 .mg-editorial-wrap{width:min(1360px,calc(100% - 90px));margin:0 auto;padding:0 0 115px}
@@ -84,7 +83,7 @@ body:has(.mg-home) .mg-site-footer{background:#050505;border-top-color:#171717}
  .mg-chat-heading{gap:12px;margin-bottom:26px!important}
  .mg-chat-heading h1{font-size:clamp(32px,8.5vw,43px)!important;line-height:1.2!important}
  .mg-home .mg-chat-heading .mg-kicker{font-size:8px}
- .mg-chat-section:has(.mchat-shell.is-conversing){padding-top:28px;padding-bottom:54px}
+ .mg-home .mg-chat-section:has(.mchat-shell.is-conversing){padding-top:24px;padding-bottom:44px}
  .mg-editorial-wrap{width:calc(100% - 35px);padding-bottom:65px}
  .mg-feature-layout{grid-template-columns:1fr;gap:24px}.mg-feature-lead{min-height:410px}
  .mg-feature-stack{grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:14px}
