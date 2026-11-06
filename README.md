@@ -22,6 +22,9 @@ Open http://127.0.0.1:4173. For static hosting, upload the contents of `dist/` t
 - Multi-file processing (up to 10 images), previews, downloads, validation and explicit errors.
 - Live profit and discount calculators with currency selection and copy results.
 - Original seller guides, About, Privacy, Terms and Contact pages.
+- Manglo Playbook: six original, crawlable field guides, searchable topic library,
+  contextual links to tools, a private in-browser listing checklist, editorial
+  standards, and RSS feed at `/feed.xml`.
 - Responsive interface, keyboard focus states, sitemap, robots and canonical URLs.
 
 Supported images: JPG, PNG, WebP, up to 20 MB and 40 megapixels each. Requires a modern browser with createImageBitmap and canvas encoding. Animation is flattened. Metadata is not preserved. Inspect exported results.
@@ -29,6 +32,40 @@ Supported images: JPG, PNG, WebP, up to 20 MB and 40 megapixels each. Requires a
 ## Before public launch
 
 Public support contact: faikxbillion@gmail.com. No advertising or analytics tags are installed. Before enabling AdSense, obtain Google approval, update privacy disclosures and add any required consent management. Do not invent publisher IDs or add a fake ads.txt. AdSense approval is not guaranteed.
+
+## Playbook and future AdSense launch
+
+The Playbook is served as **static HTML** at `/playbook/` and
+`/playbook/<article-slug>/`. `content/playbook.mjs` stores the editorial content;
+`scripts/build.mjs` generates the article routes, article and breadcrumb
+structured data, canonical/meta tags, `sitemap.xml`, and `feed.xml`. Running
+`npm run build` updates these routes, including the homepage's Playbook teaser.
+The interactive filters, progress indicators, and checklist enhance the pages
+but do not hide article content from search engines when JavaScript is off.
+
+Before adding Google advertising:
+
+1. Inspect the published pages and fix thin, duplicate, inaccurate or broken
+   content. New pages need time to be crawled and indexed; submitting a sitemap
+   is not a guarantee of indexing or search ranking.
+2. Review the current [AdSense program policies](https://support.google.com/adsense/answer/48182)
+   and [Google Publisher Policies](https://support.google.com/adsense/answer/10502938),
+   then apply for AdSense with the real site and real account information.
+3. When AdSense displays the correct publisher ID, place Google's actual code
+   and `ads.txt` instructions as instructed in that account. **No sample ads or
+   placeholder IDs are installed here.**
+4. Update the site's privacy policy to reflect the advertising/measurement
+   features actually used. If showing personalized advertising to people in
+   the EEA, UK or Switzerland, use a Google-certified CMP and the consent
+   controls required for that traffic. Respect applicable regional laws.
+5. Keep advertising visually identifiable and separate from tool controls,
+   download buttons and editorial navigation; never ask visitors to click ads.
+   Verify layouts on mobile before enabling live placements.
+
+For Hostinger static hosting, upload **all contents of `dist/`** to
+`public_html/` after every release. A commit to this GitHub repository alone
+does not update the live Hostinger website unless deployment automation is
+configured separately.
 
 The old source is recoverable from Git history; this replacement does not delete remote databases or cancel third-party services.
 
