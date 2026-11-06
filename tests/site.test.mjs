@@ -6,9 +6,9 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106o"/);
-  assert.match(home,/src="\/hero-2-1\.js\?v=20261106o"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106o"/);
+  assert.match(home,/href="\/hero-2-1\.css\?v=20261106p"/);
+  assert.match(home,/src="\/hero-2-1\.js\?v=20261106p"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261106p"/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -39,8 +39,10 @@ test('open conversation aligns both roles and never overlays the result with the
   assert.doesNotMatch(chat,/layout="position"/);
   assert.match(chat,/useLayoutEffect/);
   assert.match(chat,/dock\.animate\(/);
-  assert.match(chat,/duration: 1250/);
-  assert.match(chat,/firstTurn && !reduceMotion \? 1300 : 250/);
+  assert.match(chat,/FIRST_LAUNCH_MOTION_MS = 2600/);
+  assert.match(chat,/FIRST_REPLY_DELAY_MS = FIRST_LAUNCH_MOTION_MS \+ 250/);
+  assert.match(chat,/duration: FIRST_LAUNCH_MOTION_MS/);
+  assert.match(chat,/firstTurn && !reduceMotion \? FIRST_REPLY_DELAY_MS : 250/);
   assert.doesNotMatch(chat,/scrollIntoView/);
   assert.match(css,/\.mchat-shell\.is-conversing \.mchat-tool-list\{justify-content:flex-start/);
   const editorial=await readFile(new URL('home-editorial.css',root),'utf8');
@@ -84,8 +86,8 @@ test('all seven interactive tools load their client logic; editorial routes do n
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
   for(const id of ids){
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
-    assert.match(html,/src="\/app\.js\?v=20261106o" defer/);
-    assert.match(html,/src="\/experience\.js\?v=20261106o" defer/);
+    assert.match(html,/src="\/app\.js\?v=20261106p" defer/);
+    assert.match(html,/src="\/experience\.js\?v=20261106p" defer/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
@@ -109,7 +111,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106o"/);
+    assert.match(html,/href="\/experience\.css\?v=20261106p"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });

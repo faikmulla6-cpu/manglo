@@ -32,6 +32,11 @@ const shortNames: Record<ToolId, string> = {
   "discount-calculator": "Discount",
 };
 
+// Give the entire prompt-and-tools dock time to glide into the workspace
+// before the first assistant result is allowed to appear.
+const FIRST_LAUNCH_MOTION_MS = 2600;
+const FIRST_REPLY_DELAY_MS = FIRST_LAUNCH_MOTION_MS + 250;
+
 function StreamingText({ text }: { text: string }) {
   const reduceMotion = useReducedMotion();
   const [shown, setShown] = useState(reduceMotion ? text.length : 0);
@@ -91,7 +96,7 @@ export function ToolChat() {
     const animation = dock.animate([
       { transform: `translate3d(0, ${distance}px, 0)` },
       { transform: "translate3d(0, 0, 0)" },
-    ], { duration: 1250, easing: "cubic-bezier(.42, 0, .18, 1)", fill: "both" });
+    ], { duration: FIRST_LAUNCH_MOTION_MS, easing: "cubic-bezier(.65, 0, .35, 1)", fill: "both" });
     animation.onfinish = () => animation.cancel();
     return () => animation.cancel();
   }, [inConversation, reduceMotion]);
@@ -131,7 +136,7 @@ export function ToolChat() {
     setBusy(true); setStage("thinking");
     // Let the first workspace transition finish before the response replaces
     // the thinking state; otherwise a growing result moves the dock mid-flight.
-    await new Promise<void>(resolve => window.setTimeout(resolve, firstTurn && !reduceMotion ? 1300 : 250));
+    await new Promise<void>(resolve => window.setTimeout(resolve, firstTurn && !reduceMotion ? FIRST_REPLY_DELAY_MS : 250));
     if (operation.current !== run) return;
     setStage("processing");
     try {
