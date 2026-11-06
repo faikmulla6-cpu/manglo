@@ -8,7 +8,7 @@ const domain = 'https://manglo.shop';
 const published = '2026-11-06';
 // Change the URL when these generated assets change. Static hosts/CDNs can
 // otherwise keep an older bundle cached after a new index.html is deployed.
-const release = '20261106c';
+const release = '20261106d';
 const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
@@ -129,7 +129,7 @@ function renderPage(route, title, description, main, options = {}) {
 // The older app.js is a client-side router for the original tools and guides.
 // Editorial pages are already complete HTML, so running that router on them
 // would replace the article with its "not found" screen.
-const staticEditorial = html => html.replace('<script src="/app.js?v=studio4" defer></script>', '');
+const staticEditorial = html => html.replace(/<script src="\/app\.js(?:\?v=[^"]+)?" defer><\/script>/g, '');
 
 async function saveRoute(route, html) {
   await mkdir(new URL(`${route}/`, root), { recursive: true });

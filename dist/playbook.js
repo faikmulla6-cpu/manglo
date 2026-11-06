@@ -55,6 +55,34 @@
     }, { passive: true });
     window.addEventListener('resize', updateProgress);
     updateProgress();
+
+    // Keep the table of contents oriented as the reader moves through the
+    // article. It is an enhancement only: anchor links work without JS.
+    const tocLinks = [...document.querySelectorAll('.pb-toc nav a[href^="#"]')];
+    const tocTargets = tocLinks.map(link => document.getElementById(link.getAttribute('href').slice(1)));
+    if (tocLinks.length && tocTargets.every(Boolean)) {
+      let sectionPending = false;
+      const syncSection = () => {
+        let activeIndex = 0;
+        tocTargets.forEach((target, index) => {
+          if (target.getBoundingClientRect().top < 190) activeIndex = index;
+        });
+        tocLinks.forEach((link, index) => {
+          if (index === activeIndex) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+        sectionPending = false;
+      };
+      const scheduleSection = () => {
+        if (!sectionPending) {
+          sectionPending = true;
+          requestAnimationFrame(syncSection);
+        }
+      };
+      window.addEventListener('scroll', scheduleSection, { passive: true });
+      window.addEventListener('resize', scheduleSection);
+      syncSection();
+    }
   }
 
   document.querySelector('#pb-copy-link')?.addEventListener('click', async event => {
