@@ -6,16 +6,19 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106h"/);
-  assert.match(home,/src="\/hero-2-1\.js\?v=20261106h"/);
+  assert.match(home,/href="\/hero-2-1\.css\?v=20261106i"/);
+  assert.match(home,/src="\/hero-2-1\.js\?v=20261106i"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261106i"/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
   await stat(new URL('hero-2-1.js',root));
-  assert.match(home,/<h1 id="mg-home-title">Make good ideas/);
+  assert.match(home,/<h1 id="mg-home-title">What can Manglo/);
   assert.match(home,/id="tools"/);
   assert.match(home,/id="manglo-chat-root"/);
-  assert.match(home,/MANGLO STUDIO \/ AN EASIER WAY TO WORK/);
+  assert.match(home,/MANGLO \/ YOUR CREATIVE WORKSPACE/);
+  assert.match(home,/class="mg-feature-layout"/);
+  assert.match(home,/class="mg-news-grid"/);
   assert.doesNotMatch(home,/class="mg-tool-grid"/);
 });
 test('browser hero bundle does not depend on Node process environment variables',async()=>{
@@ -42,7 +45,7 @@ test('Playbook hub and articles are crawlable, descriptive and linked to real to
 });
 test('Playbook additions remain independent from the existing seven tools',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
-  assert.match(home,/class="pb-home-teaser"/);
+  assert.match(home,/class="mg-editorial-wrap"/);
   assert.match(home,/href="\/playbook\/"/);
   assert.match(home,/<nav class="mg-desktop-nav" aria-label="Main navigation">[\s\S]*?<a href="\/playbook\/">Playbook<\/a>/);
   assert.match(home,/<details class="mg-mobile-menu">[\s\S]*?<a href="\/playbook\/">Playbook/);
@@ -59,8 +62,8 @@ test('all seven interactive tools load their client logic; editorial routes do n
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
   for(const id of ids){
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
-    assert.match(html,/src="\/app\.js\?v=20261106h" defer/);
-    assert.match(html,/src="\/experience\.js\?v=20261106h" defer/);
+    assert.match(html,/src="\/app\.js\?v=20261106i" defer/);
+    assert.match(html,/src="\/experience\.js\?v=20261106i" defer/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
@@ -84,7 +87,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106h"/);
+    assert.match(html,/href="\/experience\.css\?v=20261106i"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowDownToLine, ArrowRight, ArrowUpRight, Check, CheckCircle2, Crop,
-  FileImage, FileOutput, Image, Layers2, LoaderCircle, RotateCcw,
-  ShieldCheck, SlidersHorizontal, Sparkles, TrendingUp, Percent, WandSparkles,
+  FileImage, FileOutput, Layers2, LoaderCircle, RotateCcw,
+  ShieldCheck, SlidersHorizontal, Sparkles, TrendingUp, Percent,
 } from "lucide-react";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import {
@@ -54,7 +54,7 @@ function ToolButton({ id, active, onClick }: { id: ToolId; active: boolean; onCl
   return <button type="button" onClick={onClick} aria-pressed={active}
     title={`${item.title} — ${item.subtitle}`}
     className={`mchat-tool-button ${active ? "is-active" : ""}`}>
-    <Icon className="mchat-tool-icon" size={17} strokeWidth={1.7} />
+    <Icon className="mchat-tool-icon" size={15} strokeWidth={1.7} />
     <span>{shortNames[id]}</span>
     {active && <Check className="mchat-tool-check" size={12} aria-hidden="true" />}
   </button>;
@@ -74,6 +74,7 @@ export function ToolChat() {
   const pendingFile = useRef<File | null>(null);
   const urls = useRef<string[]>([]);
   const threadEnd = useRef<HTMLDivElement>(null);
+  const inConversation = messages.length > 0 || stage !== null;
 
   useEffect(() => {
     if (messages.length || stage) threadEnd.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "end" });
@@ -161,37 +162,10 @@ export function ToolChat() {
     catch { setNotice("Clipboard is unavailable. Select the result text to copy it."); }
   };
 
-  return <section className="mchat-shell" aria-label="Manglo Studio">
-    <div className="mchat-ambient" aria-hidden="true" />
-    <header className="mchat-topbar">
-      <div className="mchat-identity"><span className="mchat-avatar"><WandSparkles size={21} strokeWidth={1.6} /></span>
-        <div><strong>Manglo <span>Studio</span></strong><small>YOUR CREATIVE WORKSPACE</small></div>
-      </div>
-      <div className="mchat-top-actions"><span className="mchat-status"><i /> READY WHEN YOU ARE</span>
-        <button type="button" onClick={reset} className="mchat-new" title="Clear this conversation and its files"><RotateCcw size={15} /> <span>New session</span></button>
-      </div>
-    </header>
+  return <section className={`mchat-shell ${inConversation ? "is-conversing" : "is-idle"}`} aria-label="Manglo Studio">
+    {inConversation && <header className="mchat-topbar"><div className="mchat-identity"><span className="mchat-avatar"><Sparkles size={17} /></span><div><strong>Manglo Studio</strong><small>YOUR PRIVATE WORKSPACE</small></div></div><button type="button" onClick={reset} className="mchat-new" title="Clear this conversation and its files"><RotateCcw size={15} /> <span>New chat</span></button></header>}
 
-    <div className="mchat-thread" aria-label="Tool assistant conversation" aria-live="polite" aria-relevant="additions text">
-      {!messages.length && <div className="mchat-welcome">
-        <div className="mchat-welcome-art" aria-hidden="true">
-          <motion.span className="mchat-orbit mchat-orbit-one" animate={reduceMotion ? undefined : { rotate: 360 }} transition={{ duration: 38, repeat: Infinity, ease: "linear" }} />
-          <motion.span className="mchat-orbit mchat-orbit-two" animate={reduceMotion ? undefined : { rotate: -360 }} transition={{ duration: 44, repeat: Infinity, ease: "linear" }} />
-          <span className="mchat-orb-core"><Sparkles size={36} strokeWidth={1.1} /></span>
-          <i className="mchat-orb-flare" />
-        </div>
-        <div className="mchat-welcome-copy"><span className="mchat-overline"><span /> YOUR WORK, IN FLOW</span>
-          <h3>The little things,<br /><em>beautifully done.</em></h3>
-          <p>One place for better images and smarter prices. Tell Manglo what you need, or start with an idea below.</p>
-        </div>
-        <div className="mchat-starters" aria-label="Suggested tasks">
-          <button type="button" onClick={() => chooseTool("image-compressor")}><Image size={17} /> Compress a photo <ArrowUpRight size={15} /></button>
-          <button type="button" onClick={() => chooseTool("target-size-compressor")}><FileImage size={17} /> Under 200 KB <ArrowUpRight size={15} /></button>
-          <button type="button" onClick={() => chooseTool("profit-calculator")}><TrendingUp size={17} /> Calculate profit <ArrowUpRight size={15} /></button>
-          <button type="button" onClick={() => chooseTool("discount-calculator")}><Percent size={17} /> Plan a discount <ArrowUpRight size={15} /></button>
-        </div>
-      </div>}
-
+    {inConversation && <div className="mchat-thread" aria-label="Tool assistant conversation" aria-live="polite" aria-relevant="additions text">
       <div className="mchat-messages">
         <AnimatePresence initial={false}>
           {messages.map(message => <motion.article key={message.id} className={`mchat-message mchat-message-${message.role}${message.error ? " is-error" : ""}`}
@@ -219,23 +193,20 @@ export function ToolChat() {
         {stage && <div className="mchat-processing" role="status"><span className="mchat-processing-avatar"><Sparkles size={17} /></span><div><span className="mchat-processing-label"><LoaderCircle size={17} className="mchat-spin" /> {stage === "thinking" ? "Thinking through your request" : "Working on your result"}<span className="mchat-dots">···</span></span><small>{stage === "thinking" ? "Finding the best tool for the job" : "Processing privately in your browser"}</small></div></div>}
         <div ref={threadEnd} />
       </div>
-    </div>
+    </div>}
 
     <div className="mchat-compose-area">
-      <div className="mchat-compose-intro"><span><i /> ASK MANGLO</span><span>TYPE AN INSTRUCTION OR ATTACH AN IMAGE</span></div>
       {selected && <div className="mchat-selected"><span>SELECTED ACTION</span><strong>{toolOptions.find(item => item.id === selected)?.title}</strong><button type="button" onClick={() => { setSelected(null); setDraft(""); }} aria-label="Clear selected tool">×</button></div>}
       <PromptInputBox key={session} value={draft} onValueChange={setDraft} onSend={send} isLoading={busy} onCancel={cancel}
-        placeholder={selected ? toolOptions.find(item => item.id === selected)?.prompt : "Ask Manglo to compress, resize, convert, crop or calculate…"} />
+        placeholder={selected ? "Ask another question, or select a different tool…" : "What would you like to make easier today?"} />
       {notice && <p className="mchat-notice" role="status">{notice}</p>}
     </div>
 
     <nav className="mchat-dock" aria-label="Choose one of seven Manglo tools">
-      <div className="mchat-dock-heading"><span>YOUR SEVEN TOOLS</span><span>CHOOSE ONE OR JUST ASK NATURALLY <ArrowRight size={14}/></span></div>
       <div className="mchat-tool-list">
         {toolOptions.map(item => <ToolButton key={item.id} id={item.id} active={selected === item.id} onClick={() => chooseTool(item.id)} />)}
       </div>
     </nav>
-    <footer className="mchat-footer"><span><ShieldCheck size={15} /> Images stay on your device. No account required.</span>
-      <span>Focused tool assistant · No hosted AI model <a href="/playbook/">Explore the Playbook <ArrowUpRight size={13} /></a></span></footer>
+    <p className="mchat-assurance"><ShieldCheck size={13} /> Seven free tools · Images stay on your device · No account required</p>
   </section>;
 }

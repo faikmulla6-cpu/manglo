@@ -8,8 +8,9 @@ const domain = 'https://manglo.shop';
 const published = '2026-11-06';
 // Change the URL when these generated assets change. Static hosts/CDNs can
 // otherwise keep an older bundle cached after a new index.html is deployed.
-const release = '20261106h';
+const release = '20261106i';
 const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
+const homeCss = `<link rel="stylesheet" href="/home-editorial.css?v=${release}">`;
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
 const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
@@ -30,6 +31,7 @@ const original = await readFile(new URL('index.html', root), 'utf8');
 let template = original
   .replace(/<a class="mg-skip" href="#content">Skip to content<\/a>/g, '')
   .replace(/<link rel="stylesheet" href="\/hero-2-1\.css(?:\?[^\"]*)?">/g, '')
+  .replace(/<link rel="stylesheet" href="\/home-editorial\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<script src="\/hero-2-1\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
   .replace(/<script src="\/playbook-home\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
   .replace(/<link rel="stylesheet" href="\/playbook\.css(?:\?[^\"]*)?">/g, '')
@@ -145,10 +147,38 @@ const articleCard = (article, i = 0) => `
     </div>
   </a>`;
 
-const homeTeaser = `<section class="pb-home-teaser" aria-labelledby="pb-home-title">
-  <div class="pb-home-intro"><div><span class="pb-kicker">THE MANGLO PLAYBOOK</span><h2 id="pb-home-title">Good ideas. Better selling days.</h2><p>Small, practical field guides for product photos, pricing and making your next listing easier.</p></div><a class="pb-pill-link" href="/playbook/">Explore the Playbook <span aria-hidden="true">→</span></a></div>
-  <div class="pb-home-cards">${playbookArticles.slice(0, 3).map((article, i) => articleCard(article, i)).join('')}</div>
-</section>`;
+const story = (article, extraClass = '') => `<a class="mg-story ${extraClass}" href="${articleHref(article)}">
+  <div class="mg-story-image"><img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" width="1536" height="1024" loading="lazy"></div>
+  <div class="mg-story-copy"><span>${escapeHTML(article.category)} · ${article.readTime} MIN READ</span><h3>${escapeHTML(article.title)}</h3></div>
+</a>`;
+const newsRow = article => `<a class="mg-news-item" href="${articleHref(article)}">
+  <img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" loading="lazy" width="1536" height="1024">
+  <span><strong>${escapeHTML(article.title)}</strong><small>${escapeHTML(article.category)} · ${article.readTime} min read</small></span>
+</a>`;
+const homeTeaser = `<div class="mg-editorial-wrap">
+  <section class="mg-feature-section" aria-labelledby="mg-feature-title">
+    <div class="mg-reading-heading"><div><span class="mg-reading-overline">THE MANGLO PLAYBOOK</span><h2 id="mg-feature-title">Featured ideas</h2></div><a href="/playbook/">All articles <span aria-hidden="true">→</span></a></div>
+    <div class="mg-feature-layout">
+      <a class="mg-feature-lead" href="${articleHref(playbookArticles[0])}">
+        <img src="${playbookArticles[0].image}" alt="${escapeHTML(playbookArticles[0].imageAlt)}" width="1536" height="1024">
+        <div class="mg-feature-shade"></div><div class="mg-feature-lead-copy"><span>FEATURED / PRODUCT PHOTOS</span><h3>${escapeHTML(playbookArticles[0].title)}</h3><p>${escapeHTML(playbookArticles[0].dek)}</p><small>Read the guide →</small></div>
+      </a>
+      <div class="mg-feature-stack">${story(playbookArticles[4])}${story(playbookArticles[1])}</div>
+    </div>
+  </section>
+  <section class="mg-latest-section" aria-labelledby="mg-latest-title">
+    <div class="mg-reading-heading"><h2 id="mg-latest-title">Latest from the Playbook</h2><a href="/playbook/">View all <span aria-hidden="true">→</span></a></div>
+    <div class="mg-news-grid">${[...playbookArticles].reverse().slice(0,6).map(newsRow).join('')}</div>
+  </section>
+  <section class="mg-topic-section" aria-labelledby="mg-photos-title">
+    <div class="mg-reading-heading"><div><span class="mg-reading-overline">MAKE THE PRODUCT LOOK ITS BEST</span><h2 id="mg-photos-title">Image & product stories</h2></div><a href="/playbook/">Explore guides <span aria-hidden="true">→</span></a></div>
+    <div class="mg-topic-grid">${[playbookArticles[4],playbookArticles[2],playbookArticles[0]].map(a=>story(a)).join('')}</div>
+  </section>
+  <section class="mg-topic-section" aria-labelledby="mg-business-title">
+    <div class="mg-reading-heading"><div><span class="mg-reading-overline">FOR INDEPENDENT SELLERS EVERYWHERE</span><h2 id="mg-business-title">Pricing & selling smarter</h2></div><a href="/playbook/">Explore guides <span aria-hidden="true">→</span></a></div>
+    <div class="mg-topic-grid">${[playbookArticles[1],playbookArticles[3],playbookArticles[5]].map(a=>story(a)).join('')}</div>
+  </section>
+</div>`;
 
 const homeMain = homeHTML.replace('<!-- PLAYBOOK_HOME_TEASER -->', homeTeaser);
 const homeSchema = jsonLD({
@@ -162,7 +192,8 @@ let homePage = renderPage('', 'Manglo | Beautiful tools for independent work',
 // The home page is now completely static and crawlable. Only its optional
 // React island and filters need JavaScript; the old router stays on tool URLs.
 homePage = staticEditorial(homePage).replace('</body>', `${heroJs}</body>`)
-  .replace(experienceCss, `${heroCss}${experienceCss}`);
+  .replace(experienceCss, `${heroCss}${experienceCss}${homeCss}`);
+await writeFile(new URL('home-editorial.css', root), await readFile(new URL('../src/home-editorial.css', import.meta.url), 'utf8'));
 await writeFile(new URL('index.html', root), homePage);
 
 function trustPage(route, page) {
