@@ -1,6 +1,6 @@
 /* Manglo assistant: one private, purpose-built workspace for all seven tools. */
 .mg-chat-section{position:relative;width:min(1460px,calc(100% - 100px));margin:0 auto;padding:118px 0 142px;scroll-margin-top:80px}
-.mg-chat-section::before{content:"";position:absolute;z-index:0;inset:22% -10% 10%;pointer-events:none;background:radial-gradient(ellipse at 35% 30%,#bb87581e,transparent 58%),radial-gradient(ellipse at 70% 65%,#52778214,transparent 52%);filter:blur(50px)}
+.mg-chat-section::before{content:"";position:absolute;z-index:0;inset:22% 0 10%;pointer-events:none;background:radial-gradient(ellipse at 35% 30%,#bb87581e,transparent 58%),radial-gradient(ellipse at 70% 65%,#52778214,transparent 52%);filter:blur(50px)}
 .mg-chat-heading{position:relative;display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:47px}
 .mg-chat-heading .mg-kicker{margin-bottom:21px}
 .mg-chat-heading h2{font:600 clamp(39px,4.4vw,73px)/1.08 Manrope,Arial,sans-serif!important;letter-spacing:-.07em;color:#f4ebe0;margin:0!important}
