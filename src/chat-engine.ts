@@ -85,8 +85,11 @@ export function calculateFromMessage(tool: "profit-calculator" | "discount-calcu
   const currency = getCurrency(input);
   const price = amount(input, tool === "profit-calculator"
     ? ["selling price", "sale price", "selling for", "sell for", "price", "revenue", "sale"]
-    : ["original price", "list price", "regular price", "price"]);
-  if (price === undefined) throw Error("Tell me the selling price. Example: ‘selling price ₹1000, product cost ₹400’. ");
+    : ["original price", "list price", "regular price", "price"])
+    ?? (tool === "discount-calculator" ? matchNumber(input, [/\b(?:on|from)\s*(?:₹|\$|£|€)?\s*([\d][\d,]*(?:\.\d+)?)/i]) : undefined);
+  if (price === undefined) throw Error(tool === "discount-calculator"
+    ? "Tell me the original price. Example: ‘20% discount on $100’. "
+    : "Tell me the selling price. Example: ‘selling price ₹1000, product cost ₹400’. ");
   if (!Number.isFinite(price) || price < 0 || price > 1e12) throw Error("Enter a valid, non-negative price.");
   const cost = amount(input, ["product cost", "total cost", "item cost", "cost"]) ?? 0;
   if (!Number.isFinite(cost) || cost < 0 || cost > 1e12) throw Error("Enter a valid, non-negative cost.");

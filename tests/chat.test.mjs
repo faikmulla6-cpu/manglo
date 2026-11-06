@@ -34,6 +34,8 @@ test('profit and discount use real user-supplied arithmetic', () => {
     'Calculate a 20% discount on original price ₹1000, cost ₹400');
   assert.match(discount.body, /Sale price: ₹800\.00/);
   assert.match(discount.body, /Profit after entered cost: ₹400\.00/);
+  const naturalDiscount = engine.calculateFromMessage('discount-calculator', 'Calculate a 20% discount on $100');
+  assert.match(naturalDiscount.body, /Sale price: \$80\.00/);
   assert.throws(() => engine.calculateFromMessage('profit-calculator', 'profit please'), /selling price/i);
   assert.throws(() => engine.calculateFromMessage('discount-calculator', 'price 1000 discount 120%'), /0 to 100%/);
 });
