@@ -59,6 +59,7 @@
 .mchat-message-role{display:block;color:#b5b8ba;font-size:9px;letter-spacing:.2em;margin-bottom:12px;font-weight:750}.mchat-message-role span{color:#676b72}
 .mchat-bubble h4{margin:0 0 11px;color:#f8f8f8;font-size:clamp(18px,1.6vw,23px);line-height:1.35;letter-spacing:-.045em;font-weight:630}
 .mchat-response-copy,.mchat-user-copy{white-space:pre-line;overflow-wrap:anywhere;font-size:clamp(13px,1.12vw,15px);line-height:1.9;color:#bfc3c7;margin:0}.mchat-user-copy{color:#e9e9ea;font-size:clamp(14px,1.2vw,16px)}
+.mchat-stream{position:relative;min-width:0}.mchat-stream-measure{visibility:hidden;pointer-events:none}.mchat-stream-visible{position:absolute;inset:0;overflow:visible}
 .mchat-caret{display:inline-block;width:5px;height:14px;margin-left:2px;vertical-align:middle;background:#ddd;animation:mchat-caret .65s step-end infinite}@keyframes mchat-caret{50%{opacity:0}}
 .mchat-user-file{display:flex;align-items:center;gap:8px;margin-top:13px;padding:8px 10px;border:1px solid #ffffff23;border-radius:9px;font-size:11px;color:#d0d0d0}
 .mchat-processing{display:flex;align-items:start;gap:12px;margin:4px 0 30px}.mchat-processing-avatar{display:none}.mchat-processing>div{display:flex;flex-direction:column;gap:5px;padding:0;border:0;border-radius:0;background:transparent}

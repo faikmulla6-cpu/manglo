@@ -50,7 +50,13 @@ function StreamingText({ text }: { text: string }) {
     }), 20);
     return () => window.clearInterval(timer);
   }, [text, reduceMotion]);
-  return <p className="mchat-response-copy">{text.slice(0, shown)}{shown < text.length && <span className="mchat-caret" aria-hidden="true" />}</p>;
+  // Reserve the final line height from the start. Streaming one letter at a
+  // time must not keep pushing the composer lower as new lines appear.
+  return <div className="mchat-stream">
+    <p className="mchat-response-copy mchat-stream-measure" aria-hidden="true">{text}</p>
+    <p className="mchat-response-copy mchat-stream-visible" aria-live="off">{text.slice(0, shown)}{shown < text.length && <span className="mchat-caret" aria-hidden="true" />}</p>
+    <span className="mchat-visually-hidden" aria-live="polite">{text}</span>
+  </div>;
 }
 
 function ToolButton({ id, active, onClick }: { id: ToolId; active: boolean; onClick: () => void }) {
@@ -100,6 +106,23 @@ export function ToolChat() {
     animation.onfinish = () => animation.cancel();
     return () => animation.cancel();
   }, [inConversation, reduceMotion]);
+  const lastRevealedReply = useRef(0);
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant" || last.id === lastRevealedReply.current) return;
+    lastRevealedReply.current = last.id;
+    // On short screens a finished answer might sit under the sticky composer.
+    // Reveal it with a single measured scroll, after the initial dock glide.
+    const frame = window.requestAnimationFrame(() => {
+      const replies = document.querySelectorAll<HTMLElement>(".mchat-message-assistant");
+      const reply = replies[replies.length - 1];
+      const dock = inputDock.current;
+      if (!reply || !dock) return;
+      const overlap = reply.getBoundingClientRect().bottom - dock.getBoundingClientRect().top + 20;
+      if (overlap > 20) window.scrollBy({ top: overlap, behavior: reduceMotion ? "auto" : "smooth" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [messages, reduceMotion]);
   useEffect(() => () => { urls.current.forEach(URL.revokeObjectURL); }, []);
 
   const chooseTool = (id: ToolId) => {
