@@ -50,11 +50,11 @@
 .mchat-identity{display:flex;align-items:center;gap:11px}.mchat-identity-glow{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;color:#e9e5df;background:radial-gradient(circle,#5b524c66,transparent 72%)}
 .mchat-identity strong{display:block;font-size:12px;font-weight:650;color:#f6f5f4;letter-spacing:-.01em}.mchat-identity small{display:block;margin-top:2px;font-size:9px;letter-spacing:.14em;color:#82848b}
 .mchat-new{display:flex;align-items:center;gap:8px;white-space:nowrap;border:0!important;border-radius:100px!important;background:transparent!important;color:#a9abb0!important;padding:10px 5px!important;font-size:11px!important;transition:color .2s}.mchat-new:hover{color:#fff!important;background:transparent!important}
-.mchat-thread{flex:1;min-height:290px;overflow:visible;padding:clamp(42px,8vh,95px) 16px 34px;display:flex;flex-direction:column;justify-content:flex-end}
+.mchat-thread{flex:1;min-height:290px;overflow:visible;padding:clamp(42px,8vh,95px) 16px 50px;display:flex;flex-direction:column;justify-content:flex-end}
 .mchat-messages{width:min(745px,100%);margin:auto auto 0;padding:0 0 20px}
-.mchat-message{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin:0 0 36px}.mchat-message-avatar{display:none}.mchat-message-user{align-items:flex-end}
+.mchat-message{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin:0 0 36px}.mchat-message-avatar{display:none}.mchat-message-user{align-items:flex-start}
 .mchat-bubble{max-width:100%;min-width:0;position:relative;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;color:#e2e3e3}
-.mchat-message-user .mchat-bubble{max-width:min(610px,92%);text-align:right;background:transparent;border:0}
+.mchat-message-user .mchat-bubble{max-width:100%;text-align:left;background:transparent;border:0}
 .mchat-message-user .mchat-bubble:before{content:"YOU";display:block;margin:0 0 8px;color:#898c93;font-size:9px;font-weight:700;letter-spacing:.2em}
 .mchat-message-role{display:block;color:#b5b8ba;font-size:9px;letter-spacing:.2em;margin-bottom:12px;font-weight:750}.mchat-message-role span{color:#676b72}
 .mchat-bubble h4{margin:0 0 11px;color:#f8f8f8;font-size:clamp(18px,1.6vw,23px);line-height:1.35;letter-spacing:-.045em;font-weight:630}
@@ -64,7 +64,7 @@
 .mchat-processing{display:flex;align-items:start;gap:12px;margin:4px 0 30px}.mchat-processing-avatar{display:none}.mchat-processing>div{display:flex;flex-direction:column;gap:5px;padding:0;border:0;border-radius:0;background:transparent}
 .mchat-processing-label{display:flex;align-items:center;gap:8px;color:#eee;font-size:12px}.mchat-processing small{color:#919ca1;font-size:10px}
 .mchat-spin{animation:mchat-spin 1s linear infinite}.mchat-dots{letter-spacing:.2em}@keyframes mchat-spin{to{transform:rotate(360deg)}}
-.mchat-shell.is-conversing .mchat-input-dock{position:sticky;bottom:0;flex:none;width:100%;padding:21px 12px 9px;background:linear-gradient(to bottom,#07070800,#080809e8 28%,#080809f7 76%,#080809fa);backdrop-filter:blur(19px);-webkit-backdrop-filter:blur(19px)}
+.mchat-shell.is-conversing .mchat-input-dock{position:relative;bottom:auto;flex:none;width:100%;padding:15px 12px 9px;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
 .mchat-shell.is-conversing .mchat-compose-area{width:100%;max-width:745px;padding:0;background:transparent}
 .mchat-shell.is-conversing .mchat-composer{max-width:745px;margin:auto;background:#232326ed;border-color:#39393c;box-shadow:0 20px 65px #0006,inset 0 1px #ffffff07}
 .mchat-shell.is-conversing .mchat-dock{flex:none;padding:12px 0 0;margin:0}
@@ -81,7 +81,7 @@
 .mchat-copy{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 11px!important;border:1px solid #ffffff44!important;border-radius:100px!important;background:#ffffff12!important;color:#fff!important;font-size:11px!important}
 @media(max-width:750px){
  .mchat-shell.is-idle{width:100%}.mchat-composer{border-radius:16px}.mchat-composer textarea{font-size:13px!important}.mchat-tool-list{gap:6px}.mchat-tool-button{font-size:10px!important;padding:8px 10px!important}
- .mchat-shell.is-conversing{height:auto;min-height:max(550px,calc(100svh - 92px));border:0;border-radius:0}.mchat-topbar{padding:0 5px}.mchat-thread{min-height:270px;padding:55px 4px 22px}
+ .mchat-shell.is-conversing{height:auto;min-height:max(550px,calc(100svh - 92px));border:0;border-radius:0}.mchat-topbar{padding:0 5px}.mchat-thread{min-height:270px;padding:55px 4px 38px}
  .mchat-bubble{padding:0}.mchat-bubble h4{font-size:18px}.mchat-response-copy,.mchat-user-copy{font-size:13px}.mchat-shell.is-conversing .mchat-input-dock{padding:15px 0 8px}
  .mchat-shell.is-conversing .mchat-dock{padding:11px 0 0}.mchat-shell.is-conversing .mchat-tool-button{min-height:29px;font-size:10px!important;padding:7px 10px!important}
  .mchat-comparison>div{height:130px}
