@@ -25,7 +25,10 @@ Open http://127.0.0.1:4173. For static hosting, upload the contents of `dist/` t
 - Manglo Playbook: six original, crawlable field guides, searchable topic library,
   contextual links to tools, a private in-browser listing checklist, editorial
   standards, and RSS feed at `/feed.xml`.
-- Responsive interface, keyboard focus states, sitemap, robots and canonical URLs.
+- Cinematic dark design with bronze/glass accents, original hero photography,
+  responsive card gallery, animated navigation, editorial layouts and reduced-motion support.
+- Searchable/category-filtered tools, dedicated working workspaces, expanded About
+  and Contact, readable policy pages, keyboard focus states, sitemap, robots and canonical URLs.
 
 Supported images: JPG, PNG, WebP, up to 20 MB and 40 megapixels each. Requires a modern browser with createImageBitmap and canvas encoding. Animation is flattened. Metadata is not preserved. Inspect exported results.
 
@@ -72,9 +75,12 @@ The old source is recoverable from Git history; this replacement does not delete
 ## React hero (Hero 2.1)
 
 The homepage uses a small React island for its animated hero. The rest of Manglo
-is still static HTML/CSS/JavaScript: the seven tools, guides, existing navigation,
-interactive sample exporter and all URLs remain unchanged. If the hero bundle
-cannot load, the original server-rendered hero remains usable.
+is still static HTML/CSS/JavaScript: the seven working tools, guides and existing
+URLs remain unchanged. The shared navigation, tool gallery and editorial layouts
+come from `scripts/build.mjs`, `content/home.mjs`, `dist/experience.css` and
+`dist/experience.js`. If the React bundle cannot load, a usable server-rendered
+hero remains. The legacy `dist/app.js` is loaded on tool routes to drive the
+interactive controls, but not on editorial routes where it would overwrite HTML.
 
 - Component: `components/ui/hero-2-1.tsx` (`Hero2`); example usage in `components/demo.tsx` (`DemoOne`).
 - Mount: `src/hero-entry.tsx` replaces only the homepage `.hero-copy` contents.
@@ -85,8 +91,8 @@ cannot load, the original server-rendered hero remains usable.
   only holds the local "How does Manglo work?" disclosure state.
 
 Run `npm run build` after edits and deploy the entire `dist/` directory. The
-static build adds the CSS/JS tags to the homepage only; the React bundle runs
-after the existing `app.js` renderer. `npm run typecheck` checks the TSX.
+static build adds React CSS/JS tags to the homepage only and tool logic to the
+tool routes only. `npm run typecheck` checks the TSX.
 
 The root-level `components/ui` is deliberately the shadcn component directory,
 with the `@/components/ui` alias in `tsconfig.json` and `vite.config.ts`, plus
@@ -97,6 +103,6 @@ a new project instead, run `npx shadcn@latest init` in a React/TypeScript app
 with Tailwind installed. Here, the Tailwind CSS import omits Preflight and uses
 the `mg:` prefix to avoid overriding the existing static toolkit styles.
 
-The page reuses Manglo's existing local product photo rather than introducing
-an external image request; no new privacy disclosure or remote asset is needed.
+The homepage cover uses an original generated product-studio image stored locally
+at `dist/assets/obsidian-hero.webp`; no external image request is required.
 

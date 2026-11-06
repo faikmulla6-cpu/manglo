@@ -168,7 +168,7 @@ export const playbookArticles = [
         <label><input type="checkbox"> <span>10. Delivery time, stock and return terms are accurate.</span></label>
         <label><input type="checkbox"> <span>11. You have rights to every image and claim in the listing.</span></label>
         <label><input type="checkbox"> <span>12. The final listing is readable and usable on a phone.</span></label>
-        <div class="pb-checklist-controls"><strong data-checklist-count aria-live="polite">0 of 12 complete</strong><button type="button" data-print-checklist>Print checklist ↗</button></div>
+        <div class="pb-checklist-controls"><strong data-checklist-count aria-live="polite">0 of 12 complete</strong><button type="button" data-print-checklist>Print checklist →</button></div>
       </div>
       <h2 id="why-it-matters">Why these checks belong together</h2>
       <p>A beautiful photograph cannot fix an incorrect delivery promise. A perfect title cannot rescue an unprofitable order. Treat visual clarity, cost accuracy and buyer expectations as one workflow. Fix the highest-impact mistakes before spending money on traffic.</p>
