@@ -5,10 +5,13 @@ import { playbookArticles, categories } from '../content/playbook.mjs';
 const root = new URL('../dist/', import.meta.url);
 const domain = 'https://manglo.shop';
 const published = '2026-11-06';
-const heroCss = '<link rel="stylesheet" href="/hero-2-1.css">';
-const heroJs = '<script src="/hero-2-1.js" defer></script>';
-const homeJs = '<script src="/playbook-home.js" defer></script>';
-const playbookCss = '<link rel="stylesheet" href="/playbook.css">';
+// Change the URL when these generated assets change. Static hosts/CDNs can
+// otherwise keep an older bundle cached after a new index.html is deployed.
+const release = '20261106b';
+const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
+const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
+const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
+const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
 const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Playbook" href="/feed.xml">';
 
 const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
@@ -21,11 +24,12 @@ const original = await readFile(new URL('index.html', root), 'utf8');
 // The generated home page also acts as the template. Strip additions from any
 // previous build to make repeated runs deterministic and non-duplicating.
 let template = original
-  .replaceAll(heroCss, '')
-  .replaceAll(heroJs, '')
-  .replaceAll(homeJs, '')
+  .replace(/<link rel="stylesheet" href="\/hero-2-1\.css(?:\?[^\"]*)?">/g, '')
+  .replace(/<script src="\/hero-2-1\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
+  .replace(/<script src="\/playbook-home\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
+  .replace(/<link rel="stylesheet" href="\/playbook\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<!-- PB_META_START -->[\s\S]*?<!-- PB_META_END -->/g, '');
-if (!template.includes(playbookCss)) template = template.replace('</head>', `${playbookCss}</head>`);
+template = template.replace('</head>', `${playbookCss}</head>`);
 if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLink}</head>`);
 
 const existingRoutes = {
