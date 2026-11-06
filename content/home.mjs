@@ -26,26 +26,8 @@ function card(tool, index) {
 
 export function renderHome(tools) {
   return `<div class="mg-home">
-    <section class="mg-cover premium-hero" aria-labelledby="mg-home-title">
-      <div class="mg-cover-light" aria-hidden="true"></div>
-      <div class="mg-cover-inner">
-        <div class="mg-cover-copy hero-copy">
-          <div class="mg-eyebrow"><span class="mg-dot"></span> MANGLO / THE INDEPENDENT WORKSPACE</div>
-          <h1 id="mg-home-title">A sharper edge <em>for every idea.</em></h1>
-          <p>Make your images look their best. Understand the numbers behind every sale. Move from idea to listing with less friction.</p>
-          <div class="mg-cover-actions"><a class="mg-button mg-button-primary" href="#tools">Explore the toolkit <span>→</span></a><a class="mg-button mg-button-ghost" href="/playbook/">Read the Playbook <span>→</span></a></div>
-          <div class="mg-cover-assurance"><span>07 browser-based tools</span><span>No account needed</span><span>Image processing stays local</span></div>
-        </div>
-        <div class="mg-cover-product studio-window"><img src="/assets/obsidian-hero.webp" alt="Cinematic arrangement of unbranded product packaging on dark glass" width="1536" height="1024" fetchpriority="high">
-          <div class="mg-image-corner mg-image-corner-top">MANGLO / PRODUCT STUDIO <span>01—07</span></div>
-          <div class="mg-image-corner mg-image-corner-bottom"><span class="mg-icon-flash">✦</span><div><strong>Bring your best to the details.</strong><small>Photography, pricing, and the work in between.</small></div><span aria-hidden="true">→</span></div>
-        </div>
-      </div>
-      <a class="mg-scroll-prompt" href="#tools"><span>SCROLL TO EXPLORE</span><i aria-hidden="true">↓</i></a>
-    </section>
-    <div class="mg-marquee" aria-label="Manglo toolkit specialties"><div><span>IMAGE PREPARATION</span><b>✦</b><span>SMARTER MARGINS</span><b>✦</b><span>BETTER PRODUCT LISTINGS</span><b>✦</b><span>FREE TO USE</span><b>✦</b></div></div>
-    <section class="mg-chat-section" id="tools" aria-labelledby="mg-tools-title">
-      <div class="mg-chat-heading"><div><span class="mg-kicker"><span class="mg-kicker-line"></span> 01 / THE MANGLO ASSISTANT</span><h2 id="mg-tools-title">Your next task.<br><em>One conversation away.</em></h2></div><p>Seven practical tools, one calm workspace. Attach an image or describe your numbers. Get a result you can actually use.</p></div>
+    <section class="mg-chat-section" id="tools" aria-labelledby="mg-home-title">
+      <div class="mg-chat-heading"><div><span class="mg-kicker"><span class="mg-kicker-line"></span> MANGLO STUDIO / AN EASIER WAY TO WORK</span><h1 id="mg-home-title">Make good ideas<br><em>happen effortlessly.</em></h1></div><div class="mg-chat-heading-aside"><p>A more intuitive way to edit images and work out your numbers. Seven real tools, one conversation. No account, no clutter, just progress.</p><a class="mg-chat-entry" href="#manglo-chat-prompt">Start creating <span aria-hidden="true">→</span></a></div></div>
       <div id="manglo-chat-root" class="mchat-root"><div class="mchat-fallback"><h3>Make something useful with Manglo.</h3><p>Our image tools and seller calculators are available free without an account. Use the browser workspace or visit a direct tool.</p><div class="mchat-fallback-links">${tools.map(tool => `<a href="/tools/${escape(tool.id)}/">${escape(tool.name)}</a>`).join('')}</div></div></div>
       <noscript><p>Enable JavaScript to use the chat workspace. The seven individual tools linked above remain available.</p></noscript>
     </section>
