@@ -5,6 +5,11 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // React and Motion publish CommonJS branches that check NODE_ENV at runtime.
+  // This bundle runs directly in browsers without a Node.js `process` global.
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
+  },
   resolve: {
     alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
   },

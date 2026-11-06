@@ -14,3 +14,7 @@ test('React hero assets are homepage-only while static routes stay independent',
   assert.match(home,/class="studio-window"/);
   assert.match(home,/id="tools"/);
 });
+test('browser hero bundle does not depend on Node process environment variables',async()=>{
+  const hero=await readFile(new URL('hero-2-1.js',root),'utf8');
+  assert.doesNotMatch(hero,/process\.env\./);
+});
