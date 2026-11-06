@@ -43,6 +43,15 @@ export function PromptInputBox({ value, onValueChange, onSend, isLoading = false
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  useEffect(() => {
+    if (!showPreview) return;
+    const dismiss = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setShowPreview(false);
+    };
+    window.addEventListener("keydown", dismiss);
+    return () => window.removeEventListener("keydown", dismiss);
+  }, [showPreview]);
+
   const chooseFile = (candidate?: File) => {
     if (!candidate) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(candidate.type)) {

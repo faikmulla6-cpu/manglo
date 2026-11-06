@@ -107,7 +107,9 @@ export function ToolChat() {
     setSelected(id);
     setDraft(toolOptions.find(tool => tool.id === id)!.prompt);
     setNotice("");
-    document.getElementById("manglo-chat-prompt")?.focus();
+    // The tool pills are already beside the composer; focusing must not
+    // unexpectedly scroll the entire editorial page before the Send glide.
+    document.getElementById("manglo-chat-prompt")?.focus({ preventScroll: true });
   };
 
   const reply = (message: Omit<Message, "id" | "role">) => {

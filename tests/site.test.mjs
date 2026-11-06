@@ -6,9 +6,9 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106p"/);
-  assert.match(home,/src="\/hero-2-1\.js\?v=20261106p"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106p"/);
+  assert.match(home,/href="\/hero-2-1\.css\?v=20261106q"/);
+  assert.match(home,/src="\/hero-2-1\.js\?v=20261106q"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261106q"/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -30,7 +30,8 @@ test('open conversation aligns both roles and never overlays the result with the
   const chat=await readFile(new URL('../components/tool-chat.tsx',root),'utf8');
   assert.match(css,/\.mchat-shell\.is-conversing\{[^}]*overflow:visible/);
   assert.match(css,/\.mchat-thread\{[^}]*overflow:visible/);
-  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-input-dock\{[^}]*position:relative/);
+  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-input-dock\{[^}]*position:sticky/);
+  assert.match(css,/\.mchat-shell\.is-conversing \.mchat-input-dock:before\{[^}]*pointer-events:none/);
   assert.match(css,/\.mchat-shell\.is-conversing \.mchat-dock\{[^}]*width:min\(745px,100%\)/);
   assert.match(css,/\.mchat-shell\.is-conversing \.mchat-tool-list\{justify-content:flex-start/);
   assert.match(css,/\.mchat-message-user\{align-items:flex-start/);
@@ -43,11 +44,14 @@ test('open conversation aligns both roles and never overlays the result with the
   assert.match(chat,/FIRST_REPLY_DELAY_MS = FIRST_LAUNCH_MOTION_MS \+ 250/);
   assert.match(chat,/duration: FIRST_LAUNCH_MOTION_MS/);
   assert.match(chat,/firstTurn && !reduceMotion \? FIRST_REPLY_DELAY_MS : 250/);
+  assert.match(chat,/focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(chat,/scrollIntoView/);
   assert.match(css,/\.mchat-shell\.is-conversing \.mchat-tool-list\{justify-content:flex-start/);
   const editorial=await readFile(new URL('home-editorial.css',root),'utf8');
   assert.match(editorial,/overflow-anchor:none/);
   assert.doesNotMatch(editorial,/transition:padding/);
+  const input=await readFile(new URL('../components/ui/ai-prompt-box.tsx',root),'utf8');
+  assert.match(input,/event\.key === "Escape"/);
 });
 test('Playbook hub and articles are crawlable, descriptive and linked to real tools',async()=>{
   const hub=await readFile(new URL('playbook/index.html',root),'utf8');
@@ -86,8 +90,8 @@ test('all seven interactive tools load their client logic; editorial routes do n
   const ids=['image-compressor','image-resizer','image-converter','image-cropper','target-size-compressor','profit-calculator','discount-calculator'];
   for(const id of ids){
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
-    assert.match(html,/src="\/app\.js\?v=20261106p" defer/);
-    assert.match(html,/src="\/experience\.js\?v=20261106p" defer/);
+    assert.match(html,/src="\/app\.js\?v=20261106q" defer/);
+    assert.match(html,/src="\/experience\.js\?v=20261106q" defer/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
@@ -111,7 +115,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of ['compress-product-images-without-blur','calculate-real-profit-per-order','jpg-png-webp-product-photos','profitable-discount-calculator-guide','phone-product-photography-setup','product-listing-preflight-checklist']){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106p"/);
+    assert.match(html,/href="\/experience\.css\?v=20261106q"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });

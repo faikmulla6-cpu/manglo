@@ -8,7 +8,7 @@ const domain = 'https://manglo.shop';
 const published = '2026-11-06';
 // Change the URL when these generated assets change. Static hosts/CDNs can
 // otherwise keep an older bundle cached after a new index.html is deployed.
-const release = '20261106p';
+const release = '20261106q';
 const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
 const homeCss = `<link rel="stylesheet" href="/home-editorial.css?v=${release}">`;
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
