@@ -5,6 +5,8 @@ import { resolve } from 'node:path';
 const root = new URL('../dist/', import.meta.url);
 const expectedHost = 'https://manglo.shop';
 const categoryDesks = ['practical', 'shopping', 'technology', 'ai', 'trends'];
+const ownershipMeta = '<meta name="google-adsense-account" content="ca-pub-8653555162421936">';
+const adsTxtExpected = 'google.com, pub-8653555162421936, DIRECT, f08c47fec0942fa0\n';
 
 // Release gate for generated static pages. This is deliberately separate from
 // live Search Console indexing, real-user metrics, legal and editorial reviews.
@@ -39,7 +41,11 @@ export async function auditSite() {
     if (!html.includes('<html lang="en">') || !html.includes('name="viewport"')) fail(route, 'accessibility', 'Language or responsive viewport missing');
     if (!html.includes('class="mg-mobile-menu"') || !html.includes('class="mg-skip"')) fail(route, 'navigation', 'Mobile navigation or skip link missing');
     if (!html.includes('href="/journal/"') || !html.includes('href="/editorial-standards/"')) fail(route, 'transparency', 'Journal or editorial standards link missing');
-    if (html.includes('adsbygoogle') || html.includes('ca-pub-')) fail(route, 'ad_policy', 'Unexpected live ad code in inactive preapproval build');
+    if (html.split(ownershipMeta).length !== 2) fail(route, 'adsense_ownership', 'Exactly one verified AdSense ownership meta tag is required');
+    const withoutVerification = html.replace(ownershipMeta, '');
+    if (/adsbygoogle|pagead2\.googlesyndication\.com|<ins[^>]*class=["'][^"']*adsbygoogle|ca-pub-/i.test(withoutVerification)) {
+      fail(route, 'ad_policy', 'Unexpected advertising code while Auto ads remain inactive');
+    }
     if (route.startsWith('/tools/') && (!html.includes('class="mg-tool-guide"') || !html.includes('src="/tool-guides.js"'))) fail(route, 'tool_value', 'Interactive tool also needs substantive readable guidance before and after JavaScript');
     if (route === '/privacy/' && (!html.includes('Google AdSense is activated later') || !html.includes('My Ad Center'))) fail(route, 'privacy', 'Advertising data disclosures must be prepared without falsely claiming ads are active');
     const structured = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
@@ -56,6 +62,8 @@ export async function auditSite() {
   }
   const errorPage = await readFile(new URL('404.html', root), 'utf8');
   if (!errorPage.includes('name="robots" content="noindex,follow"')) fail('/404', 'indexability', '404 page must not be indexed');
+  const adsTxt = await readFile(new URL('ads.txt', root), 'utf8');
+  if (adsTxt !== adsTxtExpected) fail('/ads.txt', 'adsense_ownership', 'ads.txt must match the publisher entry supplied by Google');
   return { mode:'LOCAL_BUILD_AUDIT', audited:paths.length, skippedCategoryDesks:categoryDesks.length, passed:failures.length===0, failures };
 }
 

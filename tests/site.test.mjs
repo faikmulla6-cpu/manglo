@@ -108,7 +108,19 @@ test('Playbook additions remain independent from the existing seven tools',async
   const editorial=await readFile(new URL('editorial-standards/index.html',root),'utf8');
   assert.match(editorial,/Ads and editorial independence/);
   assert.match(editorial,/href="\/playbook\.css/);
-  assert.doesNotMatch(home,/adsbygoogle|ca-pub-/);
+  const ownership = '<meta name="google-adsense-account" content="ca-pub-8653555162421936">';
+  assert.equal(home.split(ownership).length - 1, 1);
+  assert.doesNotMatch(home.replace(ownership,''),/adsbygoogle|pagead2\.googlesyndication\.com|ca-pub-/);
+});
+test('AdSense verification is passive and ads remain disabled across static routes',async()=>{
+  const publisher = 'ca-pub-8653555162421936';
+  const meta = `<meta name="google-adsense-account" content="${publisher}">`;
+  assert.equal(await readFile(new URL('ads.txt',root),'utf8'),'google.com, pub-8653555162421936, DIRECT, f08c47fec0942fa0\n');
+  for(const route of ['', 'playbook/', 'journal/', 'editorial-standards/', 'privacy/', 'tools/image-converter/']){
+    const html=await readFile(new URL(`${route}index.html`,root),'utf8');
+    assert.equal(html.split(meta).length-1,1,`${route} should have one ownership tag`);
+    assert.doesNotMatch(html.replace(meta,''),/adsbygoogle|pagead2\.googlesyndication\.com|ca-pub-/i,`${route} must not load advertising code`);
+  }
 });
 test('new search-intent guides have unique metadata, real task links and dated indexable pages',async()=>{
   const additions=playbookArticles.filter(a=>a.published==='2026-11-07');

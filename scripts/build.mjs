@@ -23,6 +23,11 @@ const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
 const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Playbook" href="/feed.xml">';
+// Account ownership verification only. These public static identifiers do not
+// load advertising JavaScript, set cookies, or enable Auto ads.
+const adsensePublisher = 'ca-pub-8653555162421936';
+const adsenseVerification = `<meta name="google-adsense-account" content="${adsensePublisher}">`;
+const adsTxt = 'google.com, pub-8653555162421936, DIRECT, f08c47fec0942fa0\n';
 // The seven homepage stylesheets were each blocking first paint on mobile.
 // Preserve their cascade order in a single generated file while keeping the
 // individual stylesheets for all other pages and the legacy tool UI.
@@ -63,6 +68,7 @@ let template = original
   .replace(/<!-- PB_META_START -->[\s\S]*?<!-- PB_META_END -->/g, '');
 template = template.replace('</head>', `${experienceCss}</head>`);
 if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLink}</head>`);
+if (!template.includes(adsenseVerification)) template = template.replace('</head>', `${adsenseVerification}</head>`);
 
 // Every static route shares one coherent, accessible identity. The header and
 // footer are generated afresh so older build outputs cannot leave stale UI.
@@ -420,6 +426,7 @@ await writeFile(new URL('404.html', root), staticEditorial(renderPage('', 'Page 
 // carry noindex until original reviewed material is released.
 const sitemapPaths = ['', ...Object.keys(existingRoutes), 'playbook', ...playbookArticles.map(a => `playbook/${a.slug}`), 'journal', 'editorial-standards'];
 await writeFile(new URL('robots.txt', root), `User-agent: *\nAllow: /\nSitemap: ${absolute('/sitemap.xml')}\n`);
+await writeFile(new URL('ads.txt', root), adsTxt);
 await writeFile(new URL('sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map(route => `<url><loc>${absolute(route ? `/${route}/` : '/')}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 const xml = value => escapeHTML(value).replace(/'/g, '&apos;');
