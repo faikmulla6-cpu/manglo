@@ -29,3 +29,5 @@ jobs:
         run: npm run typecheck
       - name: Run editorial, routing and tool tests
         run: npm test
+      - name: Audit canonical pages and preapproval safeguards
+        run: npm run audit:site

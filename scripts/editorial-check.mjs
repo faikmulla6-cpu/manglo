@@ -26,11 +26,13 @@ export function assessDraft(draft, now = new Date()) {
   if (sources.length < 2) fail('sources','At least two individually reviewed sources required by Manglo policy');
   const ids = new Set();
   for (const s of sources) {
-    if (!s?.id || ids.has(s.id) || !isHttps(s.url) || !s.title || !s.publisher || !datePattern.test(s.checkedAt || '')) {
-      fail('sources','Each source needs unique ID, HTTPS URL, title, publisher and check date');continue;
+    const checkDay = typeof s?.checkedAt === 'string' ? Date.parse(`${s.checkedAt}T00:00:00Z`) : NaN;
+    const validDate = datePattern.test(s?.checkedAt || '') && Number.isFinite(checkDay) && new Date(checkDay).toISOString().slice(0,10) === s.checkedAt && checkDay <= now.getTime();
+    if (!s?.id || ids.has(s.id) || !isHttps(s.url) || !s.title || !s.publisher || !validDate) {
+      fail('sources','Each source needs a unique ID, HTTPS URL, title, publisher and real check date no later than today');continue;
     }
     ids.add(s.id);
-    if (draft.category === 'trends' && (now.getTime() - Date.parse(`${s.checkedAt}T00:00:00Z`)) / 86400000 > 2) fail('freshness','Trend sources must be rechecked within two days');
+    if (draft.category === 'trends' && (now.getTime() - checkDay) / 86400000 > 2) fail('freshness','Trend sources must be rechecked within two days');
   }
   if (!Array.isArray(draft.claims) || draft.claims.length < 2) fail('fact_check','Claim-to-source ledger required');
   for (const claim of draft.claims || []) if (!claim?.text || claim.verified !== true || !Array.isArray(claim.sourceIds) || !claim.sourceIds.length || claim.sourceIds.some(id=>!ids.has(id))) fail('fact_check','Every consequential claim needs valid source IDs and verification');

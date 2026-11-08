@@ -11,7 +11,7 @@ const published = '2026-11-06';
 // otherwise keep an older bundle cached after a new index.html is deployed.
 const release = '20261106r';
 const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
-const homeCss = `<link rel="stylesheet" href="/home-editorial.css?v=${release}">`;
+const homeCss = '<link rel="stylesheet" href="/home-editorial.css?v=20261108m">';
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
 const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
@@ -40,7 +40,6 @@ let template = original
   .replace(/<link rel="stylesheet" href="\/experience\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<script src="\/experience\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
   .replace(/<!-- PB_META_START -->[\s\S]*?<!-- PB_META_END -->/g, '');
-template = template.replace('</head>', `${playbookCss}</head>`);
 template = template.replace('</head>', `${experienceCss}</head>`);
 if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLink}</head>`);
 
@@ -119,7 +118,7 @@ function renderPage(route, title, description, main, options = {}) {
     <meta property="og:image:alt" content="${escapeHTML(options.imageAlt || 'Manglo seller tools and practical guides')}">
     <meta name="twitter:card" content="summary_large_image">
     ${options.article ? `<meta property="article:published_time" content="${options.published || published}"><meta property="article:modified_time" content="${options.modified || options.published || published}">` : ''}
-    ${options.schema || ''}<!-- PB_META_END -->`;
+    ${options.schema || jsonLD({ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:absolute(path), isPartOf:{ '@type':'WebSite', name:'Manglo', url:absolute('/') } })}<!-- PB_META_END -->`;
 
   return template
     .replace(/<main id="content">[\s\S]*?<\/main>/, `<main id="content">${main}</main>`)
@@ -127,7 +126,9 @@ function renderPage(route, title, description, main, options = {}) {
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHTML(title)} — Manglo</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHTML(description)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${absolute(path)}">`)
-    .replace('</head>', `${meta}</head>`);
+    // The Playbook stylesheet is page-specific. Loading it on the homepage,
+    // tools and Journal delays their first render without styling anything.
+    .replace('</head>', `${route === 'playbook' || route.startsWith('playbook/') || route === 'editorial-standards' ? playbookCss : ''}${meta}</head>`);
 }
 
 // The older app.js is a client-side router for the original tools and guides.
@@ -223,7 +224,11 @@ for (const [route, title] of Object.entries(existingRoutes)) {
   if (route.startsWith('guides/')) {
     const id = route.split('/')[1];
     const guide = data.guides.find(g => g.id === id);
-    description = guide.title;
+    description = ({
+      'prepare-product-images':'Prepare product images for listings with practical checks for file dimensions, clarity, formats and upload readiness.',
+      'calculate-selling-profit':'Understand real selling profit with a clear breakdown of selling price, product costs, shipping, fees and discounts.',
+      'jpg-png-webp':'Compare JPG, PNG and WebP formats, then choose the most suitable format for photographs, transparent images and website uploads.'
+    })[id] || guide.title;
     const cover = id === 'prepare-product-images' ? '/assets/photography-studio.webp'
       : id === 'calculate-selling-profit' ? '/assets/seller-desk.webp' : '/assets/seller-still-life.webp';
     body = `<article class="article"><div class="breadcrumb"><a href="/">Home</a> / <a href="/playbook/">Playbook</a> / Guide</div><div class="eyebrow">MANGLO SELLER GUIDES</div><h1>${guide.title}</h1><img class="article-cover" src="${cover}" alt="Product and seller workspace illustration" width="1536" height="1024">${data.articles[id]}<p><a href="/playbook/">Explore more in Manglo Playbook →</a></p></article>`;
@@ -335,7 +340,7 @@ await saveRoute('editorial-standards', staticEditorial(renderPage('editorial-sta
   'How Manglo Journal and Playbook articles are researched, produced, corrected and kept honest, with transparent AI and advertising policies.', expandedStandards)));
 
 const missing = `<div class="pb-editorial-page"><div class="pb-kicker">404 / WRONG TURN</div><h1>Let's get you back to something useful.</h1><p class="pb-article-dek">That page isn't here. Your next useful tool or guide is one click away.</p><p><a class="pb-primary" href="/">Go home →</a> <a class="pb-pill-link" href="/playbook/">Browse the Playbook →</a></p></div>`;
-await writeFile(new URL('404.html', root), staticEditorial(renderPage('', 'Page not found', 'This Manglo page was not found.', missing, { noindex: true })));
+await writeFile(new URL('404.html', root), staticEditorial(renderPage('', 'Page not found', 'This Manglo page was not found.', missing, { noindex: true }).replace('</head>', `${playbookCss}</head>`)));
 
 // Do not advertise the unfilled category desks in the sitemap: their pages
 // carry noindex until original reviewed material is released.

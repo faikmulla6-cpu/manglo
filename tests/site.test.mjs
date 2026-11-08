@@ -9,7 +9,9 @@ test('React hero assets are homepage-only while static routes stay independent',
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
   assert.match(home,/href="\/hero-2-1\.css\?v=20261106r"/);
   assert.match(home,/src="\/hero-2-1\.js\?v=20261106r"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106r"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261108m"/);
+  assert.doesNotMatch(home,/href="\/playbook\.css/);
+  assert.doesNotMatch(tool,/href="\/playbook\.css/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -61,6 +63,7 @@ test('Playbook hub and articles are crawlable, descriptive and linked to real to
   const hub=await readFile(new URL('playbook/index.html',root),'utf8');
   assert.match(hub,/Explore the field guides/);
   assert.match(hub,/id="pb-grid"/);
+  assert.match(hub,/href="\/playbook\.css/);
   const entries=[...hub.matchAll(/href="(\/playbook\/[^"#]+\/)"/g)].map(x=>x[1]);
   assert.equal(new Set(entries).size,playbookArticles.length);
   const pages=playbookArticles.map(a=>a.slug);
@@ -88,6 +91,7 @@ test('Playbook additions remain independent from the existing seven tools',async
   assert.match((await readFile(new URL('feed.xml',root),'utf8')),/<rss version="2.0">/);
   const editorial=await readFile(new URL('editorial-standards/index.html',root),'utf8');
   assert.match(editorial,/Ads and editorial independence/);
+  assert.match(editorial,/href="\/playbook\.css/);
   assert.doesNotMatch(home,/adsbygoogle|ca-pub-/);
 });
 test('new search-intent guides have unique metadata, real task links and dated indexable pages',async()=>{

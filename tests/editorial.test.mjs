@@ -7,3 +7,12 @@ const fixture=()=>({status:'draft',author:'Manglo Editorial',category:'practical
 test('all-pass fixture only reaches owner-review stage',()=>{const r=assessDraft(fixture(),new Date('2026-11-08T10:00:00Z'));assert.equal(r.decision,'READY_FOR_OWNER_REVIEW');assert.equal(r.published,false);});
 test('unverified claims, rights or authorship block publication',()=>{const d=fixture();d.author='Invented Expert';d.image.rightsEvidence='';d.claims[0].sourceIds=['missing'];const r=assessDraft(d);assert.equal(r.decision,'SKIP_PUBLICATION');assert.ok(r.failures.some(f=>f.gate==='image_rights'));assert.ok(r.failures.some(f=>f.gate==='fact_check'));assert.ok(r.notification.includes('No article went live'));});
 test('stale trends and missing specialist review block publication',()=>{const d=fixture();d.category='trends';d.sources.forEach(s=>s.checkedAt='2026-10-20');const r=assessDraft(d,new Date('2026-11-08T10:00:00Z'));assert.ok(r.failures.some(f=>f.gate==='freshness'));assert.ok(r.failures.some(f=>f.gate==='human_review'));});
+test('fabricated, malformed or future source check dates cannot satisfy fact checking',()=>{
+  for (const invalidDate of ['2026-11-31','2026-13-08','2026-11-09']) {
+    const draft=fixture();draft.sources[0].checkedAt=invalidDate;
+    const report=assessDraft(draft,new Date('2026-11-08T10:00:00Z'));
+    assert.equal(report.decision,'SKIP_PUBLICATION');
+    assert.ok(report.failures.some(f=>f.gate==='sources'));
+    assert.ok(report.failures.some(f=>f.gate==='fact_check'));
+  }
+});

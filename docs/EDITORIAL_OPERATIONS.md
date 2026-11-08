@@ -31,6 +31,9 @@ Checks include: organizational author, approved category, substantive answer, di
 4. Publish revised content only when the precise update is verified. Date changes should reflect real changes.
 5. No category page is indexed before that category has substantive independently verified articles; empty Journal desks currently use `noindex,follow` and are absent from the sitemap.
 6. Verify previews on desktop/mobile, canonical URLs, `Article` markup, image metadata, sitemap, RSS and link integrity.
+   The static build now includes `npm run audit:site` to inspect indexable URLs,
+   descriptions, canonical/OG URLs, structured data, accessible navigation and
+   unindexed empty categories. This does not replace browser or live audits.
 7. Run **seven consecutive real dry runs**, logging all pass/fail states and verifying delivery of skipped-publication explanations to Faik, before considering activation. Simulated unit tests are not a substitute.
 8. Obtain explicit approval for publishing and for enabling the separate 6 PM automation. Maintain a working kill switch and reversible rollback process.
 
@@ -41,6 +44,9 @@ Checks include: organizational author, approved category, substantive answer, di
 - Regional CMP configuration and actual ad placement behavior when AdSense is connected, if required by applicable policy/law.
 - Delivery destination and credentials for editorial failure notifications. The current dry run creates a report message but deliberately sends nothing.
 - Publisher ownership and rights records for any image without provenance evidence.
+
+For measured predeployment status and owner-controlled release gates, see
+`docs/LAUNCH_READINESS.md`.
 
 ## Official references consulted 8 November 2026
 
