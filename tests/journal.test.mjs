@@ -15,7 +15,7 @@ test('Journal is a substantial accessible editorial hub in the sitemap',async()=
   assert.match(html,/href="\/journal\/ai\/"/);
   await stat(new URL('journal.css',dist));
 });
-test('Five categories are navigable but noindex while waiting for verified articles',async()=>{
+test('Five category pages contain original useful methods but remain noindex until in-depth articles are approved',async()=>{
   const sitemap=await readFile(new URL('sitemap.xml',dist),'utf8');
   assert.equal(journalSections.length,5);
   for(const section of journalSections){
@@ -23,7 +23,13 @@ test('Five categories are navigable but noindex while waiting for verified artic
     const html=await readFile(new URL(route+'index.html',dist),'utf8');
     assert.match(html,/<h1>/);
     assert.match(html,/name="robots" content="noindex,follow"/);
-    assert.match(html,/Research and review phase/);
+    assert.match(html,/Practical category guide/);
+    assert.match(html,/A useful starting method/);
+    assert.match(html,/The four-point check/);
+    assert.equal([...html.matchAll(/class="mj-guide-module"/g)].length,3);
+    const main=html.match(/<main id="content">([\s\S]*?)<\/main>/)?.[1]||'';
+    assert.ok(main.replace(/<[^>]*>/g,' ').trim().split(/\s+/).length>=300,`${section.slug} needs a substantive overview`);
+    assert.doesNotMatch(html,/Research and review phase|No new stories have been released here yet/);
     assert.ok(!sitemap.includes(`https://manglo.shop/${route}`));
   }
 });

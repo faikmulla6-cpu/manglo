@@ -108,6 +108,13 @@ a new project instead, run `npx shadcn@latest init` in a React/TypeScript app
 with Tailwind installed. Here, the Tailwind CSS import omits Preflight and uses
 the `mg:` prefix to avoid overriding the existing static toolkit styles.
 
-The homepage cover uses an original generated product-studio image stored locally
-at `dist/assets/obsidian-hero.webp`; no external image request is required.
+The homepage and Journal share the new original illustrative artwork at
+`dist/assets/manglo-editorial-hero-20261108.webp`; three more unbranded visual
+assets are documented in `docs/IMAGE_RIGHTS_REGISTER.md`. They load locally,
+without depending on a third-party image host.
+
+**AdSense readiness:** see `docs/ADSENSE_READINESS_20261108.md` for the current
+policy crosswalk, confirmed fixes and unresolved owner/Google-controlled checks.
+No advertising or publication automation has been activated by this revision.
+
 

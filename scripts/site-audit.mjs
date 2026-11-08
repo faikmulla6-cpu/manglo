@@ -40,6 +40,8 @@ export async function auditSite() {
     if (!html.includes('class="mg-mobile-menu"') || !html.includes('class="mg-skip"')) fail(route, 'navigation', 'Mobile navigation or skip link missing');
     if (!html.includes('href="/journal/"') || !html.includes('href="/editorial-standards/"')) fail(route, 'transparency', 'Journal or editorial standards link missing');
     if (html.includes('adsbygoogle') || html.includes('ca-pub-')) fail(route, 'ad_policy', 'Unexpected live ad code in inactive preapproval build');
+    if (route.startsWith('/tools/') && (!html.includes('class="mg-tool-guide"') || !html.includes('src="/tool-guides.js"'))) fail(route, 'tool_value', 'Interactive tool also needs substantive readable guidance before and after JavaScript');
+    if (route === '/privacy/' && (!html.includes('Google AdSense is activated later') || !html.includes('My Ad Center'))) fail(route, 'privacy', 'Advertising data disclosures must be prepared without falsely claiming ads are active');
     const structured = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     if (!structured.length) fail(route, 'structured_data', 'Missing JSON-LD');
     for (const [, json] of structured) try { JSON.parse(json); } catch { fail(route, 'structured_data', 'Invalid JSON-LD'); }
