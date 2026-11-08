@@ -33,6 +33,12 @@ test('React hero assets are homepage-only while static routes stay independent',
   }
   assert.doesNotMatch(bundle,/@import/);
   assert.equal([...home.matchAll(/<link rel="stylesheet"/g)].length,2);
+  for (const name of ['manglo-product-photo','manglo-photo-workspace','manglo-seller-desk']) {
+    const thumbnail=`${name}-960.webp`;
+    await stat(new URL(`assets/${thumbnail}`,root));
+    assert.ok(home.includes(`srcset="/assets/${thumbnail} 960w, /assets/${name}-20261108.webp 1536w"`), `${name} needs responsive sources`);
+  }
+  assert.match(home,/class="mg-feature-lead"[\s\S]*?sizes="\(max-width: 760px\) calc\(100vw - 32px\), 660px"/);
 });
 test('browser hero bundle does not depend on Node process environment variables',async()=>{
   const hero=await readFile(new URL('hero-2-1.js',root),'utf8');

@@ -162,20 +162,28 @@ async function saveRoute(route, html) {
 }
 
 const articleHref = article => `/playbook/${article.slug}/`;
+const responsiveImages = new Map([
+  ['/assets/manglo-product-photo-20261108.webp', '/assets/manglo-product-photo-960.webp'],
+  ['/assets/manglo-photo-workspace-20261108.webp', '/assets/manglo-photo-workspace-960.webp'],
+  ['/assets/manglo-seller-desk-20261108.webp', '/assets/manglo-seller-desk-960.webp']
+]);
+const responsiveImageAttrs = source => responsiveImages.has(source)
+  ? ` srcset="${responsiveImages.get(source)} 960w, ${source} 1536w" sizes="(max-width: 760px) calc(100vw - 32px), 660px"`
+  : '';
 const articleCard = (article, i = 0) => `
   <a class="pb-card" href="${articleHref(article)}" data-category="${escapeHTML(article.category)}" data-search="${escapeHTML(`${article.title} ${article.description} ${article.category}`.toLowerCase())}">
-    <div class="pb-card-visual"><img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" loading="lazy" width="1536" height="1024"><span class="pb-card-number">${String(i + 1).padStart(2, '0')}</span></div>
+    <div class="pb-card-visual"><img src="${article.image}"${responsiveImageAttrs(article.image)} alt="${escapeHTML(article.imageAlt)}" loading="lazy" width="1536" height="1024"><span class="pb-card-number">${String(i + 1).padStart(2, '0')}</span></div>
     <div class="pb-card-copy"><div class="pb-card-meta"><span>${escapeHTML(article.category)}</span><span>${article.readTime} min read</span></div>
       <h3>${escapeHTML(article.title)}</h3><p>${escapeHTML(article.dek)}</p><span class="pb-card-read">Read the guide <span aria-hidden="true">→</span></span>
     </div>
   </a>`;
 
 const story = (article, extraClass = '') => `<a class="mg-story ${extraClass}" href="${articleHref(article)}">
-  <div class="mg-story-image"><img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" width="1536" height="1024" loading="lazy"></div>
+  <div class="mg-story-image"><img src="${article.image}"${responsiveImageAttrs(article.image)} alt="${escapeHTML(article.imageAlt)}" width="1536" height="1024" loading="lazy"></div>
   <div class="mg-story-copy"><span>${escapeHTML(article.category)} · ${article.readTime} MIN READ</span><h3>${escapeHTML(article.title)}</h3></div>
 </a>`;
 const newsRow = article => `<a class="mg-news-item" href="${articleHref(article)}">
-  <img src="${article.image}" alt="${escapeHTML(article.imageAlt)}" loading="lazy" width="1536" height="1024">
+  <img src="${article.image}"${responsiveImageAttrs(article.image)} alt="${escapeHTML(article.imageAlt)}" loading="lazy" width="1536" height="1024">
   <span><strong>${escapeHTML(article.title)}</strong><small>${escapeHTML(article.category)} · ${article.readTime} min read</small></span>
 </a>`;
 const homeTeaser = `<div class="mg-editorial-wrap">
@@ -183,7 +191,7 @@ const homeTeaser = `<div class="mg-editorial-wrap">
     <div class="mg-reading-heading"><div><span class="mg-reading-overline">THE MANGLO PLAYBOOK</span><h2 id="mg-feature-title">Featured ideas</h2></div><a href="/playbook/">All articles <span aria-hidden="true">→</span></a></div>
     <div class="mg-feature-layout">
       <a class="mg-feature-lead" href="${articleHref(playbookArticles[0])}">
-        <img src="${playbookArticles[0].image}" alt="${escapeHTML(playbookArticles[0].imageAlt)}" width="1536" height="1024" fetchpriority="high">
+        <img src="${playbookArticles[0].image}"${responsiveImageAttrs(playbookArticles[0].image)} alt="${escapeHTML(playbookArticles[0].imageAlt)}" width="1536" height="1024" fetchpriority="high">
         <div class="mg-feature-shade"></div><div class="mg-feature-lead-copy"><span>FEATURED / PRODUCT PHOTOS</span><h3>${escapeHTML(playbookArticles[0].title)}</h3><p>${escapeHTML(playbookArticles[0].dek)}</p><small>Read the guide →</small></div>
       </a>
       <div class="mg-feature-stack">${story(playbookArticles[4])}${story(playbookArticles[1])}</div>
