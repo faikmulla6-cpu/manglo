@@ -7,9 +7,9 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/hero-2-1\.css\?v=20261106r"/);
+  assert.match(home,/href="\/manglo-home\.css\?v=20261108p"/);
   assert.match(home,/src="\/hero-2-1\.js\?v=20261106r"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261108m"/);
+  assert.doesNotMatch(home,/href="\/(?:hero-2-1|home-editorial)\.css/);
   assert.doesNotMatch(home,/href="\/playbook\.css/);
   assert.doesNotMatch(tool,/href="\/playbook\.css/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
@@ -22,7 +22,17 @@ test('React hero assets are homepage-only while static routes stay independent',
   assert.match(home,/MANGLO \/ YOUR CREATIVE WORKSPACE/);
   assert.match(home,/class="mg-feature-layout"/);
   assert.match(home,/class="mg-news-grid"/);
+  assert.match(home,/class="mg-feature-lead"[\s\S]*?fetchpriority="high"/);
   assert.doesNotMatch(home,/class="mg-tool-grid"/);
+  const bundle=await readFile(new URL('manglo-home.css',root),'utf8');
+  let previous=-1;
+  for(const file of ['style.css','glass.css','premium.css','refinement.css','hero-2-1.css','experience.css','home-editorial.css']){
+    const next=bundle.indexOf(`/* ${file} */`);
+    assert.ok(next>previous,`${file} must retain original cascade order`);
+    previous=next;
+  }
+  assert.doesNotMatch(bundle,/@import/);
+  assert.equal([...home.matchAll(/<link rel="stylesheet"/g)].length,2);
 });
 test('browser hero bundle does not depend on Node process environment variables',async()=>{
   const hero=await readFile(new URL('hero-2-1.js',root),'utf8');
