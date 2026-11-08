@@ -23,7 +23,7 @@ const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108k">';
 const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}">`;
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
-const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Playbook" href="/feed.xml">';
+const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Journal and Playbook" href="/feed.xml">';
 // Account ownership verification only. These public static identifiers do not
 // load advertising JavaScript, set cookies, or enable Auto ads.
 const adsensePublisher = 'ca-pub-8653555162421936';
@@ -69,6 +69,7 @@ let template = original
   .replace(/<link rel="stylesheet" href="\/playbook\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<link rel="stylesheet" href="\/experience\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<script src="\/experience\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
+  .replace(/<link rel="alternate" type="application\/rss\+xml" title="Manglo Playbook" href="\/feed\.xml">/g, '')
   .replace(/<!-- PB_META_START -->[\s\S]*?<!-- PB_META_END -->/g, '');
 template = template.replace('</head>', `${experienceCss}</head>`);
 if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLink}</head>`);
