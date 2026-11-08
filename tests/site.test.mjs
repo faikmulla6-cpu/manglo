@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFile,stat}from'node:fs/promises';import vm from'node:vm';
 import {playbookArticles} from '../content/playbook.mjs';
 const root=new URL('../dist/',import.meta.url);
-test('every sitemap route exists and contains a visible heading without JavaScript',async()=>{const xml=await readFile(new URL('sitemap.xml',root),'utf8');const urls=[...xml.matchAll(/<loc>https:\/\/manglo.shop\/(.*?)<\/loc>/g)].map(m=>m[1]);assert.equal(urls.length,17+playbookArticles.length);for(const route of urls){const html=await readFile(new URL(route+'index.html',root),'utf8');assert.match(html,/<h1\b[^>]*>/);assert.ok(html.includes(`href="https://manglo.shop/${route}"`));assert.ok(!html.includes('Cashfree'));}});
+test('every sitemap route exists and contains a visible heading without JavaScript',async()=>{const xml=await readFile(new URL('sitemap.xml',root),'utf8');const urls=[...xml.matchAll(/<loc>https:\/\/manglo.shop\/(.*?)<\/loc>/g)].map(m=>m[1]);assert.equal(urls.length,18+playbookArticles.length);for(const route of urls){const html=await readFile(new URL(route+'index.html',root),'utf8');assert.match(html,/<h1\b[^>]*>/);assert.ok(html.includes(`href="https://manglo.shop/${route}"`));assert.ok(!html.includes('Cashfree'));}});
 test('local links resolve to built files even when cache-busted',async()=>{const html=await readFile(new URL('index.html',root),'utf8');for(const m of html.matchAll(/(?:href|src)="(\/[^"#?]*)(?:\?[^"#]*)?(?:#[^"]*)?"/g)){const target=m[1];await stat(new URL(target.slice(1)+(target.endsWith('/')?'index.html':''),root));}});
 test('image geometry preserves proportions, crops correctly and rejects excessive output',async()=>{const source=await readFile(new URL('app.js',root),'utf8');const start=source.indexOf('function draw('),end=source.indexOf('\nfunction encode',start);const operations=[];const sandbox={document:{createElement:()=>({width:0,height:0,getContext:()=>({drawImage:(...args)=>operations.push(args),fillRect(){}})})}};vm.createContext(sandbox);vm.runInContext(source.slice(start,end),sandbox);const bitmap={width:1600,height:1200};let result=sandbox.draw(bitmap,{resize:true,width:1000,height:1000,keep:true});assert.equal(result.width,1000);assert.equal(result.height,750);result=sandbox.draw(bitmap,{crop:true,ratio:1,x:.5,y:.5});assert.equal(result.width,1200);assert.equal(result.height,1200);assert.equal(operations.at(-1)[1],200);assert.throws(()=>sandbox.draw(bitmap,{resize:true,width:10000,height:10000}),/40 megapixels/);});
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
@@ -9,7 +9,9 @@ test('React hero assets are homepage-only while static routes stay independent',
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
   assert.match(home,/href="\/hero-2-1\.css\?v=20261106r"/);
   assert.match(home,/src="\/hero-2-1\.js\?v=20261106r"/);
-  assert.match(home,/href="\/home-editorial\.css\?v=20261106r"/);
+  assert.match(home,/href="\/home-editorial\.css\?v=20261108m"/);
+  assert.doesNotMatch(home,/href="\/playbook\.css/);
+  assert.doesNotMatch(tool,/href="\/playbook\.css/);
   assert.equal([...home.matchAll(/src="\/hero-2-1\.js/g)].length,1);
   assert.doesNotMatch(tool,/hero-2-1\.(?:js|css)/);
   await stat(new URL('hero-2-1.css',root));
@@ -61,6 +63,7 @@ test('Playbook hub and articles are crawlable, descriptive and linked to real to
   const hub=await readFile(new URL('playbook/index.html',root),'utf8');
   assert.match(hub,/Explore the field guides/);
   assert.match(hub,/id="pb-grid"/);
+  assert.match(hub,/href="\/playbook\.css/);
   const entries=[...hub.matchAll(/href="(\/playbook\/[^"#]+\/)"/g)].map(x=>x[1]);
   assert.equal(new Set(entries).size,playbookArticles.length);
   const pages=playbookArticles.map(a=>a.slug);
@@ -88,6 +91,7 @@ test('Playbook additions remain independent from the existing seven tools',async
   assert.match((await readFile(new URL('feed.xml',root),'utf8')),/<rss version="2.0">/);
   const editorial=await readFile(new URL('editorial-standards/index.html',root),'utf8');
   assert.match(editorial,/Ads and editorial independence/);
+  assert.match(editorial,/href="\/playbook\.css/);
   assert.doesNotMatch(home,/adsbygoogle|ca-pub-/);
 });
 test('new search-intent guides have unique metadata, real task links and dated indexable pages',async()=>{
@@ -145,3 +149,4 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });
+

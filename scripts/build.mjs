@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import vm from 'node:vm';
 import { playbookArticles, categories } from '../content/playbook.mjs';
 import { renderHome } from '../content/home.mjs';
+import { journalSections, editorialCommitments } from '../content/journal.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const domain = 'https://manglo.shop';
@@ -10,10 +11,11 @@ const published = '2026-11-06';
 // otherwise keep an older bundle cached after a new index.html is deployed.
 const release = '20261106r';
 const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
-const homeCss = `<link rel="stylesheet" href="/home-editorial.css?v=${release}">`;
+const homeCss = '<link rel="stylesheet" href="/home-editorial.css?v=20261108m">';
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
 const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
+const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108j">';
 const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}">`;
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
@@ -38,7 +40,6 @@ let template = original
   .replace(/<link rel="stylesheet" href="\/experience\.css(?:\?[^\"]*)?">/g, '')
   .replace(/<script src="\/experience\.js(?:\?[^\"]*)?" defer><\/script>/g, '')
   .replace(/<!-- PB_META_START -->[\s\S]*?<!-- PB_META_END -->/g, '');
-template = template.replace('</head>', `${playbookCss}</head>`);
 template = template.replace('</head>', `${experienceCss}</head>`);
 if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLink}</head>`);
 
@@ -46,14 +47,14 @@ if (!template.includes(rssLink)) template = template.replace('</head>', `${rssLi
 // footer are generated afresh so older build outputs cannot leave stale UI.
 const header = `<a class="mg-skip" href="#content">Skip to content</a><header class="mg-site-header">
   <a class="mg-brand" href="/" aria-label="Manglo home"><span class="mg-brand-mark" aria-hidden="true">m</span>manglo<span class="mg-brand-dot">.</span></a>
-  <nav class="mg-desktop-nav" aria-label="Main navigation"><a href="/#tools">Tools</a><a href="/playbook/">Playbook</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
+  <nav class="mg-desktop-nav" aria-label="Main navigation"><a href="/#tools">Tools</a><a href="/playbook/">Playbook</a><a href="/journal/">Journal</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
   <a class="mg-header-action" href="/#tools">Explore the tools <span aria-hidden="true">→</span></a>
-  <details class="mg-mobile-menu"><summary aria-label="Open navigation">☰</summary><div><a href="/#tools">Tools →</a><a href="/playbook/">Playbook →</a><a href="/about/">About →</a><a href="/contact/">Contact →</a></div></details>
+  <details class="mg-mobile-menu"><summary aria-label="Open navigation">☰</summary><div><a href="/#tools">Tools →</a><a href="/playbook/">Playbook →</a><a href="/journal/">Journal →</a><a href="/about/">About →</a><a href="/contact/">Contact →</a></div></details>
 </header>`;
 const footer = `<footer class="mg-site-footer"><div class="mg-footer-top">
   <div class="mg-footer-brand"><a class="mg-brand" href="/"><span class="mg-brand-mark" aria-hidden="true">m</span>manglo<span class="mg-brand-dot">.</span></a><p>A thoughtful collection of free image tools, seller calculators and practical field guides. Built for independent work.</p></div>
   <div class="mg-footer-col"><span class="mg-footer-heading">EXPLORE</span><a href="/#tools">All tools</a><a href="/tools/image-compressor/">Image compressor</a><a href="/tools/image-resizer/">Image resizer</a><a href="/tools/profit-calculator/">Profit calculator</a><a href="/tools/discount-calculator/">Discount calculator</a></div>
-  <div class="mg-footer-col"><span class="mg-footer-heading">LEARN</span><a href="/playbook/">Manglo Playbook</a><a href="/playbook/product-listing-preflight-checklist/">Listing checklist</a><a href="/guides/prepare-product-images/">Product image guide</a><a href="/editorial-standards/">Editorial standards</a></div>
+  <div class="mg-footer-col"><span class="mg-footer-heading">LEARN</span><a href="/journal/">Manglo Journal</a><a href="/playbook/">Manglo Playbook</a><a href="/playbook/product-listing-preflight-checklist/">Listing checklist</a><a href="/editorial-standards/">Editorial standards</a></div>
   <div class="mg-footer-col"><span class="mg-footer-heading">MANGLO</span><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="mailto:faikxbillion@gmail.com">Email support →</a></div>
 </div><div class="mg-footer-bottom"><span>© 2026 Manglo. Small tools, thoughtful design.</span><span>Free to use · No account required</span><a href="#content">Back to top ↑</a></div></footer>`;
 template = template.replace(/<header(?:\s[^>]*)?>[\s\S]*?<\/header>/, header)
@@ -117,7 +118,7 @@ function renderPage(route, title, description, main, options = {}) {
     <meta property="og:image:alt" content="${escapeHTML(options.imageAlt || 'Manglo seller tools and practical guides')}">
     <meta name="twitter:card" content="summary_large_image">
     ${options.article ? `<meta property="article:published_time" content="${options.published || published}"><meta property="article:modified_time" content="${options.modified || options.published || published}">` : ''}
-    ${options.schema || ''}<!-- PB_META_END -->`;
+    ${options.schema || jsonLD({ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:absolute(path), isPartOf:{ '@type':'WebSite', name:'Manglo', url:absolute('/') } })}<!-- PB_META_END -->`;
 
   return template
     .replace(/<main id="content">[\s\S]*?<\/main>/, `<main id="content">${main}</main>`)
@@ -125,7 +126,9 @@ function renderPage(route, title, description, main, options = {}) {
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHTML(title)} — Manglo</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHTML(description)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${absolute(path)}">`)
-    .replace('</head>', `${meta}</head>`);
+    // The Playbook stylesheet is page-specific. Loading it on the homepage,
+    // tools and Journal delays their first render without styling anything.
+    .replace('</head>', `${route === 'playbook' || route.startsWith('playbook/') || route === 'editorial-standards' ? playbookCss : ''}${meta}</head>`);
 }
 
 // The older app.js is a client-side router for the original tools and guides.
@@ -186,7 +189,7 @@ const homeSchema = jsonLD({
   name: 'Manglo', url: absolute('/'),
   description: 'Free browser-local image tools, seller calculators and practical education.'
 });
-let homePage = renderPage('', 'Manglo | Beautiful tools for independent work',
+let homePage = renderPage('', 'Free image tools, seller calculators and practical guides',
   'Free image tools, seller profit calculators and practical guides. Work on your photos and numbers with no account required.',
   homeMain, { schema: homeSchema, image:'/assets/obsidian-hero.webp', imageAlt:'Premium editorial product arrangement in glass and bronze' });
 // The home page is now completely static and crawlable. Only its optional
@@ -194,6 +197,7 @@ let homePage = renderPage('', 'Manglo | Beautiful tools for independent work',
 homePage = staticEditorial(homePage).replace('</body>', `${heroJs}</body>`)
   .replace(experienceCss, `${heroCss}${experienceCss}${homeCss}`);
 await writeFile(new URL('home-editorial.css', root), await readFile(new URL('../src/home-editorial.css', import.meta.url), 'utf8'));
+await writeFile(new URL('journal.css', root), await readFile(new URL('../src/journal.css', import.meta.url), 'utf8'));
 await writeFile(new URL('index.html', root), homePage);
 
 function trustPage(route, page) {
@@ -220,7 +224,11 @@ for (const [route, title] of Object.entries(existingRoutes)) {
   if (route.startsWith('guides/')) {
     const id = route.split('/')[1];
     const guide = data.guides.find(g => g.id === id);
-    description = guide.title;
+    description = ({
+      'prepare-product-images':'Prepare product images for listings with practical checks for file dimensions, clarity, formats and upload readiness.',
+      'calculate-selling-profit':'Understand real selling profit with a clear breakdown of selling price, product costs, shipping, fees and discounts.',
+      'jpg-png-webp':'Compare JPG, PNG and WebP formats, then choose the most suitable format for photographs, transparent images and website uploads.'
+    })[id] || guide.title;
     const cover = id === 'prepare-product-images' ? '/assets/photography-studio.webp'
       : id === 'calculate-selling-profit' ? '/assets/seller-desk.webp' : '/assets/seller-still-life.webp';
     body = `<article class="article"><div class="breadcrumb"><a href="/">Home</a> / <a href="/playbook/">Playbook</a> / Guide</div><div class="eyebrow">MANGLO SELLER GUIDES</div><h1>${guide.title}</h1><img class="article-cover" src="${cover}" alt="Product and seller workspace illustration" width="1536" height="1024">${data.articles[id]}<p><a href="/playbook/">Explore more in Manglo Playbook →</a></p></article>`;
@@ -262,6 +270,34 @@ await saveRoute('playbook', staticEditorial(renderPage('playbook', 'Manglo Playb
   hub, { image: featured.image, imageAlt: featured.imageAlt, schema: jsonLD({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Manglo Playbook', url: absolute('/playbook/'), inLanguage: 'en', mainEntity: { '@type': 'ItemList', itemListElement: playbookArticles.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.title, url: absolute(articleHref(a)) })) } }) })
   .replace('</body>', '<script src="/playbook.js" defer></script></body>')));
 
+// Journal expansion: an honest editorial gateway. Unreleased categories are
+// functional, but deliberately excluded from search until substantive, verified
+// articles are ready and the owner authorizes publication.
+const journalPage = html => staticEditorial(html.replace('</head>', `${journalCss}</head>`));
+const journalCards = journalSections.map(section => `<a class="mj-card" href="/journal/${section.slug}/" aria-label="Explore ${escapeHTML(section.name)}"><span class="mj-card-number">${section.number} / EDITORIAL DESK</span><h3>${escapeHTML(section.name)}</h3><p>${escapeHTML(section.description)}</p><span class="mj-card-foot"><span>${escapeHTML(section.short)}</span><span aria-hidden="true">↗</span></span></a>`).join('');
+const journalReading = [playbookArticles[0], playbookArticles[6], playbookArticles[1]].map(a => `<a href="${articleHref(a)}">${escapeHTML(a.title)} <span aria-hidden="true">↗</span></a>`).join('');
+const journalHub = `<div class="mj-page"><div class="mj-container">
+  <section class="mj-hero"><div class="mj-hero-grid"><div><span class="mj-kicker">Manglo Journal / Editorial</span><h1>Clarity for a<br><em>changing world.</em></h1><p class="mj-hero-copy">Practical answers, smarter buying decisions, technology made clear and carefully verified developments. Written for readers in India, useful wherever you are.</p><div class="mj-actions"><a class="mj-button mj-button-primary" href="#desks">Explore the desks <span aria-hidden="true">&nbsp;↗</span></a><a class="mj-button" href="/editorial-standards/">How we work ↗</a></div></div><aside class="mj-hero-panel"><div class="mj-orbit" aria-hidden="true">✦</div><div><small>Our publishing promise</small><strong>Helpful first.<br>Evidence always.</strong><p>We publish only when the work earns a reader's trust. No invented tests, recycled claims or forced daily quota.</p></div></aside></div></section>
+  <section class="mj-section" id="desks" aria-labelledby="mj-desks-heading"><div class="mj-section-head"><div><span class="mj-kicker">Five ways to explore</span><h2 id="mj-desks-heading">Choose your curiosity.</h2></div><p>Each desk has a clear purpose. Unreleased coverage is marked honestly while our verification workflow is prepared.</p></div><div class="mj-categories">${journalCards}</div></section>
+  <section class="mj-section" aria-labelledby="mj-reading-heading"><div class="mj-feature"><div><span class="mj-kicker">Read something useful now</span><h3 id="mj-reading-heading">Begin with the original Playbook.</h3><p>Our existing practical guides remain available while new editorial desks are researched and checked. These are real articles, not placeholder stories.</p><div class="mj-actions"><a class="mj-button" href="/playbook/">All Playbook guides ↗</a></div></div><div class="mj-reading-list">${journalReading}</div></div></section>
+  <section class="mj-section" aria-labelledby="mj-method-heading"><div class="mj-section-head"><div><span class="mj-kicker">Why readers can trust us</span><h2 id="mj-method-heading">A visible standard.</h2></div><p>Manglo Editorial is a publication identity, not a fabricated expert profile.</p></div><div class="mj-methods">${editorialCommitments.map(c => `<div class="mj-method-card"><small>${c.number} / STANDARD</small><h3>${escapeHTML(c.title)}</h3><p>${escapeHTML(c.copy)}</p></div>`).join('')}</div></section>
+  <section class="mj-section"><div class="mj-note"><div><strong>Seen something that needs correcting?</strong><p>We welcome specific corrections and keep advertising separate from editorial judgment.</p></div><a class="mj-button mj-button-primary" href="/contact/">Contact the editorial desk ↗</a></div></section>
+</div></div>`;
+await saveRoute('journal', journalPage(renderPage('journal', 'Manglo Journal | Practical guides, AI, technology and shopping',
+  'Manglo Journal covers practical guides, shopping decisions, technology, AI and carefully verified trends, with transparent editorial standards.',
+  journalHub, { image: '/assets/obsidian-hero.webp', imageAlt: 'Manglo editorial studio', schema: jsonLD({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Manglo Journal', url: absolute('/journal/'), inLanguage: 'en', publisher: { '@type':'Organization', name:'Manglo', url: absolute('/') } }) })));
+
+for (const section of journalSections) {
+  const existing = section.existing.map(slug => playbookArticles.find(a => a.slug === slug)).filter(Boolean);
+  const links = existing.map(a => `<a href="${articleHref(a)}">${escapeHTML(a.title)} <span aria-hidden="true">↗</span></a>`).join('');
+  const page = `<div class="mj-page"><div class="mj-container"><nav class="mj-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/journal/">Journal</a><span>/</span><span>${escapeHTML(section.name)}</span></nav>
+    <header class="mj-topic-hero"><span class="mj-kicker">Manglo Journal / ${section.number}</span><h1>${escapeHTML(section.name)}.</h1><p>${escapeHTML(section.description)}</p></header>
+    <section class="mj-section"><div class="mj-topic-shell"><div><span class="mj-readiness">Research and review phase</span><h2 style="margin-top:22px">What this desk will cover</h2><ul>${section.topics.map(topic => `<li>${escapeHTML(topic)}</li>`).join('')}</ul><p>${escapeHTML(section.promise)}</p></div><div><h2>Reading, with context.</h2><p>New Journal articles are held until factual claims, sources, image rights and technical quality pass review. We won't label plans as published reporting.</p>${links ? `<div class="mj-reading-list mj-topic-links">${links}</div>` : '<p class="mj-subtle">No new stories have been released here yet.</p>'}<div class="mj-actions"><a class="mj-button" href="/journal/">All editorial desks ↗</a><a class="mj-button" href="/editorial-standards/">Editorial standards ↗</a></div></div></div></section>
+  </div></div>`;
+  await saveRoute(`journal/${section.slug}`, journalPage(renderPage(`journal/${section.slug}`, `${section.name} | Manglo Journal`,
+    section.description, page, { noindex:true, image:'/assets/obsidian-hero.webp', imageAlt:'Manglo editorial desk' })));
+}
+
 for (const article of playbookArticles) {
   const others = playbookArticles.filter(a => a.slug !== article.slug);
   const related = others.filter(a => a.category === article.category).concat(others.filter(a => a.category !== article.category)).slice(0, 2);
@@ -291,13 +327,24 @@ for (const article of playbookArticles) {
 }
 
 const standards = `<div class="pb-editorial-page"><nav class="pb-breadcrumb" aria-label="Breadcrumb"><a href="/">Manglo</a><span>/</span><a href="/playbook/">Playbook</a><span>/</span>Editorial standards</nav><div class="pb-kicker">HOW WE WORK</div><h1>Useful before impressive. Honest before loud.</h1><p class="pb-article-dek">Here's how we plan, write and maintain the Manglo Playbook—and how to tell us when we miss something.</p><div class="pb-standards-grid"><section><h2>Who makes the guides?</h2><p>Manglo Editorial publishes practical articles to help independent sellers use everyday digital tools. We explain common workflows, show the math behind examples and link to relevant Manglo tools. We do not claim marketplace endorsement or certifications we don't hold.</p></section><section><h2>How we handle examples</h2><p>Currency examples, margins and product scenarios are labelled illustrative. They are not reported marketplace fees, live price quotes or fabricated customer case studies. When an article includes a calculation, we show the inputs so readers can check it.</p></section><section><h2>Corrections and updates</h2><p>Requirements, formats and platform policies can change. We review guides when changes come to our attention, update significant content and indicate the modified date. If you spot an error or outdated instruction, contact <a href="mailto:faikxbillion@gmail.com">faikxbillion@gmail.com</a> with the page and correction.</p></section><section><h2>Ads and editorial independence</h2><p>Manglo does not currently serve Google ads on this site. If advertising is introduced after approval, ads will be distinguishable from editorial content. We will update our privacy disclosures and implement any required consent controls before enabling relevant tracking or ad technology.</p></section><section><h2>What the Playbook isn't</h2><p>Guides are general educational information—not individualized legal, financial, tax or professional advice. Sellers should verify regulations, rates and platform requirements for their own region and business.</p></section><section><h2>Privacy and reader trust</h2><p>The current site has no account requirement. We avoid invasive popups and misleading download buttons. Read the <a href="/privacy/">privacy policy</a>, <a href="/terms/">terms</a> and <a href="/contact/">contact page</a> for more detail.</p></section></div><a class="pb-primary" href="/playbook/">Back to the Playbook →</a></div>`;
+const expandedStandards = standards
+  .replace('Manglo Editorial publishes practical articles to help independent sellers use everyday digital tools.', 'Manglo Editorial is an organizational byline for original practical, shopping, technology, AI and selectively verified trend coverage. It does not represent an invented individual or expert.')
+  .replace("Here's how we plan, write and maintain the Manglo Playbook—and how to tell us when we miss something.", "How we research, verify, produce and correct Manglo Journal and Playbook content—and how to tell us when we miss something.")
+  .replace('<a class="pb-primary" href="/playbook/">Back to the Playbook →</a>', `<div class="pb-standards-grid">
+    <section><h2>Research and sources</h2><p>Claims that could affect buying decisions or safety require evidence. We prefer current official documentation, primary announcements and original data, and label uncertainty or conflicting sources. We do not invent tests, quotations, prices or personal experience.</p></section>
+    <section><h2>AI assistance and accountability</h2><p>AI tools may assist with topic organization, drafting, formatting or research discovery. Manglo Editorial remains responsible for claims, sources, originality and corrections. Material AI assistance is disclosed where a reader would reasonably expect to know how the work was made.</p></section>
+    <section><h2>Images and commercial relationships</h2><p>Published visuals must be original or used with appropriate permission, and must not suggest a test or real-world event that did not happen. Affiliate relationships and sponsorships, if introduced, will be clearly identified. Payment will not purchase a favorable conclusion.</p></section>
+    <section><h2>Our publication gate</h2><p>Every proposed story must clear accuracy, reader value, source, rights, transparency, accessibility and technical checks. If a gate fails, we skip publication and record an explanation. There is no promise to publish every day or to appear in Google Search or Discover.</p></section>
+  </div><a class="pb-primary" href="/journal/">Explore the Journal →</a>`);
 await saveRoute('editorial-standards', staticEditorial(renderPage('editorial-standards', 'Editorial standards and corrections',
-  'How Manglo Playbook articles are produced, corrected and kept honest, with transparent examples and clear advertising policies.', standards)));
+  'How Manglo Journal and Playbook articles are researched, produced, corrected and kept honest, with transparent AI and advertising policies.', expandedStandards)));
 
 const missing = `<div class="pb-editorial-page"><div class="pb-kicker">404 / WRONG TURN</div><h1>Let's get you back to something useful.</h1><p class="pb-article-dek">That page isn't here. Your next useful tool or guide is one click away.</p><p><a class="pb-primary" href="/">Go home →</a> <a class="pb-pill-link" href="/playbook/">Browse the Playbook →</a></p></div>`;
-await writeFile(new URL('404.html', root), staticEditorial(renderPage('', 'Page not found', 'This Manglo page was not found.', missing, { noindex: true })));
+await writeFile(new URL('404.html', root), staticEditorial(renderPage('', 'Page not found', 'This Manglo page was not found.', missing, { noindex: true }).replace('</head>', `${playbookCss}</head>`)));
 
-const sitemapPaths = ['', ...Object.keys(existingRoutes), 'playbook', ...playbookArticles.map(a => `playbook/${a.slug}`), 'editorial-standards'];
+// Do not advertise the unfilled category desks in the sitemap: their pages
+// carry noindex until original reviewed material is released.
+const sitemapPaths = ['', ...Object.keys(existingRoutes), 'playbook', ...playbookArticles.map(a => `playbook/${a.slug}`), 'journal', 'editorial-standards'];
 await writeFile(new URL('robots.txt', root), `User-agent: *\nAllow: /\nSitemap: ${absolute('/sitemap.xml')}\n`);
 await writeFile(new URL('sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map(route => `<url><loc>${absolute(route ? `/${route}/` : '/')}</loc></url>`).join('\n')}\n</urlset>\n`);
 
@@ -306,3 +353,4 @@ const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel
 await writeFile(new URL('feed.xml', root), rss);
 
 console.log(`Built ${sitemapPaths.length} crawlable routes, 404, RSS feed, robots.txt and sitemap.xml.`);
+
