@@ -1,21 +1,21 @@
-# Manglo Journal — editorial operations (inactive)
+# Manglo Journal — editorial operations and release safeguards
 
-Status: **preparation only**. No automated publishing, no ad code and no notification service is enabled.
+Status as of **9 November 2026**: Faik explicitly authorised a **daily 18:00 Asia/Kolkata editorial automation**, including conditional publication of at most one fully qualified article per day. The automation is enabled. Individual article publication still fails closed until every required check, real review/sign-off, thumbnail asset, source ledger and live-deployment verification is complete. Google AdSense Auto ads, advertising code and ad serving remain **disabled**.
 
 ## Locked choices
 
 - Byline: **Manglo Editorial**, an organizational identity. Never invent a person, photo, review credentials or firsthand use.
 - Audience: India-first English; explanations useful internationally with regional qualifiers.
 - Five desks: Practical guides, Shopping smarter, Technology, AI in practice, Verified trends.
-- Proposed future run: 18:00 **Asia/Kolkata** daily, at most one qualified article. The schedule remains **inactive**.
+- Scheduled editorial run: 18:00 **Asia/Kolkata** daily, at most one qualified article. A run is not a publication quota.
 - Every failed gate: **SKIP PUBLICATION** and create an explanation; never force a weaker replacement story.
-- Separate owner approval required before any automated publishing, new article publication, ad insertion or deployment to manglo.shop.
+- Owner's blanket **conditional** publishing approval was provided on 9 November 2026. It replaces per-article owner publication approval **only after all safety gates pass**; it does not waive independent review, specialist sign-offs, deployment checks, or future approval for enabling advertising.
 
 ## Working states
 
-`IDEA -> RESEARCH -> DRAFT -> FACT_CHECK -> RIGHTS_CHECK -> HUMAN_REVIEW -> PREVIEW -> OWNER_REVIEW -> [explicitly authorized publication]`
+`IDEA -> RESEARCH -> DRAFT -> FACT_CHECK -> RIGHTS_CHECK -> HUMAN_REVIEW -> PREVIEW -> RELEASE_CHECK -> [approved automatic publication] -> LIVE_VERIFICATION`
 
-Any failed stage routes to `SKIPPED` with a title, timestamp, failed gates, sources, corrective action and a clear statement that nothing went live. `READY_FOR_OWNER_REVIEW` is **not** permission to publish.
+Any failed stage routes to `SKIPPED` with a title, timestamp, failed gates, sources, corrective action and a clear statement that nothing went live. The existing checker says `READY_FOR_OWNER_REVIEW` on a pass because it is a dry-run preflight; **this alone is never permission to publish**. Actual release requires the additional operational, reviewer and deployment gates.
 
 ## Quality gate
 
@@ -34,15 +34,17 @@ Checks include: organizational author, approved category, substantive answer, di
    The static build now includes `npm run audit:site` to inspect indexable URLs,
    descriptions, canonical/OG URLs, structured data, accessible navigation and
    unindexed empty categories. This does not replace browser or live audits.
-7. Run **seven consecutive real dry runs**, logging all pass/fail states and verifying delivery of skipped-publication explanations to Faik, before considering activation. Simulated unit tests are not a substitute.
-8. Obtain explicit approval for publishing and for enabling the separate 6 PM automation. Maintain a working kill switch and reversible rollback process.
+7. Before the **first unattended live article**, complete **seven consecutive real dry-run validations**, logging all pass/fail states and checking delivery of skipped-publication explanations to Faik. The editorial schedule is active but must skip release while this evidence is missing; simulated unit tests are not a substitute.
+8. Blanket conditional owner authorisation for the 6 PM automation was given on 9 November 2026. Maintain a working kill switch and reversible rollback process. **Never** enable Auto ads under this approval.
+9. Hostinger dashboard confirmed that `main` of `faikmulla6-cpu/manglo` deploys automatically. Do not infer success from a GitHub merge or Hostinger deployment status alone: check the final article URL, image, metadata and content live.
+10. New Journal article packages live in `content/journal-posts/*.json`; see that folder's README for the strict content and thumbnail contract. The build refuses invalid or incomplete packages.
 
 ## External dependencies that cannot be certified in source code
 
 - Google Search Console domain verification, URL Inspection results, actual indexing, recrawl and Core Web Vitals field data.
 - Google AdSense account/site review and Google-controlled approval. **No one can guarantee acceptance**.
 - Regional CMP configuration and actual ad placement behavior when AdSense is connected, if required by applicable policy/law.
-- Delivery destination and credentials for editorial failure notifications. The current dry run creates a report message but deliberately sends nothing.
+- Notification delivery must be verified by an actual scheduled run; the local editorial checker only creates a report message and sends nothing.
 - Publisher ownership and rights records for any image without provenance evidence.
 
 For measured predeployment status and owner-controlled release gates, see
