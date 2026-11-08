@@ -189,7 +189,7 @@ const homeSchema = jsonLD({
   name: 'Manglo', url: absolute('/'),
   description: 'Free browser-local image tools, seller calculators and practical education.'
 });
-let homePage = renderPage('', 'Manglo | Beautiful tools for independent work',
+let homePage = renderPage('', 'Free image tools, seller calculators and practical guides',
   'Free image tools, seller profit calculators and practical guides. Work on your photos and numbers with no account required.',
   homeMain, { schema: homeSchema, image:'/assets/obsidian-hero.webp', imageAlt:'Premium editorial product arrangement in glass and bronze' });
 // The home page is now completely static and crawlable. Only its optional
