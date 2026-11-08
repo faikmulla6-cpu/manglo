@@ -171,4 +171,17 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });
+test('Playbook and editorial reading surfaces keep dark text and background in the same theme',async()=>{
+  const css=await readFile(new URL('playbook.css',root),'utf8');
+  assert.match(css,/body:has\(\.pb-page\) #content,body:has\(\.pb-article-page\) #content,body:has\(\.pb-editorial-page\) #content\{background:var\(--mg-bg,#090b0d\)\}/);
+  assert.doesNotMatch(css,/#content\{background:#f8f7f0\}/);
+  const experience=await readFile(new URL('experience.css',root),'utf8');
+  assert.match(experience,/\.pb-article-header h1\{[^}]*color:#f7efe5!important/);
+  assert.match(experience,/\.pb-article-body p,\.pb-article-body li\{[^}]*color:#adb9c2!important/);
+  for(const route of ['playbook/','editorial-standards/','playbook/calculate-discount-percentage-final-price/']){
+    const html=await readFile(new URL(route+'index.html',root),'utf8');
+    assert.match(html,/href="\/playbook\.css\?v=20261108contrast"/);
+    assert.match(html,/<h1[ >]/);
+  }
+});
 
