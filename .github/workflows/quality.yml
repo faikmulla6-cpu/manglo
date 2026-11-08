@@ -31,3 +31,5 @@ jobs:
         run: npm test
       - name: Audit canonical pages and preapproval safeguards
         run: npm run audit:site
+      - name: Check internal links and image alternatives
+        run: npm run audit:links

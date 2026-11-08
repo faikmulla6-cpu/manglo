@@ -1,4 +1,6 @@
-# Manglo — launch readiness audit
+# Manglo — earlier launch readiness audit (historical baseline)
+
+> **Superseded status note, 8 November 2026:** The draft described below was subsequently merged into `main` at `bb2cfb0cd4225f1833109e679ca0f9ed2f059d63` and Hostinger deployed it. Search Console later confirmed the Journal URL indexed; newer PageSpeed lab scores were mobile 85 and desktop 96 for performance, with accessibility, best practices and SEO scores of 100. The new AdSense-remediation changes are **not described by this older table**. Consult [`ADSENSE_READINESS_20261108.md`](ADSENSE_READINESS_20261108.md) for the current Google-policy crosswalk and release gates. The article publisher, ads and 18:00 IST automation remain inactive.
 
 Audited **8 November 2026**. The improvements are on a **draft GitHub pull request**, not deployed to `manglo.shop`. This document distinguishes source-level evidence from observations on the currently live website. No article, automated schedule, ad code or external notification service was activated.
 

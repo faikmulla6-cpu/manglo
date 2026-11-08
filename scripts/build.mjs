@@ -3,6 +3,8 @@ import vm from 'node:vm';
 import { playbookArticles, categories } from '../content/playbook.mjs';
 import { renderHome } from '../content/home.mjs';
 import { journalSections, editorialCommitments } from '../content/journal.mjs';
+import { categoryOverviews } from '../content/category-overviews.mjs';
+import { toolOverviews } from '../content/tool-overviews.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const domain = 'https://manglo.shop';
@@ -15,7 +17,7 @@ const homeCss = '<link rel="stylesheet" href="/home-editorial.css?v=20261108m">'
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
 const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
-const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108j">';
+const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108k">';
 const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}">`;
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
@@ -106,7 +108,7 @@ const breadcrumb = items => jsonLD({
 
 function renderPage(route, title, description, main, options = {}) {
   const path = route ? `/${route}/` : '/';
-  const image = absolute(options.image || '/assets/photography-studio.webp');
+  const image = absolute(options.image || '/assets/manglo-photo-workspace-20261108.webp');
   const meta = `<!-- PB_META_START -->
     <meta name="robots" content="${options.noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
     <meta property="og:type" content="${options.article ? 'article' : 'website'}">
@@ -191,7 +193,7 @@ const homeSchema = jsonLD({
 });
 let homePage = renderPage('', 'Free image tools, seller calculators and practical guides',
   'Free image tools, seller profit calculators and practical guides. Work on your photos and numbers with no account required.',
-  homeMain, { schema: homeSchema, image:'/assets/obsidian-hero.webp', imageAlt:'Premium editorial product arrangement in glass and bronze' });
+  homeMain, { schema: homeSchema, image:'/assets/manglo-editorial-hero-20261108.webp', imageAlt:'Original illustrative studio still life in warm glass and ceramic' });
 // The home page is now completely static and crawlable. Only its optional
 // React island and filters need JavaScript; the old router stays on tool URLs.
 homePage = staticEditorial(homePage).replace('</body>', `${heroJs}</body>`)
@@ -203,19 +205,32 @@ await writeFile(new URL('index.html', root), homePage);
 function trustPage(route, page) {
   if (route === 'about') return `<div class="mg-info-page mg-about">
     <section class="mg-about-hero"><span class="mg-kicker"><span class="mg-kicker-line"></span> THE MANGLO STORY</span><h1>Good work deserves<br><em>good tools.</em></h1><p>Not another complicated platform. Manglo is a focused place to prepare product images, understand selling numbers and learn the practical details that help independent work move forward.</p></section>
-    <section class="mg-about-grid"><div><span class="mg-kicker"><span class="mg-kicker-line"></span> WHAT WE BELIEVE</span><h2>The details should feel <em>easier.</em></h2><p>Independent sellers have enough to manage. Beautiful product photos, accurate pricing and clear listings shouldn't require expensive software or another dashboard to learn.</p><p>We build simple, useful tools around real tasks: compress a photo, choose a format, understand the margin or check a promotion before it goes live. Our Playbook explains the thinking behind those actions.</p><a class="mg-inline-link" href="/#tools">Explore all seven tools →</a></div><div class="mg-about-photo"><img src="/assets/seller-desk.webp" alt="Practical workspace with a notebook and calculator" width="1536" height="1024"><span>INDEPENDENT WORK / MADE MORE APPROACHABLE</span></div></section>
+    <section class="mg-about-grid"><div><span class="mg-kicker"><span class="mg-kicker-line"></span> WHAT WE BELIEVE</span><h2>The details should feel <em>easier.</em></h2><p>Independent sellers have enough to manage. Beautiful product photos, accurate pricing and clear listings shouldn't require expensive software or another dashboard to learn.</p><p>We build simple, useful tools around real tasks: compress a photo, choose a format, understand the margin or check a promotion before it goes live. Our Playbook explains the thinking behind those actions.</p><a class="mg-inline-link" href="/#tools">Explore all seven tools →</a></div><div class="mg-about-photo"><img src="/assets/manglo-seller-desk-20261108.webp" alt="Practical workspace with a notebook and calculator" width="1536" height="1024"><span>INDEPENDENT WORK / MADE MORE APPROACHABLE</span></div></section>
     <section class="mg-about-values"><span class="mg-kicker"><span class="mg-kicker-line"></span> THE PRINCIPLES</span><h2>Built around what matters.</h2><div class="mg-values-grid"><div class="mg-about-block"><span>01 / CLARITY</span><h3>One clear job at a time.</h3><p>Each tool has a purpose and explains what it does. No overwhelming dashboard or unexplained settings.</p></div><div class="mg-about-block"><span>02 / PRIVACY</span><h3>Files stay on your device.</h3><p>Our image tools process photos inside your browser rather than uploading them to a Manglo server.</p></div><div class="mg-about-block"><span>03 / ACCESS</span><h3>Useful without an account.</h3><p>All seven tools are currently free. Our practical guides are open to everyone, with examples for sellers in India and worldwide.</p></div></div></section>
     <section class="mg-about-closing"><h2>Have an idea to make Manglo better?</h2><a class="mg-button mg-button-primary" href="/contact/">Talk to us →</a></section>
   </div>`;
   if (route === 'contact') return `<div class="mg-info-page mg-contact"><section class="mg-contact-hero"><span class="mg-kicker"><span class="mg-kicker-line"></span> GET IN TOUCH</span><h1>Let's make things <em>better.</em></h1><p>Have feedback, a tool idea, a technical problem or a privacy question? Send a direct note. No complicated ticketing system.</p></section><div class="mg-contact-grid"><section class="mg-contact-card"><span class="mg-kicker">SAY HELLO</span><h2>Reach the Manglo inbox.</h2><p>You can email us directly. Your email app will handle sending the message; this website does not collect contact forms or store your message.</p><a class="mg-contact-email" href="mailto:faikxbillion@gmail.com">faikxbillion@gmail.com →</a><div><a class="mg-button mg-button-primary" href="mailto:faikxbillion@gmail.com?subject=Manglo%20support">Write an email →</a></div></section><section class="mg-contact-card"><span class="mg-kicker">HELP US HELP YOU</span><h2>For a useful bug report.</h2><ol><li>Tell us which tool or page you used.</li><li>Include your browser, device and the steps you took.</li><li>Explain what you expected and what happened.</li><li>Share a file format or dimensions for image issues—not private files.</li></ol><p>There is no live chat or guaranteed response time. Please don't send passwords, private photos or customer data.</p></section></div></div>`;
   const headings = [];
   let section = 0;
-  const body = page.body.replace(/<h2>(.*?)<\/h2>/g, (_, heading) => {
+  const disclosedBody = route === 'privacy'
+    ? page.body
+      .replace('Effective November 5, 2026.', 'Effective November 8, 2026.')
+      .replace('<p>This version does not include advertising tags, analytics scripts or nonessential cookies. If advertising or analytics is introduced, this policy and any required consent controls must be updated before those services are enabled.</p>',
+        '<p><strong>Current status:</strong> Manglo does not currently serve Google ads or run advertising measurement tags. We have not enabled a daily article publisher or any advertising cookies.</p><p><strong>If Google AdSense is activated later:</strong> Google and other authorized advertising vendors may use cookies or similar technologies to serve ads based on visits to Manglo and other sites, subject to your choices and applicable consent requirements. Google explains ad personalization controls at <a href="https://myadcenter.google.com/" rel="noopener noreferrer">My Ad Center</a>; you can also learn about some industry opt-out choices at <a href="https://www.aboutads.info/" rel="noopener noreferrer">AboutAds.info</a>. These services are not active on Manglo today.</p><p>Before enabling ads, Manglo will update this notice to accurately identify the vendors and processing in use and will configure the required consent controls for applicable regions. Visitors in the EEA, UK and Switzerland may require a Google-certified consent platform when AdSense serves ads. No consent banner is shown now because we have not enabled that advertising technology.</p>')
+    : page.body;
+  const body = disclosedBody.replace(/<h2>(.*?)<\/h2>/g, (_, heading) => {
     const id = `policy-section-${++section}`;
     headings.push({ id, heading });
     return `<h2 id="${id}">${heading}</h2>`;
   });
   return `<div class="mg-policy"><section class="mg-policy-hero"><span class="mg-kicker"><span class="mg-kicker-line"></span> MANGLO / TRANSPARENCY</span><h1>${escapeHTML(route === 'privacy' ? 'Your privacy matters.' : 'Clear, fair terms.')}</h1><p>${route === 'privacy' ? 'A plain-language account of what Manglo does with files and information.' : 'The conditions for using these free browser-based tools, without the fine-print maze.'}</p></section><div class="mg-policy-layout"><nav class="mg-policy-toc" aria-label="On this page"><strong>IN THIS DOCUMENT</strong>${headings.map(h => `<a href="#${h.id}">${h.heading}</a>`).join('')}</nav><article class="mg-policy-content">${body}</article></div></div>`;
+}
+
+function toolGuidance(tool) {
+  const guide = toolOverviews[tool.id];
+  if (!guide) throw Error(`Missing useful guidance for ${tool.id}`);
+  return `<section class="mg-tool-guide" aria-labelledby="mg-guide-${tool.id}"><div class="mg-tool-guide-heading"><span>HOW TO USE THIS WELL</span><h2 id="mg-guide-${tool.id}">${escapeHTML(guide.question)}</h2><p>Practical context to help you decide what to change and what to check before using the output.</p></div>
+    <div class="mg-tool-guide-grid"><div class="mg-tool-guide-prose">${guide.paragraphs.map(p=>`<p>${escapeHTML(p)}</p>`).join('')}<p class="mg-tool-guide-limit"><strong>Know the limit:</strong> ${escapeHTML(guide.limitation)}</p></div><aside class="mg-tool-guide-panel"><h3>Your final checks</h3><ol>${guide.checks.map(c=>`<li>${escapeHTML(c)}</li>`).join('')}</ol><a href="${guide.related}">${escapeHTML(guide.relatedText)} <span aria-hidden="true">↗</span></a></aside></div></section>`;
 }
 
 for (const [route, title] of Object.entries(existingRoutes)) {
@@ -229,8 +244,8 @@ for (const [route, title] of Object.entries(existingRoutes)) {
       'calculate-selling-profit':'Understand real selling profit with a clear breakdown of selling price, product costs, shipping, fees and discounts.',
       'jpg-png-webp':'Compare JPG, PNG and WebP formats, then choose the most suitable format for photographs, transparent images and website uploads.'
     })[id] || guide.title;
-    const cover = id === 'prepare-product-images' ? '/assets/photography-studio.webp'
-      : id === 'calculate-selling-profit' ? '/assets/seller-desk.webp' : '/assets/seller-still-life.webp';
+    const cover = id === 'prepare-product-images' ? '/assets/manglo-photo-workspace-20261108.webp'
+      : id === 'calculate-selling-profit' ? '/assets/manglo-seller-desk-20261108.webp' : '/assets/manglo-product-photo-20261108.webp';
     body = `<article class="article"><div class="breadcrumb"><a href="/">Home</a> / <a href="/playbook/">Playbook</a> / Guide</div><div class="eyebrow">MANGLO SELLER GUIDES</div><h1>${guide.title}</h1><img class="article-cover" src="${cover}" alt="Product and seller workspace illustration" width="1536" height="1024">${data.articles[id]}<p><a href="/playbook/">Explore more in Manglo Playbook →</a></p></article>`;
   } else if (data.pages[route]) {
     const page = data.pages[route];
@@ -244,13 +259,23 @@ for (const [route, title] of Object.entries(existingRoutes)) {
     description = tool.desc;
     body = `<div class="container"><div class="page-heading"><h1>${tool.name}</h1><p>${tool.desc}</p><noscript>This interactive tool requires JavaScript. Enable JavaScript to process images locally or calculate results.</noscript></div>
       <section class="tool-explainer"><h2>Simple tools for everyday work</h2><p>${tool.group === 'image' ? 'Choose JPG, PNG or WebP files from your device. Set output options, process images and download the results. Image processing happens locally in your browser. Keep your originals and inspect the output before publishing.' : 'Enter your selling price and relevant costs to estimate results. Fees, shipping and expenses affect what you keep. These tools offer estimates, not financial or tax advice.'}</p>
-      <a href="/guides/${tool.group === 'image' ? 'prepare-product-images' : 'calculate-selling-profit'}/">Read our practical guide</a></section></div>`;
+      <a href="/guides/${tool.group === 'image' ? 'prepare-product-images' : 'calculate-selling-profit'}/">Read our practical guide</a></section>${toolGuidance(tool)}</div>`;
   }
   // Article and information pages have complete static markup and do not need
   // the original browser router. Tool routes retain that router and all tools.
   const html = renderPage(route, title, description, body);
-  await saveRoute(route, route.startsWith('tools/') ? html : staticEditorial(html));
+  await saveRoute(route, route.startsWith('tools/') ? html.replace('</body>', '<script src="/tool-guides.js" defer></script></body>') : staticEditorial(html));
 }
+
+// The legacy client router replaces tool-page HTML after load. Keep the same
+// independently useful explanation in the interactive DOM after that render.
+const guideHTML = Object.fromEntries(data.tools.map(tool => [tool.id, toolGuidance(tool)]));
+await writeFile(new URL('tool-guides.js', root), `(() => {
+  const id = location.pathname.split('/').filter(Boolean).at(-1);
+  const guides = ${JSON.stringify(guideHTML).replace(/</g, '\\u003c')};
+  const main = document.querySelector('#content');
+  if (main && guides[id] && !main.querySelector('.mg-tool-guide')) main.insertAdjacentHTML('beforeend', guides[id]);
+})();\n`);
 
 const featured = playbookArticles[0];
 const hub = `<div class="pb-page">
@@ -278,24 +303,29 @@ const journalCards = journalSections.map(section => `<a class="mj-card" href="/j
 const journalReading = [playbookArticles[0], playbookArticles[6], playbookArticles[1]].map(a => `<a href="${articleHref(a)}">${escapeHTML(a.title)} <span aria-hidden="true">↗</span></a>`).join('');
 const journalHub = `<div class="mj-page"><div class="mj-container">
   <section class="mj-hero"><div class="mj-hero-grid"><div><span class="mj-kicker">Manglo Journal / Editorial</span><h1>Clarity for a<br><em>changing world.</em></h1><p class="mj-hero-copy">Practical answers, smarter buying decisions, technology made clear and carefully verified developments. Written for readers in India, useful wherever you are.</p><div class="mj-actions"><a class="mj-button mj-button-primary" href="#desks">Explore the desks <span aria-hidden="true">&nbsp;↗</span></a><a class="mj-button" href="/editorial-standards/">How we work ↗</a></div></div><aside class="mj-hero-panel"><div class="mj-orbit" aria-hidden="true">✦</div><div><small>Our publishing promise</small><strong>Helpful first.<br>Evidence always.</strong><p>We publish only when the work earns a reader's trust. No invented tests, recycled claims or forced daily quota.</p></div></aside></div></section>
-  <section class="mj-section" id="desks" aria-labelledby="mj-desks-heading"><div class="mj-section-head"><div><span class="mj-kicker">Five ways to explore</span><h2 id="mj-desks-heading">Choose your curiosity.</h2></div><p>Each desk has a clear purpose. Unreleased coverage is marked honestly while our verification workflow is prepared.</p></div><div class="mj-categories">${journalCards}</div></section>
+  <section class="mj-section" id="desks" aria-labelledby="mj-desks-heading"><div class="mj-section-head"><div><span class="mj-kicker">Five ways to explore</span><h2 id="mj-desks-heading">Choose your curiosity.</h2></div><p>Each desk contains a practical framework you can use now. In-depth reporting follows only after verification.</p></div><div class="mj-categories">${journalCards}</div></section>
   <section class="mj-section" aria-labelledby="mj-reading-heading"><div class="mj-feature"><div><span class="mj-kicker">Read something useful now</span><h3 id="mj-reading-heading">Begin with the original Playbook.</h3><p>Our existing practical guides remain available while new editorial desks are researched and checked. These are real articles, not placeholder stories.</p><div class="mj-actions"><a class="mj-button" href="/playbook/">All Playbook guides ↗</a></div></div><div class="mj-reading-list">${journalReading}</div></div></section>
   <section class="mj-section" aria-labelledby="mj-method-heading"><div class="mj-section-head"><div><span class="mj-kicker">Why readers can trust us</span><h2 id="mj-method-heading">A visible standard.</h2></div><p>Manglo Editorial is a publication identity, not a fabricated expert profile.</p></div><div class="mj-methods">${editorialCommitments.map(c => `<div class="mj-method-card"><small>${c.number} / STANDARD</small><h3>${escapeHTML(c.title)}</h3><p>${escapeHTML(c.copy)}</p></div>`).join('')}</div></section>
   <section class="mj-section"><div class="mj-note"><div><strong>Seen something that needs correcting?</strong><p>We welcome specific corrections and keep advertising separate from editorial judgment.</p></div><a class="mj-button mj-button-primary" href="/contact/">Contact the editorial desk ↗</a></div></section>
 </div></div>`;
 await saveRoute('journal', journalPage(renderPage('journal', 'Manglo Journal | Practical guides, AI, technology and shopping',
   'Manglo Journal covers practical guides, shopping decisions, technology, AI and carefully verified trends, with transparent editorial standards.',
-  journalHub, { image: '/assets/obsidian-hero.webp', imageAlt: 'Manglo editorial studio', schema: jsonLD({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Manglo Journal', url: absolute('/journal/'), inLanguage: 'en', publisher: { '@type':'Organization', name:'Manglo', url: absolute('/') } }) })));
+  journalHub, { image: '/assets/manglo-editorial-hero-20261108.webp', imageAlt: 'Original illustrative editorial studio', schema: jsonLD({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Manglo Journal', url: absolute('/journal/'), inLanguage: 'en', publisher: { '@type':'Organization', name:'Manglo', url: absolute('/') } }) })));
 
 for (const section of journalSections) {
   const existing = section.existing.map(slug => playbookArticles.find(a => a.slug === slug)).filter(Boolean);
   const links = existing.map(a => `<a href="${articleHref(a)}">${escapeHTML(a.title)} <span aria-hidden="true">↗</span></a>`).join('');
+  const overview = categoryOverviews[section.slug];
+  if (!overview) throw Error(`Missing useful category overview for ${section.slug}`);
+  const guideModules = overview.sections.map((item, i) => `<section class="mj-guide-module" aria-labelledby="mj-guide-${section.slug}-${i}"><span class="mj-module-number">${String(i+1).padStart(2,'0')} / THE METHOD</span><h3 id="mj-guide-${section.slug}-${i}">${escapeHTML(item.title)}</h3>${item.body}</section>`).join('');
   const page = `<div class="mj-page"><div class="mj-container"><nav class="mj-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/journal/">Journal</a><span>/</span><span>${escapeHTML(section.name)}</span></nav>
     <header class="mj-topic-hero"><span class="mj-kicker">Manglo Journal / ${section.number}</span><h1>${escapeHTML(section.name)}.</h1><p>${escapeHTML(section.description)}</p></header>
-    <section class="mj-section"><div class="mj-topic-shell"><div><span class="mj-readiness">Research and review phase</span><h2 style="margin-top:22px">What this desk will cover</h2><ul>${section.topics.map(topic => `<li>${escapeHTML(topic)}</li>`).join('')}</ul><p>${escapeHTML(section.promise)}</p></div><div><h2>Reading, with context.</h2><p>New Journal articles are held until factual claims, sources, image rights and technical quality pass review. We won't label plans as published reporting.</p>${links ? `<div class="mj-reading-list mj-topic-links">${links}</div>` : '<p class="mj-subtle">No new stories have been released here yet.</p>'}<div class="mj-actions"><a class="mj-button" href="/journal/">All editorial desks ↗</a><a class="mj-button" href="/editorial-standards/">Editorial standards ↗</a></div></div></div></section>
+    <section class="mj-section mj-topic-intro" aria-label="Your starting point"><div class="mj-topic-shell"><div><span class="mj-readiness">Practical category guide</span><h2>${escapeHTML(overview.eyebrow)}</h2><p class="mj-topic-lead">${escapeHTML(overview.lead)}</p><p>${escapeHTML(section.promise)}</p></div><div><h2>Start with a clear decision.</h2><p>${escapeHTML(overview.next)}</p>${links ? `<div class="mj-reading-list mj-topic-links">${links}</div>` : `<a class="mj-button" href="/playbook/">Browse existing practical guides ↗</a>`}<div class="mj-actions"><a class="mj-button" href="/journal/">All editorial desks ↗</a><a class="mj-button" href="/editorial-standards/">Editorial standards ↗</a></div></div></div></section>
+    <section class="mj-section mj-topic-guide" aria-labelledby="mj-guide-heading"><div class="mj-section-head"><div><span class="mj-kicker">Use this now</span><h2 id="mj-guide-heading">A useful starting method.</h2></div><p>Concrete steps you can apply now. Examples are illustrative, not claimed tests or live product prices.</p></div><div class="mj-guide-list">${guideModules}</div></section>
+    <section class="mj-section mj-topic-checklist" aria-labelledby="mj-check-heading"><div class="mj-feature"><div><span class="mj-kicker">Before you decide</span><h2 id="mj-check-heading">The four-point check.</h2><p>Use this short list as a quality gate for your own work. A missing answer is a reason to pause and verify.</p></div><ol class="mj-check-list">${overview.checklist.map(point=>`<li>${escapeHTML(point)}</li>`).join('')}</ol></div></section>
   </div></div>`;
   await saveRoute(`journal/${section.slug}`, journalPage(renderPage(`journal/${section.slug}`, `${section.name} | Manglo Journal`,
-    section.description, page, { noindex:true, image:'/assets/obsidian-hero.webp', imageAlt:'Manglo editorial desk' })));
+    section.description, page, { noindex:true, image:'/assets/manglo-editorial-hero-20261108.webp', imageAlt:'Original illustrative editorial studio' })));
 }
 
 for (const article of playbookArticles) {

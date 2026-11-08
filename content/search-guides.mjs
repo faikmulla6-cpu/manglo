@@ -8,7 +8,7 @@ export const searchGuides = [
     title: 'How to compress an image to 100 KB or 200 KB for an online form',
     description: 'Step-by-step guide to reducing JPG, PNG or WebP images toward a 100 KB or 200 KB upload limit without sacrificing essential details.',
     dek: 'A form asks for a smaller photo. Here is how to meet the limit while keeping the face, text and edges clear.',
-    image: '/assets/photography-studio.webp',
+    image: '/assets/manglo-photo-workspace-20261108.webp',
     imageAlt: 'A camera and photograph setup, illustrating careful image preparation',
     readTime: 7,
     published: '2026-11-07',
@@ -38,7 +38,7 @@ export const searchGuides = [
     title: 'How to resize a photo in pixels without stretching or blurring it',
     description: 'Learn the difference between pixel dimensions and file size, preserve aspect ratio, and resize photos for websites, profile images and forms.',
     dek: 'A photo can fit the exact pixel limit without looking squashed. The trick is to protect its proportions.',
-    image: '/assets/seller-still-life.webp',
+    image: '/assets/manglo-product-photo-20261108.webp',
     imageAlt: 'Product photograph with visible edges for checking resize quality',
     readTime: 6,
     published: '2026-11-07',
@@ -68,7 +68,7 @@ export const searchGuides = [
     title: 'How to convert PNG to JPG, JPG to PNG or WebP correctly',
     description: 'A practical conversion guide for JPG, PNG and WebP, including transparency, quality, web use and common upload mistakes.',
     dek: 'Converting a file is more than changing its name. Choose the format that your destination can actually open.',
-    image: '/assets/photography-studio.webp',
+    image: '/assets/manglo-photo-workspace-20261108.webp',
     imageAlt: 'Digital photo setup showing a detailed image suitable for format conversion',
     readTime: 6,
     published: '2026-11-07',
@@ -96,7 +96,7 @@ export const searchGuides = [
     title: 'Photo upload failed? Fix file size, format and dimension errors',
     description: 'Troubleshoot common photo and signature upload errors on application forms, portals and websites with a clear diagnostic checklist.',
     dek: '“Invalid image” does not tell you much. Find out which rule failed before editing the file again.',
-    image: '/assets/seller-still-life.webp',
+    image: '/assets/manglo-product-photo-20261108.webp',
     imageAlt: 'Close-up product photograph illustrating file preparation and quality checks',
     readTime: 7,
     published: '2026-11-07',
@@ -123,7 +123,7 @@ export const searchGuides = [
     title: 'How to calculate a discount percentage and final price',
     description: 'Simple formulas for 10%, 20%, 30% and other discounts, with worked rupee examples and a check for real savings.',
     dek: 'Know the final price and how much you save before you buy—or before you announce a sale.',
-    image: '/assets/seller-desk.webp',
+    image: '/assets/manglo-seller-desk-20261108.webp',
     imageAlt: 'Calculator on a desk for checking price and discount arithmetic',
     readTime: 6,
     published: '2026-11-07',
@@ -153,7 +153,7 @@ export const searchGuides = [
     title: 'How to crop a photo to square, portrait or landscape',
     description: 'Understand 1:1, 4:5, 16:9 and 9:16 photo ratios and crop images without stretching or cutting off the subject.',
     dek: 'An image can have the right shape without looking squeezed or losing the details that matter.',
-    image: '/assets/photography-studio.webp',
+    image: '/assets/manglo-photo-workspace-20261108.webp',
     imageAlt: 'Photo studio arrangement suitable for comparing portrait and landscape crops',
     readTime: 6,
     published: '2026-11-07',
@@ -175,3 +175,4 @@ export const searchGuides = [
     `
   }
 ];
+

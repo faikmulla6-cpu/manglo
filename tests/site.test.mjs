@@ -122,16 +122,22 @@ test('all seven interactive tools load their client logic; editorial routes do n
     const html=await readFile(new URL(`tools/${id}/index.html`,root),'utf8');
     assert.match(html,/src="\/app\.js\?v=20261106r" defer/);
     assert.match(html,/src="\/experience\.js\?v=20261106r" defer/);
+    assert.match(html,/class="mg-tool-guide"/);
+    assert.match(html,/src="\/tool-guides\.js" defer/);
+    assert.match(html,/Know the limit:/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/<noscript>/);
   }
+  const guideClient=await readFile(new URL('tool-guides.js',root),'utf8');
+  for(const id of ids) assert.ok(guideClient.includes('mg-guide-'+id));
+  assert.match(guideClient,/insertAdjacentHTML/);
   for(const route of ['','about/','contact/','privacy/','playbook/']){
     const html=await readFile(new URL(`${route}index.html`,root),'utf8');
     assert.doesNotMatch(html,/src="\/app\.js/);
     assert.equal([...html.matchAll(/class="mg-skip"/g)].length,1);
     assert.match(html,/class="mg-site-footer"/);
   }
-  await stat(new URL('assets/obsidian-hero.webp',root));
+  for(const image of ['manglo-editorial-hero-20261108.webp','manglo-product-photo-20261108.webp','manglo-photo-workspace-20261108.webp','manglo-seller-desk-20261108.webp']) await stat(new URL('assets/'+image,root));
 });
 test('Playbook article reader has vertical navigation and contrast-safe panels',async()=>{
   const css=await readFile(new URL('experience.css',root),'utf8');

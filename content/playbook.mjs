@@ -9,7 +9,7 @@ export const playbookArticles = [
     title: 'How to compress product images without making them blurry',
     description: 'A practical image-export workflow for online sellers: choose sensible dimensions, compare detail, and make smaller files without hiding the product.',
     dek: 'Smaller files are useful. Missing texture, unreadable labels and muddy colors are not. Here is how to balance both.',
-    image: '/assets/seller-still-life.webp',
+    image: '/assets/manglo-product-photo-20261108.webp',
     imageAlt: 'Product bottle on a simple studio set, suitable for inspecting fine photographic details',
     readTime: 7,
     tool: { href: '/tools/image-compressor/', label: 'Try the free image compressor' },
@@ -39,7 +39,7 @@ export const playbookArticles = [
     title: 'Calculate your real profit per order—not just your markup',
     description: 'Understand the real difference between selling price, markup, profit and margin with transparent INR and USD examples.',
     dek: 'Revenue is what the buyer pays. Profit is what you get to keep after a much longer list of costs.',
-    image: '/assets/seller-desk.webp',
+    image: '/assets/manglo-seller-desk-20261108.webp',
     imageAlt: 'Desk with calculator and seller paperwork for working through order costs',
     readTime: 8,
     tool: { href: '/tools/profit-calculator/', label: 'Open the profit calculator' },
@@ -68,7 +68,7 @@ export const playbookArticles = [
     title: 'JPG vs PNG vs WebP: a seller’s practical image guide',
     description: 'Choose among JPG, PNG and WebP for product listings, transparent graphics, social images and web pages without relying on vague file-size claims.',
     dek: 'The best image format is the one that keeps the important detail and works where your customer will see it.',
-    image: '/assets/photography-studio.webp',
+    image: '/assets/manglo-photo-workspace-20261108.webp',
     imageAlt: 'Small product photography setup with a clean backdrop and natural light',
     readTime: 7,
     tool: { href: '/tools/image-converter/', label: 'Convert an image locally' },
@@ -95,7 +95,7 @@ export const playbookArticles = [
     title: 'Is your discount actually profitable? Work it out before the sale',
     description: 'Understand how percentage discounts affect net profit and contribution margin, with a worked INR example and a simple break-even method.',
     dek: 'A 20% sale can do much more than reduce your revenue by 20%. Check the remaining profit first.',
-    image: '/assets/seller-desk.webp',
+    image: '/assets/manglo-seller-desk-20261108.webp',
     imageAlt: 'Calculator on a desk used to plan a product promotion',
     readTime: 7,
     tool: { href: '/tools/discount-calculator/', label: 'Calculate your sale price' },
@@ -122,7 +122,7 @@ export const playbookArticles = [
     title: 'A simple phone photography setup for better product listings',
     description: 'Make clearer product photos using a window, clean background and repeatable angles before using free crop, resize and export tools.',
     dek: 'Good product photos come from a repeatable setup more often than from expensive equipment.',
-    image: '/assets/photography-studio.webp',
+    image: '/assets/manglo-photo-workspace-20261108.webp',
     imageAlt: 'Natural light product photography setup on a tabletop',
     readTime: 8,
     tool: { href: '/tools/image-cropper/', label: 'Crop a product photo' },
@@ -150,7 +150,7 @@ export const playbookArticles = [
     title: 'The product listing preflight checklist: 12 things to check',
     description: 'A clear, printable 12-step quality checklist for images, titles, pricing, shipping promises, customer trust and final mobile preview.',
     dek: 'Before you hit publish, run through a short list that can prevent expensive surprises later.',
-    image: '/assets/seller-still-life.webp',
+    image: '/assets/manglo-product-photo-20261108.webp',
     imageAlt: 'Prepared product on a clean surface ready for an online listing',
     readTime: 6,
     tool: { href: '/tools/image-resizer/', label: 'Prepare your listing images' },
@@ -185,3 +185,4 @@ export const playbookArticles = [
 ];
 
 export const categories = ['All topics', 'Product photos', 'Image size & uploads', 'Pricing & profit', 'Everyday calculations', 'Seller workflow'];
+
