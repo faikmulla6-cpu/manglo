@@ -16,7 +16,8 @@ const heroCss = `<link rel="stylesheet" href="/hero-2-1.css?v=${release}">`;
 const homeCss = '<link rel="stylesheet" href="/home-editorial.css?v=20261108m">';
 const heroJs = `<script src="/hero-2-1.js?v=${release}" defer></script>`;
 const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
-const playbookCss = `<link rel="stylesheet" href="/playbook.css?v=${release}">`;
+// Contrast repairs must bust previously cached cream-background Playbook CSS.
+const playbookCss = '<link rel="stylesheet" href="/playbook.css?v=20261108contrast">';
 const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108k">';
 const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}">`;
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
