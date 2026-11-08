@@ -22,13 +22,31 @@ const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
 const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Playbook" href="/feed.xml">';
+// The seven homepage stylesheets were each blocking first paint on mobile.
+// Preserve their cascade order in a single generated file while keeping the
+// individual stylesheets for all other pages and the legacy tool UI.
+const homepageStyles = [
+  'style.css', 'glass.css', 'premium.css', 'refinement.css',
+  'hero-2-1.css', 'experience.css', 'home-editorial.css'
+];
+const homeBundleHref = '/manglo-home.css?v=20261108p';
+const baseStyles = homepageStyles.slice(0, 4).map(path =>
+  `<link rel="stylesheet" href="/${path}">`
+).join('');
+const fontPreloads = '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">';
 
 const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[char]));
 const absolute = path => `${domain}${path}`;
 const jsonLD = object => `<script type="application/ld+json">${JSON.stringify(object).replace(/</g, '\\u003c')}</script>`;
-const original = await readFile(new URL('index.html', root), 'utf8');
+const original = (await readFile(new URL('index.html', root), 'utf8'))
+  // A second build must recover a normal template from the bundled homepage.
+  .replace(/<link rel="stylesheet" href="\/manglo-home\.css(?:\?[^\"]*)?">/, baseStyles)
+  .replace(/<link rel="preconnect" href="https:\/\/fonts\.(?:googleapis|gstatic)\.com"[^>]*>/g, '')
+  .replace(/<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com\/css2[^\"]*">/g, '');
 
 // The generated home page also acts as the template. Strip additions from any
 // previous build to make repeated runs deterministic and non-duplicating.
@@ -165,7 +183,7 @@ const homeTeaser = `<div class="mg-editorial-wrap">
     <div class="mg-reading-heading"><div><span class="mg-reading-overline">THE MANGLO PLAYBOOK</span><h2 id="mg-feature-title">Featured ideas</h2></div><a href="/playbook/">All articles <span aria-hidden="true">→</span></a></div>
     <div class="mg-feature-layout">
       <a class="mg-feature-lead" href="${articleHref(playbookArticles[0])}">
-        <img src="${playbookArticles[0].image}" alt="${escapeHTML(playbookArticles[0].imageAlt)}" width="1536" height="1024">
+        <img src="${playbookArticles[0].image}" alt="${escapeHTML(playbookArticles[0].imageAlt)}" width="1536" height="1024" fetchpriority="high">
         <div class="mg-feature-shade"></div><div class="mg-feature-lead-copy"><span>FEATURED / PRODUCT PHOTOS</span><h3>${escapeHTML(playbookArticles[0].title)}</h3><p>${escapeHTML(playbookArticles[0].dek)}</p><small>Read the guide →</small></div>
       </a>
       <div class="mg-feature-stack">${story(playbookArticles[4])}${story(playbookArticles[1])}</div>
@@ -200,6 +218,23 @@ homePage = staticEditorial(homePage).replace('</body>', `${heroJs}</body>`)
   .replace(experienceCss, `${heroCss}${experienceCss}${homeCss}`);
 await writeFile(new URL('home-editorial.css', root), await readFile(new URL('../src/home-editorial.css', import.meta.url), 'utf8'));
 await writeFile(new URL('journal.css', root), await readFile(new URL('../src/journal.css', import.meta.url), 'utf8'));
+const bundledStyles = [];
+for (const file of homepageStyles) {
+  const css = await readFile(new URL(file, root), 'utf8');
+  // CSS @import rules have to come before all other rules. Load the single
+  // Google Fonts stylesheet in HTML instead, in parallel with the bundle.
+  bundledStyles.push(`/* ${file} */\n${css.replace(/^@import[^\r\n]*(?:\r?\n|$)/gm, '')}`);
+}
+await writeFile(new URL('manglo-home.css', root), bundledStyles.join('\n'));
+let replacedStyles = 0;
+homePage = homePage.replace(/<link rel="stylesheet" href="\/([\w-]+\.css)(?:\?[^\"]*)?">/g, (tag, file) => {
+  if (!homepageStyles.includes(file)) return tag;
+  replacedStyles++;
+  return replacedStyles === 1 ? `${fontPreloads}<link rel="stylesheet" href="${homeBundleHref}">` : '';
+});
+if (replacedStyles !== homepageStyles.length) {
+  throw new Error(`Homepage CSS bundle expected ${homepageStyles.length} links, found ${replacedStyles}`);
+}
 await writeFile(new URL('index.html', root), homePage);
 
 function trustPage(route, page) {
