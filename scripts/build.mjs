@@ -20,7 +20,8 @@ const homeJs = `<script src="/playbook-home.js?v=${release}" defer></script>`;
 // Contrast repairs must bust previously cached cream-background Playbook CSS.
 const playbookCss = '<link rel="stylesheet" href="/playbook.css?v=20261108contrast">';
 const journalCss = '<link rel="stylesheet" href="/journal.css?v=20261108k">';
-const experienceCss = `<link rel="stylesheet" href="/experience.css?v=${release}">`;
+// Keep nav-only visual releases separate from the existing application JS cache.
+const experienceCss = '<link rel="stylesheet" href="/experience.css?v=20261109glass">';
 const experienceJs = `<script src="/experience.js?v=${release}" defer></script>`;
 const toolJs = `<script src="/app.js?v=${release}" defer></script>`;
 const rssLink = '<link rel="alternate" type="application/rss+xml" title="Manglo Journal and Playbook" href="/feed.xml">';
@@ -39,7 +40,7 @@ const homepageStyles = [
   'style.css', 'glass.css', 'premium.css', 'refinement.css',
   'hero-2-1.css', 'experience.css', 'home-editorial.css'
 ];
-const homeBundleHref = '/manglo-home.css?v=20261108p';
+const homeBundleHref = '/manglo-home.css?v=20261109glass';
 const baseStyles = homepageStyles.slice(0, 4).map(path =>
   `<link rel="stylesheet" href="/${path}">`
 ).join('');
@@ -138,6 +139,19 @@ const breadcrumb = items => jsonLD({
 
 function renderPage(route, title, description, main, options = {}) {
   const path = route ? `/${route}/` : '/';
+  // These are real anchor links in server-rendered HTML, even without JS.
+  // Marking the current section is useful to both screen readers and the
+  // liquid-glass selected state. Avoid falsely marking the homepage Tools
+  // anchor as the current *page*.
+  const currentNav = route.startsWith('journal/') || route === 'journal' ? '/journal/'
+    : route.startsWith('playbook/') || route === 'playbook' ? '/playbook/'
+    : route.startsWith('tools/') ? '/#tools'
+    : route === 'about' ? '/about/'
+    : route === 'contact' ? '/contact/' : '';
+  const pageTemplate = currentNav ? template.replace(
+    /<nav class="mg-desktop-nav"[^>]*>[\s\S]*?<\/nav>/,
+    nav => nav.replace(`href="${currentNav}"`, `href="${currentNav}" aria-current="page"`)
+  ) : template;
   const image = absolute(options.image || '/assets/manglo-photo-workspace-20261108.webp');
   const meta = `<!-- PB_META_START -->
     <meta name="robots" content="${options.noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
@@ -152,7 +166,7 @@ function renderPage(route, title, description, main, options = {}) {
     ${options.article ? `<meta property="article:published_time" content="${options.published || published}"><meta property="article:modified_time" content="${options.modified || options.published || published}">` : ''}
     ${options.schema || jsonLD({ '@context':'https://schema.org', '@type':'WebPage', name:title, description, url:absolute(path), isPartOf:{ '@type':'WebSite', name:'Manglo', url:absolute('/') } })}<!-- PB_META_END -->`;
 
-  return template
+  return pageTemplate
     .replace(/<main id="content">[\s\S]*?<\/main>/, `<main id="content">${main}</main>`)
     .replace(experienceJs, `${route.startsWith('tools/') ? toolJs : ''}${experienceJs}`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHTML(title)} — Manglo</title>`)

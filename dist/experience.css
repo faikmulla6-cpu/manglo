@@ -171,3 +171,73 @@ body:has(.workspace) #content{width:min(1300px,calc(100% - 80px));margin:auto;pa
 .mg-tool-guide-panel a{font-weight:750;color:#f2bd9d;line-height:1.5;text-decoration:underline;text-underline-offset:4px}
 @media(max-width:720px){.mg-tool-guide{width:calc(100% - 28px);margin:42px auto 67px;padding:23px;border-radius:23px}.mg-tool-guide-grid{grid-template-columns:1fr;gap:15px}.mg-tool-guide-panel{padding:19px}}
 
+/* Manglo Waterline — lightweight liquid-glass navigation.
+   Native HTML anchors and details remain usable without JavaScript. Unlike
+   a WebGL shader this adds no canvas, animation loop, or external dependency. */
+@media (min-width:801px){
+  header.mg-site-header nav.mg-desktop-nav{
+    position:relative;isolation:isolate;display:inline-flex;align-items:center;
+    gap:3px!important;padding:5px;border-radius:999px;
+    border:1px solid rgba(245,230,215,.24);
+    background:radial-gradient(ellipse 95% 85% at 24% -20%,rgba(255,255,255,.17),transparent 78%),linear-gradient(150deg,rgba(244,213,186,.15),rgba(31,38,44,.63) 47%,rgba(12,18,23,.83));
+    -webkit-backdrop-filter:blur(15px) saturate(135%);backdrop-filter:blur(15px) saturate(135%);
+    box-shadow:inset 0 1px rgba(255,255,255,.28),inset 0 -1px rgba(255,255,255,.045),0 10px 28px -16px rgba(0,0,0,.75),0 0 25px -20px rgba(238,190,142,.7);
+  }
+  header.mg-site-header nav.mg-desktop-nav::before{
+    content:"";position:absolute;pointer-events:none;inset:1px 10px auto;height:11px;border-radius:50%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.21),transparent);filter:blur(7px);opacity:.62;
+  }
+  header.mg-site-header nav.mg-desktop-nav a{
+    position:relative;z-index:0;display:inline-flex;align-items:center;justify-content:center;
+    height:39px;padding:0 15px;border-radius:999px;white-space:nowrap;
+    color:#d2d6d9;font-size:12px;font-weight:650;line-height:1;text-decoration:none;
+    transition:color .22s ease,transform .26s cubic-bezier(.2,.8,.2,1);
+  }
+  header.mg-site-header nav.mg-desktop-nav a::before{
+    content:"";position:absolute;inset:0;z-index:-1;border-radius:999px;pointer-events:none;
+    background:radial-gradient(ellipse 75% 100% at 35% 0%,rgba(255,255,255,.44),transparent 85%),linear-gradient(145deg,rgba(242,217,196,.36),rgba(190,151,122,.17) 48%,rgba(255,255,255,.11));
+    box-shadow:inset 0 1px rgba(255,255,255,.46),inset 0 -1px rgba(247,196,153,.2),0 5px 17px -8px rgba(224,177,144,.6);
+    opacity:0;transform:scale(.8) translateY(4px);transition:opacity .25s ease,transform .37s cubic-bezier(.18,1.4,.35,1);
+  }
+  header.mg-site-header nav.mg-desktop-nav a::after{display:none}
+  header.mg-site-header nav.mg-desktop-nav a:hover,
+  header.mg-site-header nav.mg-desktop-nav a[aria-current="page"],
+  header.mg-site-header nav.mg-desktop-nav a:focus-visible{color:#fff9f3;transform:translateY(-1px)}
+  header.mg-site-header nav.mg-desktop-nav a:hover::before,
+  header.mg-site-header nav.mg-desktop-nav a[aria-current="page"]::before,
+  header.mg-site-header nav.mg-desktop-nav a:focus-visible::before{opacity:1;transform:scale(1) translateY(0)}
+  header.mg-site-header nav.mg-desktop-nav a:focus-visible{outline:2px solid #f0cba8;outline-offset:3px}
+}
+@media (min-width:801px) and (max-width:1100px){
+  header.mg-site-header nav.mg-desktop-nav a{padding-inline:10px;font-size:11px}
+  header.mg-site-header .mg-header-action{padding-inline:12px;gap:10px}
+}
+@media (min-width:801px) and (max-width:925px){
+  header.mg-site-header .mg-header-action{display:none}
+}
+@media (max-width:800px){
+  header.mg-site-header .mg-mobile-menu summary{
+    width:45px;height:45px;border-radius:16px;border-color:rgba(248,225,201,.36);
+    background:radial-gradient(circle at 25% 0%,rgba(255,255,255,.24),transparent 60%),linear-gradient(145deg,rgba(237,205,177,.16),rgba(24,30,36,.93));
+    box-shadow:inset 0 1px rgba(255,255,255,.28),0 7px 22px -10px #0009;
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  }
+  header.mg-site-header .mg-mobile-menu summary:focus-visible{outline:2px solid #f0cba8;outline-offset:3px}
+  header.mg-site-header .mg-mobile-menu[open] summary{background:linear-gradient(140deg,rgba(242,207,174,.35),rgba(44,45,48,.94));color:#fff}
+  header.mg-site-header .mg-mobile-menu>div{
+    width:min(290px,calc(100vw - 40px));min-width:0;max-height:calc(100dvh - 90px);overflow-y:auto;
+    padding:12px;border-radius:20px;background:radial-gradient(circle at 5% 0%,rgba(243,202,165,.16),transparent 45%),rgba(17,23,29,.96);
+    border:1px solid rgba(246,221,197,.25);box-shadow:inset 0 1px rgba(255,255,255,.2),0 20px 55px #0009;
+    -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+  }
+  header.mg-site-header .mg-mobile-menu a{min-height:46px;display:flex;align-items:center;color:#f0e8e2;border-radius:12px;transition:background .2s,color .2s}
+  header.mg-site-header .mg-mobile-menu a:hover,
+  header.mg-site-header .mg-mobile-menu a:focus-visible{color:#fff;background:linear-gradient(110deg,rgba(240,209,183,.2),rgba(255,255,255,.07))}
+  header.mg-site-header .mg-mobile-menu a:focus-visible{outline:2px solid #f0cba8;outline-offset:2px}
+}
+@media (prefers-reduced-motion:reduce){
+  header.mg-site-header nav.mg-desktop-nav a,
+  header.mg-site-header nav.mg-desktop-nav a::before,
+  header.mg-site-header .mg-mobile-menu a{transition:none!important;transform:none!important}
+}
+

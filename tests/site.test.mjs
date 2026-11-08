@@ -7,7 +7,7 @@ test('image geometry preserves proportions, crops correctly and rejects excessiv
 test('React hero assets are homepage-only while static routes stay independent',async()=>{
   const home=await readFile(new URL('index.html',root),'utf8');
   const tool=await readFile(new URL('tools/image-converter/index.html',root),'utf8');
-  assert.match(home,/href="\/manglo-home\.css\?v=20261108p"/);
+  assert.match(home,/href="\/manglo-home\.css\?v=20261109glass"/);
   assert.match(home,/src="\/hero-2-1\.js\?v=20261106r"/);
   assert.doesNotMatch(home,/href="\/(?:hero-2-1|home-editorial)\.css/);
   assert.doesNotMatch(home,/href="\/playbook\.css/);
@@ -122,6 +122,22 @@ test('AdSense verification is passive and ads remain disabled across static rout
     assert.doesNotMatch(html.replace(meta,''),/adsbygoogle|pagead2\.googlesyndication\.com|ca-pub-/i,`${route} must not load advertising code`);
   }
 });
+test('liquid-glass navigation stays lightweight, server-rendered and accessible',async()=>{
+  const home=await readFile(new URL('index.html',root),'utf8');
+  const journal=await readFile(new URL('journal/index.html',root),'utf8');
+  const tool=await readFile(new URL('tools/image-resizer/index.html',root),'utf8');
+  const css=await readFile(new URL('experience.css',root),'utf8');
+  const bundle=await readFile(new URL('manglo-home.css',root),'utf8');
+  assert.match(home,/<nav class="mg-desktop-nav" aria-label="Main navigation">[\s\S]*?<a href="\/journal\/">Journal<\/a>/);
+  assert.match(journal,/<a href="\/journal\/" aria-current="page">Journal<\/a>/);
+  assert.match(tool,/<a href="\/#tools" aria-current="page">Tools<\/a>/);
+  assert.match(home,/<details class="mg-mobile-menu">/);
+  assert.match(css,/Manglo Waterline — lightweight liquid-glass navigation/);
+  assert.match(bundle,/Manglo Waterline — lightweight liquid-glass navigation/);
+  assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
+  assert.doesNotMatch(css,/nimbus-water|nimbus-refract|@keyframes nv/);
+  assert.doesNotMatch(home,/liquid-glass-navbar\.js|nimbus-water/);
+});
 test('new search-intent guides have unique metadata, real task links and dated indexable pages',async()=>{
   const additions=playbookArticles.filter(a=>a.published==='2026-11-07');
   assert.equal(additions.length,6);
@@ -179,7 +195,7 @@ test('Playbook article reader has vertical navigation and contrast-safe panels',
   for(const slug of playbookArticles.map(a=>a.slug)){
     const html=await readFile(new URL(`playbook/${slug}/index.html`,root),'utf8');
     assert.match(html,/<nav aria-label="On this page">/);
-    assert.match(html,/href="\/experience\.css\?v=20261106r"/);
+    assert.match(html,/href="\/experience\.css\?v=20261109glass"/);
     assert.match(html,/src="\/playbook\.js" defer/);
   }
 });
