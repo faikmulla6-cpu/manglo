@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { FormEvent, MouseEvent } from "react";
-import { Pause, Play, Plus } from "lucide-react";
+import { Pause, Play, Plus, X } from "lucide-react";
 import type { EliasBook } from "@/components/ui/elias-author-hero";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -53,6 +54,8 @@ const playbooks: EliasBook[] = [
 
 function MangloApp() {
   const [open, setOpen] = useState(location.hash === "#book-demo");
+  const [activeSection, setActiveSection] = useState(location.hash || "#top");
+  const demoOpener = useRef<HTMLElement | null>(null);
   const [paused, setPaused] = useState(false);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState("");
@@ -62,6 +65,35 @@ function MangloApp() {
   const capture = new URLSearchParams(location.search).has("capture");
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  const openDemo = (opener: HTMLElement) => {
+    demoOpener.current = opener;
+    setStatus("");
+    setSuccess(false);
+    setOpen(true);
+  };
+
+  const setDemoOpen = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen && location.hash === "#book-demo") {
+      history.replaceState(history.state, "", location.pathname + location.search);
+      setActiveSection("#top");
+    }
+  };
+
+  useEffect(() => {
+    const onNavigation = () => {
+      const hash = location.hash || "#top";
+      setActiveSection(hash);
+      setOpen(hash === "#book-demo");
+    };
+    addEventListener("hashchange", onNavigation);
+    addEventListener("popstate", onNavigation);
+    return () => {
+      removeEventListener("hashchange", onNavigation);
+      removeEventListener("popstate", onNavigation);
+    };
+  }, []);
 
   useEffect(() => {
     if (status)
@@ -108,9 +140,10 @@ function MangloApp() {
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     const target = event.target instanceof Element ? event.target : null;
-    if (target?.closest('[data-book], a[href="#book-demo"]')) {
+    const opener = target?.closest<HTMLElement>('[data-book], a[href="#book-demo"]');
+    if (opener) {
       event.preventDefault();
-      setOpen(true);
+      openDemo(opener);
     }
   };
 
@@ -176,12 +209,12 @@ function MangloApp() {
           name={{ first: "Manglo", last: "Studio" }}
           navLinks={{
             left: [
-              { label: "Home", href: "#top", active: true },
-              { label: "Work", href: "#work" },
+              { label: "Home", href: "#top", active: activeSection === "#top" },
+              { label: "Work", href: "#work", active: activeSection === "#work" },
             ],
             right: [
-              { label: "Expertise", href: "#expertise" },
-              { label: "Meet Faik", href: "#founder" },
+              { label: "Expertise", href: "#expertise", active: activeSection === "#expertise" },
+              { label: "Meet Faik", href: "#founder", active: activeSection === "#founder" },
             ],
           }}
           navCta={{ label: "Book a demo", href: "#book-demo" }}
@@ -251,13 +284,26 @@ function MangloApp() {
           {paused ? <Play size={14} /> : <Pause size={14} />}{" "}
           {paused ? "Resume motion" : "Pause motion"}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Button variant="outline" size="sm" onClick={(event) => openDemo(event.currentTarget)}>
           Book a demo <Plus size={14} />
         </Button>
       </div>
       <StudioContent />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="request-dialog">
+      <Dialog open={open} onOpenChange={setDemoOpen}>
+        <DialogContent
+          className="request-dialog"
+          showCloseButton={false}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const opener = demoOpener.current || document.querySelector<HTMLElement>('.ea-nav-cta a');
+            opener?.focus({ preventScroll: true });
+          }}
+        >
+          <div className="request-dialog-tools">
+            <DialogClose aria-label="Close demo form">
+              <X size={18} aria-hidden="true" />
+            </DialogClose>
+          </div>
           <DialogHeader>
             <div className="dialog-brand">
               <img

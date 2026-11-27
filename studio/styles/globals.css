@@ -214,3 +214,96 @@
   background: #06142c9e;
 }
 .overline { text-decoration: none; }
+/* Responsive controls and a close action that stays reachable throughout the form. */
+.experience-controls > button {
+  min-height: 44px;
+  font-size: 14px;
+}
+.experience-controls > span {
+  font-size: 12px;
+}
+.request-dialog {
+  display: block;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.request-dialog-tools {
+  position: sticky;
+  top: 12px;
+  height: 0;
+  z-index: 10;
+}
+.request-dialog .request-dialog-tools [data-slot="dialog-close"] {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  top: -12px;
+  right: -18px;
+  box-shadow: 0 3px 12px #10223e18;
+}
+.request-dialog .dialog-brand {
+  min-height: 36px;
+  padding-right: 42px;
+}
+.request-dialog .demo-form {
+  margin-top: 26px;
+}
+.request-dialog .consent {
+  min-height: 44px;
+  align-items: center;
+}
+.request-dialog .consent input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+.manglo-elias .ea-book-inside-title {
+  font-size: 6.2cqh;
+  overflow-wrap: anywhere;
+}
+.manglo-elias .ea-nav-link,
+.manglo-elias .ea-nav-logo {
+  min-height: 44px;
+  align-content: center;
+}
+@media (max-width: 639px) {
+  .manglo-elias .ea-nav-logo {
+    justify-self: start;
+    font-size: 26px;
+  }
+  .manglo-elias .ea-nav-cta .ea-cta {
+    gap: 8px;
+    padding: 4px 4px 4px 12px;
+    min-height: 44px;
+  }
+  .manglo-elias .ea-nav-cta .ea-cta-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    font-size: 12px;
+  }
+  .manglo-elias .ea-nav-link {
+    font-size: 12px;
+  }
+  .request-dialog {
+    padding: 24px 20px;
+  }
+  .request-dialog .request-dialog-tools [data-slot="dialog-close"] {
+    right: -10px;
+  }
+  .request-dialog [data-slot="dialog-header"] .overline {
+    width: auto;
+    font-size: 11px;
+    letter-spacing: .1em;
+    overflow-wrap: anywhere;
+  }
+  .request-dialog .request-title {
+    font-size: clamp(30px, 9vw, 38px);
+  }
+  .request-dialog .request-title em {
+    font-size: clamp(32px, 9.5vw, 40px);
+  }
+}

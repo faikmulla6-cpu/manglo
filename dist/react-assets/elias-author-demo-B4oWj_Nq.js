@@ -1,4 +1,4 @@
-import{i as e,r as t,t as n}from"./index-Bz6XSqpc.js";import{Elias as r}from"./elias-author-hero-CrMCxBmq.js";var i=e(t(),1),a=n(),o=`@font-face {
+import{i as e,r as t,t as n}from"./index-CcGSJQnd.js";import{Elias as r}from"./elias-author-hero-DyMTnrfH.js";var i=e(t(),1),a=n(),o=`@font-face {
   font-family: 'Figtree';
   font-style: normal;
   font-weight: 300 600;
