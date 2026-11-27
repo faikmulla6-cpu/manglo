@@ -1,74 +1,37 @@
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
-
-const root = new URL('../dist/', import.meta.url);
-const expectedHost = 'https://manglo.shop';
-const categoryDesks = ['practical', 'shopping', 'technology', 'ai', 'trends'];
-const ownershipMeta = '<meta name="google-adsense-account" content="ca-pub-8653555162421936">';
-const adsTxtExpected = 'google.com, pub-8653555162421936, DIRECT, f08c47fec0942fa0\n';
-
-// Release gate for generated static pages. This is deliberately separate from
-// live Search Console indexing, real-user metrics, legal and editorial reviews.
-export async function auditSite() {
-  const failures = [];
-  const fail = (route, check, detail) => failures.push({ route, check, detail });
-  const sitemap = await readFile(new URL('sitemap.xml', root), 'utf8');
-  const paths = [...sitemap.matchAll(/<loc>(https:\/\/manglo\.shop\/[^<]*)<\/loc>/g)].map(match => new URL(match[1]).pathname);
-  const titles = new Map();
-  const descriptions = new Map();
-
-  for (const path of paths) {
-    const route = path === '/' ? '/' : path;
-    const file = new URL(path === '/' ? 'index.html' : `${path.slice(1)}index.html`, root);
-    let html;
-    try { html = await readFile(file, 'utf8'); }
-    catch { fail(route, 'file', 'Indexable sitemap URL has no generated HTML'); continue; }
-    const title = html.match(/<title>([^<]+)<\/title>/)?.[1];
-    const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1];
-    const canonicals = [...html.matchAll(/<link rel="canonical" href="([^"]+)"/g)];
-    const h1s = [...html.matchAll(/<h1\b/g)];
-    if (!title || title.length < 12 || title.length > 100) fail(route, 'title', 'Missing or poorly sized title');
-    if (!description || description.length < 55 || description.length > 180) fail(route, 'description', 'Missing or poorly sized description');
-    if (title && titles.has(title)) fail(route, 'unique_title', `Duplicates ${titles.get(title)}`);
-    if (description && descriptions.has(description)) fail(route, 'unique_description', `Duplicates ${descriptions.get(description)}`);
-    if (title) titles.set(title, route);
-    if (description) descriptions.set(description, route);
-    if (canonicals.length !== 1 || canonicals[0][1] !== expectedHost + route) fail(route, 'canonical', 'One self-referencing HTTPS canonical required');
-    if (h1s.length !== 1) fail(route, 'heading', `Expected one main heading; found ${h1s.length}`);
-    if (!html.includes('name="robots" content="index,follow,max-image-preview:large"')) fail(route, 'indexability', 'Sitemap page must be indexable');
-    if (!html.includes(`property="og:url" content="${expectedHost + route}"`)) fail(route, 'sharing', 'Canonical Open Graph URL required');
-    if (!html.includes('<html lang="en">') || !html.includes('name="viewport"')) fail(route, 'accessibility', 'Language or responsive viewport missing');
-    if (!html.includes('class="mg-mobile-menu"') || !html.includes('class="mg-skip"')) fail(route, 'navigation', 'Mobile navigation or skip link missing');
-    if (!html.includes('href="/journal/"') || !html.includes('href="/editorial-standards/"')) fail(route, 'transparency', 'Journal or editorial standards link missing');
-    if (html.split(ownershipMeta).length !== 2) fail(route, 'adsense_ownership', 'Exactly one verified AdSense ownership meta tag is required');
-    const withoutVerification = html.replace(ownershipMeta, '');
-    if (/adsbygoogle|pagead2\.googlesyndication\.com|<ins[^>]*class=["'][^"']*adsbygoogle|ca-pub-/i.test(withoutVerification)) {
-      fail(route, 'ad_policy', 'Unexpected advertising code while Auto ads remain inactive');
-    }
-    if (route.startsWith('/tools/') && (!html.includes('class="mg-tool-guide"') || !html.includes('src="/tool-guides.js"'))) fail(route, 'tool_value', 'Interactive tool also needs substantive readable guidance before and after JavaScript');
-    if (route === '/privacy/' && (!html.includes('Google AdSense is activated later') || !html.includes('My Ad Center'))) fail(route, 'privacy', 'Advertising data disclosures must be prepared without falsely claiming ads are active');
-    const structured = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
-    if (!structured.length) fail(route, 'structured_data', 'Missing JSON-LD');
-    for (const [, json] of structured) try { JSON.parse(json); } catch { fail(route, 'structured_data', 'Invalid JSON-LD'); }
-    if (route.startsWith('/playbook/') && route !== '/playbook/' && !structured.some(([, json]) => json.includes('"@type":"BlogPosting"'))) fail(route, 'article_schema', 'Published article requires BlogPosting markup');
-  }
-
-  for (const desk of categoryDesks) {
-    const path = `/journal/${desk}/`;
-    if (paths.includes(path)) fail(path, 'empty_desk', 'Unpublished category must be absent from sitemap');
-    const html = await readFile(new URL(`journal/${desk}/index.html`, root), 'utf8');
-    if (!html.includes('name="robots" content="noindex,follow"')) fail(path, 'empty_desk', 'Unpublished category must have noindex');
-  }
-  const errorPage = await readFile(new URL('404.html', root), 'utf8');
-  if (!errorPage.includes('name="robots" content="noindex,follow"')) fail('/404', 'indexability', '404 page must not be indexed');
-  const adsTxt = await readFile(new URL('ads.txt', root), 'utf8');
-  if (adsTxt !== adsTxtExpected) fail('/ads.txt', 'adsense_ownership', 'ads.txt must match the publisher entry supplied by Google');
-  return { mode:'LOCAL_BUILD_AUDIT', audited:paths.length, skippedCategoryDesks:categoryDesks.length, passed:failures.length===0, failures };
+import {readFile,stat} from 'node:fs/promises'
+import {resolve} from 'node:path'
+import {fileURLToPath} from 'node:url'
+const root=new URL('../dist/',import.meta.url)
+export async function auditSite(){
+ const failures=[]
+ const fail=(check,detail)=>failures.push({check,detail})
+ const html=await readFile(new URL('index.html',root),'utf8')
+ if(!/<title>Manglo Studio[^<]+<\/title>/.test(html))fail('title','Studio must be the homepage')
+ if(!html.includes('rel="canonical" href="https://manglo.shop/"'))fail('canonical','Homepage canonical must be the root URL')
+ if(!html.includes('property="og:url" content="https://manglo.shop/"'))fail('sharing','Open Graph URL must be the root URL')
+ if(!html.includes('name="robots" content="index,follow,max-image-preview:large"')||html.includes('noindex'))fail('indexability','Homepage must be indexable')
+ if(!html.includes('<html lang="en-GB">')||!html.includes('name="viewport"'))fail('accessibility','Language and viewport required')
+ const description=html.match(/name="description" content="([^"]+)"/)?.[1]
+ if(!description||description.length<55||description.length>180)fail('description','Descriptive homepage metadata required')
+ if(!html.includes('id="root"')||!html.includes('/react-assets/'))fail('frontend','Compiled React app required at root')
+ if(/\/studio\/|\/journal\/|\/playbook\//.test(html))fail('old_paths','Homepage must not use the retired site paths')
+ if(/adsbygoogle|googlesyndication|ca-pub-/.test(html))fail('ads','Retired advertising metadata or code found')
+ for(const [,json] of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g))try{JSON.parse(json)}catch{fail('schema','Invalid JSON-LD')}
+ const sitemap=await readFile(new URL('sitemap.xml',root),'utf8')
+ const urls=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1])
+ if(urls.length!==1||urls[0]!=='https://manglo.shop/')fail('sitemap','Only the real studio homepage belongs in the sitemap')
+ const robots=await readFile(new URL('robots.txt',root),'utf8')
+ if(!robots.includes('Sitemap: https://manglo.shop/sitemap.xml')||!robots.includes('Disallow: /api/'))fail('robots','Correct sitemap and private API exclusion required')
+ for(const old of ['studio','journal','playbook','guides','tools','feed.xml','ads.txt']){
+  try{await stat(new URL(old,root));fail('retired_output',old+' must not be deployed')}catch(error){if(error.code!=='ENOENT')throw error}
+ }
+ for(const file of ['privacy.html','plumbing.html','roofing.html','electrical.html','404.html']){
+  const page=await readFile(new URL(file,root),'utf8')
+  if(!page.includes('noindex'))fail('supporting_pages',file+' should remain noindex')
+  if(page.includes('/studio/'))fail('supporting_links',file+' still points to /studio/')
+ }
+ return {mode:'STUDIO_BUILD_AUDIT',audited:6,passed:failures.length===0,failures}
 }
-
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const result = await auditSite();
-  console.log(JSON.stringify(result, null, 2));
-  if (!result.passed) process.exitCode=1;
+if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+ const result=await auditSite();console.log(JSON.stringify(result,null,2));if(!result.passed)process.exitCode=1
 }

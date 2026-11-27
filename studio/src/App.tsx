@@ -197,7 +197,7 @@ function MangloApp() {
               "A founder-led studio for service businesses ready to look as good online as they are in real life.",
           }}
           portrait={{
-            src: "/studio/assets/faik-cutout.webp",
+            src: "/assets/faik-cutout.webp",
             alt: "Faik Hameed Mulla, founder of Manglo Studio, wearing a black blazer and sunglasses",
             width: 1000,
             height: 1162,
@@ -261,7 +261,7 @@ function MangloApp() {
           <DialogHeader>
             <div className="dialog-brand">
               <img
-                src="/studio/assets/manglo-mark.svg"
+                src="/assets/manglo-mark.svg"
                 width="33"
                 height="33"
                 alt=""

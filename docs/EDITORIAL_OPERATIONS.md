@@ -1,5 +1,7 @@
 # Manglo Journal — editorial operations and release safeguards
 
+**Retired 27 November 2026:** The owner replaced the public article/toolkit website with Manglo Studio at the domain root. Do not publish Journal, Playbook, or guide pages to manglo.shop. The active build excludes them, the legacy editorial builder is disabled, and the server returns HTTP 410 for retired routes. The policies below are historical and do not authorize new public article releases.
+
 Status as of **9 November 2026**: Faik explicitly authorised a **daily 18:00 Asia/Kolkata editorial automation**, including conditional publication of at most one fully qualified article per day. The automation is enabled. Individual article publication still fails closed until every required check, real review/sign-off, thumbnail asset, source ledger and live-deployment verification is complete. Google AdSense Auto ads, advertising code and ad serving remain **disabled**.
 
 ## Locked choices

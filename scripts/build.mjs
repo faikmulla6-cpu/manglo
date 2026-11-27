@@ -7,6 +7,8 @@ import { categoryOverviews } from '../content/category-overviews.mjs';
 import { toolOverviews } from '../content/tool-overviews.mjs';
 import { loadJournalPosts } from './journal-posts.mjs';
 
+throw new Error('The article/toolkit website is retired. Use npm run build to build Manglo Studio at the domain root.');
+
 const root = new URL('../dist/', import.meta.url);
 const domain = 'https://manglo.shop';
 const published = '2026-11-06';

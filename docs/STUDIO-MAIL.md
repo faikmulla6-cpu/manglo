@@ -1,6 +1,6 @@
 # Manglo Studio demo requests
 
-The agency lives at `/studio/`. Existing toolkit and Journal routes stay intact.
+Manglo Studio is the main website at `/`. The previous toolkit, Journal, Playbook, and guide pages are excluded from the production build. Old `/studio/` links redirect to `/`; retired article and tool routes return HTTP 410.
 The form posts JSON to `/api/demo`; the server sends only to **faik@manglo.shop** through Hostinger Mail API. Visitor email, message, business, local availability, timezone, and UTC time are included. This requests a conversation; it does not reserve a calendar slot.
 
 ## Hostinger setup
@@ -17,7 +17,7 @@ Official references: https://docs.hostinger.com/emails/agentic-mail and https://
 
 Run `npm run mail:setup` in an interactive terminal. Paste the Mail API token into the hidden prompt, never chat or a command argument. The script verifies the mailbox before saving. Windows uses current-user DPAPI encryption; other platforms use a private file. `private-data/` is ignored by Git. The local credential is never deployed.
 
-Then run `npm run build`, `npm start`, and `npm run mail:test`. The test sends one labelled notification to faik@manglo.shop. Open http://localhost:4173/studio/. Hosting environment variables take precedence over the local credential. `.env.example` is documentation; the local server does not automatically load `.env` files.
+Then run `npm run build`, `npm start`, and `npm run mail:test`. The test sends one labelled notification to faik@manglo.shop. Open http://localhost:4173/. Hosting environment variables take precedence over the local credential. `.env.example` is documentation; the local server does not automatically load `.env` files.
 
 ## Delivery behavior
 
