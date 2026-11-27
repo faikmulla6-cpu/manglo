@@ -2,3 +2,9 @@ node_modules/
 .DS_Store
 .env*
 .openai/local/
+
+!.env.example
+private-data/
+*.dpapi
+*.log
+studio/node_modules/
